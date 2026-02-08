@@ -48,8 +48,14 @@ export class LoginComponent {
     },
     error: (err) => {
       console.error(err);
-      this.errorMessage =
-        'ログインに失敗しました。社員番号またはパスワードを確認してください。';
+
+      if (typeof err.error === 'string') {
+        this.errorMessage = err.error;
+      } else {
+        this.errorMessage =
+          err.error?.message ||
+          'ログインに失敗しました。社員番号またはパスワードを確認してください。';
+      }
     },
   });
 }
