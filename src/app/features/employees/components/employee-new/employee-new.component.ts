@@ -35,6 +35,8 @@ export class EmployeeNewComponent {
   passwordStrength = '';
   passwordStrengthClass = '';
 
+  showPassword = false;
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -63,34 +65,42 @@ export class EmployeeNewComponent {
     });
   }
 
-  checkPasswordStrength(password: string): void {
-    // パスワード強度の判定
-    // 強: 大文字・小文字・数字すべて含む & 長さ12〜16文字
-    // 普通: 文字種が3つ未満で2つ以上含む & 長さ8〜16文字
-    // 弱: 上記以外（8〜16文字）
-    // 表示なし: 8文字未満 or 16文字超
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
-    const length = password.length;
+  checkPasswordStrength(password: string): void {
+    if (!password) {
+      this.passwordStrength = '';
+      this.passwordStrengthClass = '';
+      return;
+    }
+
+    const lengthOk = password.length >= 9 && password.length <= 16;
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
-    const hasDigit = /\d/.test(password);
+    const hasNumOrSymbol =
+      /\d/.test(password) ||
+      /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
 
-    const typesCount = [hasUpper, hasLower, hasDigit].filter(Boolean).length;
+    const hasSpace = /\s/.test(password);
 
-    if (length >= 8 && length <= 16) {
-      if (typesCount === 3 && length >= 12) {
-        this.passwordStrength = '強力なパスワードです';
-        this.passwordStrengthClass = 'text-success';
-      } else if (typesCount >= 2) {
-        this.passwordStrength = '普通のパスワードです';
-        this.passwordStrengthClass = 'text-warning';
-      } else {
-        this.passwordStrength = '弱いパスワードです';
-        this.passwordStrengthClass = 'text-danger';
-      }
+    if (lengthOk && hasUpper && hasLower && hasNumOrSymbol && !hasSpace) {
+      this.passwordStrength = '使用可能なパスワードです';
+      this.passwordStrengthClass = 'text-success';
     } else {
       this.passwordStrength = '';
       this.passwordStrengthClass = '';
     }
+  }
+
+  sanitizePassword(event: any): void {
+    const value = event.target.value;
+
+    // 全角・日本語除去（ASCIIのみ）
+    const sanitized = value.replace(/[^\x20-\x7E]/g, '');
+
+    event.target.value = sanitized;
+    this.employee.password = sanitized;
   }
 }

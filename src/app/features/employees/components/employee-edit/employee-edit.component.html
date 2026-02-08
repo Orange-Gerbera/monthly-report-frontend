@@ -72,24 +72,45 @@
         <div class="row mb-4">
           <div class="col-12 col-md-6">
             <label for="password" class="form-label">
-              パスワード（半角英数字8〜16文字）
-              <small class="text-muted d-block"
-                >※パスワードは変更する場合のみ入力してください。</small
-              >
+               パスワード
+              <small class="text-muted d-block">
+                9～16文字で、英大文字・英小文字・数字（または記号）を含めてください。
+              </small>
+              <small class="text-muted d-block">
+                ※パスワードは変更する場合のみ入力してください。
+              </small>
             </label>
 
-            <input
-              type="password"
-              id="password"
-              class="form-control"
-              [(ngModel)]="employee.password"
-              name="password"
-              minlength="8"
-              maxlength="16"
-              pattern="^[A-Za-z0-9]+$"
-              #passwordInput="ngModel"
-              (ngModelChange)="checkPasswordStrength($event)"
-            />
+            <div class="input-group">
+              <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  class="form-control"
+                  [(ngModel)]="employee.password"
+                  name="password"
+                  minlength="9"
+                  maxlength="16"
+                  pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*(\d|[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'&quot;]))[^\s]{9,16}$"
+                  #passwordInput="ngModel"
+                  inputmode="latin"
+                  autocomplete="new-password"
+                  style="ime-mode: disabled"
+                  (input)="sanitizePassword($event)"
+                  (ngModelChange)="checkPasswordStrength($event)"
+                />
+
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="togglePassword()"
+                  tabindex="-1"
+                >
+                <i
+                  class="bi"
+                  [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
+                ></i>
+              </button>
+            </div>
             <div
               *ngIf="
                 passwordInput.invalid &&
@@ -97,7 +118,7 @@
               "
               class="form-text text-danger"
             >
-              パスワードは半角英数字8〜16文字で入力してください(記号は使用できません)。
+              9～16文字で、英大文字・英小文字・数字（または記号）を含めてください。
             </div>
 
             <div *ngIf="passwordStrength" class="mt-2">

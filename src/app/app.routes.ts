@@ -16,6 +16,14 @@ export const appRoutes: Routes = [
       ),
   },
   {
+    path: 'password-change',
+    loadComponent: () =>
+      import(
+        './features/auth/components/password-change/password-change.component'
+      ).then((m) => m.PasswordChangeComponent),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'reports',
     loadComponent: () =>
       import(

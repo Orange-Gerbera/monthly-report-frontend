@@ -48,6 +48,14 @@ export class AuthService {
     );
   }
 
+  changePassword(password: string): Observable<any> {
+    return this.http.post(
+      `${this.API_BASE}/password/change`,
+      { password },
+      { withCredentials: true }
+    );
+  }
+
   getCurrentUser(): LoginResponse | null {
     return this.currentUser;
   }
