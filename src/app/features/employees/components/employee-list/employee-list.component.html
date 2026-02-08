@@ -46,7 +46,9 @@
             <td>{{ emp.code }}</td>
             <td>{{ emp.lastName }} {{ emp.firstName }}</td>
             <td>{{ emp.departmentName }}</td>
-            <td>
+            <td class="text-end">
+            <div class="d-flex justify-content-end align-items-center gap-2">
+              <!-- 詳細 -->
               <a
                 [routerLink]="['/employees', emp.code]"
                 class="btn btn-outline-secondary btn-sm"
@@ -67,7 +69,27 @@
                 </svg>
                 詳細
               </a>
-            </td>
+
+              <!-- ロック中表示 -->
+              <span *ngIf="emp.locked" class="badge bg-danger">
+                ロック中
+              </span>
+
+              <!-- 残り時間 -->
+              <small *ngIf="emp.locked" class="text-danger">
+                {{ remainingTime(emp.lockUntil) }}
+              </small>
+
+              <!-- ロック解除 -->
+              <button
+                *ngIf="emp.locked"
+                class="btn btn-outline-danger btn-sm"
+                (click)="unlock(emp.code)"
+              >
+                ロック解除
+              </button>
+            </div>
+          </td>
           </tr>
         </tbody>
       </table>
