@@ -27,8 +27,14 @@ export class LoginComponent {
   };
 
   this.authService.login(loginData).subscribe({
-    next: () => {
-      // ログイン成功後にユーザー情報を取得
+    next: (res: LoginResponse) => {
+      // パスワード変更が必要か判定
+      if (res.passwordChangeRequired) {
+        this.router.navigate(['/password-change']);
+        return;
+      }
+
+      // 通常ログイン
       this.authService.fetchMe().subscribe({
         next: (user) => {
           console.log('ログインユーザー:', user);

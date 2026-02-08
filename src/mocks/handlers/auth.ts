@@ -33,6 +33,7 @@ export const authHandlers = [
       email: user.email,
       department: user.departmentName,
       loginAt: new Date().toISOString(),
+      passwordChangeRequired: false, 
     };
 
     return new HttpResponse(JSON.stringify(res), {
@@ -63,6 +64,7 @@ export const authHandlers = [
       email: user.email,
       department: user.departmentName,
       loginAt: new Date().toISOString(),
+      passwordChangeRequired: false, 
     };
     return HttpResponse.json(res, { status: 200 });
   }),
