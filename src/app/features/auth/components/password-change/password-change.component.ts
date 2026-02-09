@@ -62,16 +62,20 @@ export class PasswordChangeComponent {
   }
 
   private isStrongPassword(password: string): boolean {
+    // 9～16文字
     const lengthOk = password.length >= 9 && password.length <= 16;
+    // 英大文字必須
     const hasUpper = /[A-Z]/.test(password);
+    // 英小文字必須
     const hasLower = /[a-z]/.test(password);
-    const hasNumOrSymbol =
-      /\d/.test(password) ||
-      /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
-
+    // 数字必須
+    const hasNumber = /\d/.test(password);
+    // 記号必須
+    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
+    // スペース禁止
     const hasSpace = /\s/.test(password);
 
-    return lengthOk && hasUpper && hasLower && hasNumOrSymbol && !hasSpace;
+    return (lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace);
   }
 
   sanitizePassword(event: any): void {

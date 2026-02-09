@@ -74,7 +74,7 @@
             <label for="password" class="form-label">
                パスワード
               <small class="text-muted d-block">
-                9～16文字で、英大文字・英小文字・数字（または記号）を含めてください。
+                9～16文字で、英大文字・英小文字・数字・記号を含めてください。
               </small>
               <small class="text-muted d-block">
                 ※パスワードは変更する場合のみ入力してください。
@@ -90,7 +90,7 @@
                   name="password"
                   minlength="9"
                   maxlength="16"
-                  pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*(\d|[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'&quot;]))[^\s]{9,16}$"
+                  pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'&quot;])[^\s]{9,16}$"
                   #passwordInput="ngModel"
                   inputmode="latin"
                   autocomplete="new-password"
@@ -118,7 +118,7 @@
               "
               class="form-text text-danger"
             >
-              9～16文字で、英大文字・英小文字・数字（または記号）を含めてください。
+              9～16文字で、英大文字・英小文字・数字・記号を含めてください。
             </div>
 
             <div *ngIf="passwordStrength" class="mt-2">
@@ -237,7 +237,13 @@
 
         <!-- 保存ボタン -->
         <div class="text-end">
-          <button type="submit" class="btn btn-primary px-4">保存</button>
+          <button
+            type="submit"
+            class="btn btn-primary px-4"
+            [disabled]="form.invalid || isPasswordInvalid()"
+          >
+            保存
+          </button>
         </div>
       </form>
     </div>

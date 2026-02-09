@@ -136,22 +136,28 @@ export class EmployeeEditComponent implements OnInit {
       return;
     }
 
-    const lengthOk = password.length >= 9 && password.length <= 16;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasNumOrSymbol =
-      /\d/.test(password) ||
-      /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
-
-    const hasSpace = /\s/.test(password);
-
-    if (lengthOk && hasUpper && hasLower && hasNumOrSymbol && !hasSpace) {
+    if (!this.isPasswordInvalid(password)) {
       this.passwordStrength = '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
       this.passwordStrength = '';
       this.passwordStrengthClass = '';
     }
+  }
+
+  isPasswordInvalid(password?: string): boolean {
+    const p = password ?? this.employee.password;
+
+    if (!p) return false; // 未入力＝変更なしOK
+
+    const lengthOk = p.length >= 9 && p.length <= 16;
+    const hasUpper = /[A-Z]/.test(p);
+    const hasLower = /[a-z]/.test(p);
+    const hasNumber = /\d/.test(p);
+    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(p);
+    const hasSpace = /\s/.test(p);
+
+    return !(lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace);
   }
 
   sanitizePassword(event: any): void {
