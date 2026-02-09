@@ -79,13 +79,11 @@ export class EmployeeNewComponent {
     const lengthOk = password.length >= 9 && password.length <= 16;
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
-    const hasNumOrSymbol =
-      /\d/.test(password) ||
-      /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
-
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
     const hasSpace = /\s/.test(password);
 
-    if (lengthOk && hasUpper && hasLower && hasNumOrSymbol && !hasSpace) {
+    if (lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace) {
       this.passwordStrength = '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
@@ -97,7 +95,7 @@ export class EmployeeNewComponent {
   sanitizePassword(event: any): void {
     const value = event.target.value;
 
-    // 全角・日本語除去（ASCIIのみ）
+    // 全角・日本語を除去（ASCIIのみ）
     const sanitized = value.replace(/[^\x20-\x7E]/g, '');
 
     event.target.value = sanitized;
