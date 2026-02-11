@@ -1,6 +1,6 @@
 // src/app/features/employees/components/employee-list.component.ts
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
@@ -13,14 +13,25 @@ import { ButtonComponent } from '../../../../shared/button/button.component';
   imports: [CommonModule, RouterModule, ButtonComponent],
   templateUrl: './employee-list.component.html',
 })
-export class EmployeeListComponent implements OnInit {
+export class EmployeeListComponent implements OnInit, OnDestroy {
   employees: EmployeeDto[] = [];
   loading: boolean = true;
+  private timer?: any;
 
   constructor(private employeeService: EmployeeService) {}
 
   ngOnInit(): void {
     this.loadEmployees();
+
+    this.timer = setInterval(() => {
+      this.employees = [...this.employees];
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
 
   // 一覧読み込み
