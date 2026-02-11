@@ -1,18 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDto } from '../../models/employee.dto';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/button/button.component';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-employee-detail',
   templateUrl: './employee-detail.component.html',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent],
+  imports: [CommonModule, RouterLink, ButtonComponent, FormsModule],
 })
 export class EmployeeDetailComponent implements OnInit {
   employee$!: Observable<EmployeeDto>;
@@ -30,6 +29,31 @@ export class EmployeeDetailComponent implements OnInit {
     }
   }
 
+  statusLabel(status: string): string {
+    switch (status) {
+      case 'EMPLOYED':
+        return '在職';
+      case 'SUSPENDED':
+        return '休職';
+      case 'RETIRED':
+        return '退職';
+      default:
+        return status;
+    }
+  }
+
+  toggleActive(employee: EmployeeDto) {
+    const req = { ...employee };
+
+    this.employeeService.update(employee.code, req).subscribe({
+      next: () => console.log('利用状況更新成功'),
+      error: () => {
+        alert('更新に失敗しました');
+        employee.active = !employee.active;
+      },
+    });
+  }
+
   onDelete(code: string): void {
     const confirmDelete = confirm('この従業員を削除してもよろしいですか？');
     if (!confirmDelete) return;
@@ -41,8 +65,7 @@ export class EmployeeDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error('削除失敗:', err);
-        const errorMessage = err.error?.message || '不明なエラーが発生しました';
-        alert('削除に失敗しました: ' + errorMessage);
+        alert('削除に失敗しました');
       },
     });
   }

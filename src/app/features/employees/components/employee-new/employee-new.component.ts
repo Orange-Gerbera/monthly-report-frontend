@@ -22,6 +22,8 @@ export class EmployeeNewComponent {
     email: '',
     role: 'GENERAL',
     departmentName: '',
+    employmentStatus: 'EMPLOYED',
+    active: true,
     password: '',
   };
 

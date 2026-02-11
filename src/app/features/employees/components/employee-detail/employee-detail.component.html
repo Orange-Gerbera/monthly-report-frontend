@@ -49,6 +49,27 @@
             <th scope="row">所属</th>
             <td>{{ employee.departmentName }}</td>
           </tr>
+          <tr>
+            <th scope="row">雇用状態</th>
+            <td>{{ statusLabel(employee.employmentStatus) }}</td>
+          </tr>
+          <tr>
+            <th scope="row">システム利用可否</th>
+            <td>
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [(ngModel)]="employee.active"
+                  (change)="toggleActive(employee)"
+                  id="activeSwitch"
+                />
+                <label class="form-check-label" for="activeSwitch">
+                  {{ employee.active ? '利用可能' : '利用停止' }}
+                </label>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

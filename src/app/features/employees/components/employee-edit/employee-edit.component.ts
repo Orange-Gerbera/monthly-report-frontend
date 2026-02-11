@@ -16,6 +16,7 @@ import { EmployeeDto, EmployeeRequest } from '../../models/employee.dto';
 export class EmployeeEditComponent implements OnInit {
   @Input() selfMode = false;
   isAdmin = false;
+  private originalEmploymentStatus?: string;
 
   employee: EmployeeRequest = {
     code: '',
@@ -24,6 +25,8 @@ export class EmployeeEditComponent implements OnInit {
     email: '',
     role: 'GENERAL',
     departmentName: '',
+    employmentStatus: 'EMPLOYED',
+    active: true,
     password: '',
   };
 
@@ -57,6 +60,7 @@ export class EmployeeEditComponent implements OnInit {
             role: this.convertRoleToEnum(user.role),
             password: '',
           };
+          this.originalEmploymentStatus = user.employmentStatus;
           this.isAdmin = this.employee.role === 'ADMIN';
           console.log(
             '取得したrole:',
@@ -79,6 +83,7 @@ export class EmployeeEditComponent implements OnInit {
               role: this.convertRoleToEnum(employee.role),
               password: '',
             };
+            this.originalEmploymentStatus = employee.employmentStatus;
           },
 
           error: (err) =>
@@ -101,10 +106,23 @@ export class EmployeeEditComponent implements OnInit {
       return;
     }
 
+    // 雇用状態変更時のみ利用状態を連動
+    if (this.employee.employmentStatus !== this.originalEmploymentStatus) {
+      if (
+        this.employee.employmentStatus === 'SUSPENDED' ||
+        this.employee.employmentStatus === 'RETIRED'
+      ) {
+        this.employee.active = false;
+      }
+
+      if (this.employee.employmentStatus === 'EMPLOYED') {
+        this.employee.active = true;
+      }
+    }
+
     const updateData: EmployeeRequest = {
       ...this.employee,
     };
-    console.log('送信データ:', updateData);
 
     this.employeeService.update(this.employee.code, updateData).subscribe({
       next: () => {
@@ -112,12 +130,10 @@ export class EmployeeEditComponent implements OnInit {
         const redirectUrl = this.selfMode ? '/profile' : '/employees';
         this.router.navigate([redirectUrl]);
       },
-      error: (err) => {
-        console.error('更新に失敗しました', err);
-        alert('更新に失敗しました');
-      },
+      error: () => alert('更新に失敗しました'),
     });
   }
+
 
   private convertRoleToEnum(role: string): 'GENERAL' | 'ADMIN' {
     if (role === 'ADMIN' || role === 'GENERAL')
@@ -169,4 +185,23 @@ export class EmployeeEditComponent implements OnInit {
     event.target.value = sanitized;
     this.employee.password = sanitized;
   }
+
+  statusLabel(status: string): string {
+    switch (status) {
+      case 'EMPLOYED':
+        return '在職';
+      case 'SUSPENDED':
+        return '休職';
+      case 'RETIRED':
+        return '退職';
+      default:
+        return status;
+    }
+  }
+
+  employmentStatusOptions = [
+    { label: '在職', value: 'EMPLOYED' },
+    { label: '休職', value: 'SUSPENDED' },
+    { label: '退職', value: 'RETIRED' },
+  ];
 }

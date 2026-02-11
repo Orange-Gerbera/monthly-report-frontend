@@ -17,6 +17,8 @@ export function seedEmployees(): EmployeeDto[] {
     email,
     role, // 'ADMIN' | '管理者' | '一般' など、実装側の期待に合わせる
     departmentName,
+    employmentStatus: 'EMPLOYED',
+    active: true,
   });
 
   return [

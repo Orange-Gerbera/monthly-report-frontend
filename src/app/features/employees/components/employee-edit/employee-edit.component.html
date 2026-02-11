@@ -235,6 +235,27 @@
           </div>
         </div>
 
+        <div *ngIf="!selfMode || isAdmin" class="row mb-4">
+          <div class="col-12 col-md-6">
+            <label for="employmentStatus" class="form-label">
+              雇用状態
+            </label>
+            <select
+              id="employmentStatus"
+              class="form-select"
+              [(ngModel)]="employee.employmentStatus"
+              name="employmentStatus"
+            >
+              <option
+                *ngFor="let s of employmentStatusOptions"
+                [value]="s.value"
+              >
+                {{ s.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
         <!-- 保存ボタン -->
         <div class="text-end">
           <button

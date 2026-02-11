@@ -70,5 +70,18 @@ export class EmployeeListComponent implements OnInit, OnDestroy {
 
     return `残り ${h}時間 ${m}分`;
   }
+
+  statusLabel(status: string): string {
+    switch (status) {
+      case 'EMPLOYED':
+        return '在職';
+      case 'SUSPENDED':
+        return '休職';
+      case 'RETIRED':
+        return '退職';
+      default:
+        return status;
+    }
+  }
 }
 

@@ -6,6 +6,8 @@ export interface EmployeeDto {
   email: string;
   role: string;
   departmentName: string;
+  employmentStatus: string;
+  active: boolean;
   locked?: boolean;
   lockUntil?: string; 
 }

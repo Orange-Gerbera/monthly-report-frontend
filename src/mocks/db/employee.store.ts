@@ -54,6 +54,8 @@ export class EmployeeStore {
         email: req.email,
         role: req.role,
         departmentName: req.departmentName,
+        employmentStatus: req.employmentStatus ?? cur.employmentStatus,
+        active: req.active ?? cur.active,
       };
       this.employees[idx] = updated;
 
@@ -69,6 +71,8 @@ export class EmployeeStore {
         email: req.email,
         role: req.role,
         departmentName: req.departmentName,
+        employmentStatus: req.employmentStatus ?? 'EMPLOYED',
+        active: req.active ?? true,
       };
       this.employees.push(created);
 

@@ -114,6 +114,8 @@ export const employeeHandlers = [
       email: body.email,
       role: body.role,
       departmentName: body.departmentName,
+      employmentStatus: body.employmentStatus ?? 'EMPLOYED',
+      active: body.active ?? true,
     };
 
     employeeStore.employees.push(created);
@@ -157,6 +159,9 @@ export const employeeHandlers = [
       email: body.email ?? current.email,
       role: body.role ?? current.role,
       departmentName: body.departmentName ?? current.departmentName,
+      employmentStatus:
+        body.employmentStatus ?? current.employmentStatus,
+      active: body.active ?? current.active,
     };
 
     employeeStore.employees[idx] = updated;

@@ -38,14 +38,25 @@
             <th>社員番号</th>
             <th>氏名</th>
             <th>所属</th>
+            <th>雇用状態</th>
+            <th>システム利用可否</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let emp of employees">
+          <tr *ngFor="let emp of employees" [class.table-secondary]="!emp.active">
             <td>{{ emp.code }}</td>
             <td>{{ emp.lastName }} {{ emp.firstName }}</td>
             <td>{{ emp.departmentName }}</td>
+            <td>{{ statusLabel(emp.employmentStatus) }}</td>
+            <td>
+              <span *ngIf="emp.active" class="badge bg-success">
+                利用可能
+              </span>
+              <span *ngIf="!emp.active" class="badge bg-secondary">
+                利用停止
+              </span>
+            </td>
             <td class="text-end">
             <div class="d-flex justify-content-end align-items-center gap-2">
               <!-- 詳細 -->
