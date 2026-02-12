@@ -2,6 +2,20 @@
   <h1 class="mb-4 text-center">報告書管理アプリ</h1>
 
   <form (ngSubmit)="onSubmit()">
+    <!-- 企業ID(jinjerと同じ番号) -->
+    <div class="mb-3">
+      <label for="companyId" class="form-label">企業ID（jinjerと同じ番号）</label>
+      <input
+        type="text"
+        class="form-control"
+        id="companyId"
+        [(ngModel)]="companyId"
+        name="companyId"
+        required
+      />
+    </div>
+
+    <!-- 社員番号 -->
     <div class="mb-3">
       <label for="code" class="form-label">社員番号</label>
       <input
@@ -14,6 +28,7 @@
       />
     </div>
 
+    <!-- パスワード -->
     <div class="mb-3">
       <label for="password" class="form-label">パスワード</label>
       <input
