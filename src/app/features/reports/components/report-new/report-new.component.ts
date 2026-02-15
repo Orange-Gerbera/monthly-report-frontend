@@ -8,6 +8,8 @@ import { EmployeeService } from '../../../employees/services/employee.service';
 import { ActivatedRoute } from '@angular/router';
 import { ReportFormComponent } from '../report-form/report-form.component';
 import { Location } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   standalone: true,
@@ -15,6 +17,7 @@ import { Location } from '@angular/common';
   imports: [
     CommonModule,
     ReportFormComponent, // 共通フォームを利用
+    ConfirmDialogComponent,
   ],
   templateUrl: './report-new.component.html',
 })
@@ -51,7 +54,8 @@ export class ReportNewComponent {
     private authService: AuthService,
     private employeeService: EmployeeService,
     private route: ActivatedRoute,
-    private location: Location
+    private location: Location,
+    private dialog: MatDialog
   ) {
     const navigation = this.router.getCurrentNavigation();
     // state自体が存在するか、'previousUrl' が含まれているかをチェック
@@ -119,13 +123,22 @@ export class ReportNewComponent {
 
   // 一覧に戻るボタンの実装
   onBack() {
-     const confirmed = window.confirm(
-      '編集中の内容は保存されません。よろしいですか？'
-    );
-    if (confirmed) {
-      // 取得済みの previousUrl（デフォルトは /profile）へ遷移
-      this.router.navigateByUrl(this.previousUrl);
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: '内容の破棄',
+        message: '編集中の内容は保存されませんが、よろしいですか？',
+        okLabel: '破棄して戻る',
+        okColor: 'red' // 注意を促すため赤
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        // ユーザーが「破棄して戻る」を選んだ場合のみ遷移
+        this.router.navigateByUrl(this.previousUrl);
+      }
+    });
   }
 
   /** 最新レポートの読み込み */

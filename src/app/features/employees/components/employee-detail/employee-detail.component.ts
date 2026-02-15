@@ -7,12 +7,15 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-employee-detail',
   templateUrl: './employee-detail.component.html',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, IconComponent, FormsModule],
+  imports: [CommonModule, RouterLink, ButtonComponent, IconComponent, FormsModule, ConfirmDialogComponent],
 })
 export class EmployeeDetailComponent implements OnInit {
   employee$!: Observable<EmployeeDto>;
@@ -20,7 +23,8 @@ export class EmployeeDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -56,10 +60,24 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   onDelete(code: string): void {
-    const confirmDelete = confirm('この従業員を削除してもよろしいですか？');
-    if (!confirmDelete) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: '従業員の削除',
+        message: `従業員コード [${code}] の情報を削除してもよろしいですか？\nこの操作は取り消せません。`,
+        okLabel: '削除する',
+        okColor: 'red'
+      }
+    });
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.executeDelete(code);
+      }
+    });
+  }
 
-    this.employeeService.delete(code).subscribe({
+  private executeDelete(code: string): void {
+    this.employeeService.delete(code).pipe(take(1)).subscribe({
       next: () => {
         alert('削除に成功しました');
         this.router.navigate(['/employees']);

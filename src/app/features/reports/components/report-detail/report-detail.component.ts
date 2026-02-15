@@ -14,6 +14,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ApproveConfirmDialogComponent } from '../approve-confirm-dialog/approve-confirm-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Location } from '@angular/common';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   standalone: true,
@@ -26,6 +27,7 @@ import { Location } from '@angular/common';
     ButtonComponent,
     MatDialogModule,
     MatTooltipModule,
+    ConfirmDialogComponent,
   ],
   templateUrl: './report-detail.component.html',
   styleUrls: ['./report-detail.component.scss'],
@@ -95,15 +97,37 @@ export class ReportDetailComponent {
   }
 
   onDelete(id: number): void {
-    if (confirm('この報告書を削除してもよろしいですか？')) {
-      this.reportService.deleteReport(id).subscribe({
-        next: () => this.router.navigate(['/reports']),
-        error: (err) => {
-          console.error('削除エラー:', err);
-          alert('削除に失敗しました');
-        },
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: '削除の確認',
+        message: 'この報告書を完全に削除しますか？\nこの操作は取り消せません。',
+        okLabel: '削除する',
+        okColor: 'red' // 削除なので注意を促す赤
+      },
+      // Safari/iOSでの挙動を安定させるためのオプション（任意）
+      autoFocus: false, 
+      restoreFocus: true 
+    });
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      // result にはダイアログで「削除する」を押した時に true が入る
+      if (result) {
+        this.executeDelete(id);
+      }
+    });
+  }
+
+  private executeDelete(id: number): void {
+    this.reportService.deleteReport(id).subscribe({
+      next: () => {
+        console.log('削除成功');
+        this.router.navigateByUrl(this.previousUrl);
+      },
+      error: (err) => {
+        console.error('削除失敗', err);
+        alert('削除に失敗しました。');
+      }
+    });
   }
 
   onApprove(id: number): void {

@@ -1,0 +1,25 @@
+.confirm-dialog-container {
+  min-width: 320px;
+  max-width: 450px;
+}
+
+.dialog-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  padding: 20px 24px 10px;
+}
+
+.dialog-content {
+  padding: 10px 24px 20px !important;
+  
+  .message-text {
+    white-space: pre-wrap; // 改行を有効にする
+    line-height: 1.6;
+    margin: 0;
+    color: #444;
+  }
+}
+
+.dialog-actions {
+  gap: 12px; // ボタン同士の隙間
+}

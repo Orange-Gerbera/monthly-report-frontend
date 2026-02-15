@@ -4,11 +4,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ReportService } from '../../services/report.service';
 import { ReportDto, ReportUpsertRequest } from '../../models/report.dto';
 import { ReportFormComponent } from '../report-form/report-form.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-report-edit',
   standalone: true,
-  imports: [CommonModule, ReportFormComponent],
+  imports: [CommonModule, ReportFormComponent, ConfirmDialogComponent],
   templateUrl: './report-edit.component.html',
 })
 export class ReportEditComponent implements OnInit {
@@ -26,7 +28,8 @@ export class ReportEditComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private reportService: ReportService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     // コンストラクタで詳細画面から渡された state を受け取る
     const navigation = this.router.getCurrentNavigation();
@@ -112,14 +115,23 @@ export class ReportEditComponent implements OnInit {
   }
 
   onCancel(): void {
-    const confirmed = window.confirm(
-      '編集中の内容は保存されません。よろしいですか？'
-    );
-    if (confirmed) {
-      // キャンセル時も同様に state を持たせて詳細画面に戻る
-      this.router.navigate(['/reports', this.reportId], { 
-        state: { previousUrl: this.previousUrl } 
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: '編集の破棄',
+        message: '編集中の内容は保存されませんが、よろしいですか？',
+        okLabel: '破棄して戻る',
+        okColor: 'red'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        // キャンセル時も state を維持して詳細に戻る
+        this.router.navigate(['/reports', this.reportId], { 
+          state: { previousUrl: this.previousUrl } 
+        });
+      }
+    });
   }
 }
