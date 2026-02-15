@@ -1,11 +1,13 @@
 <div class="container py-5">
-  <app-report-form
-    [model]="report"
-    mode="create"
-    submitLabel="登録"
-    backLabel="一覧に戻る"
-    (formSubmit)="onCreate($event)"
-    (cancel)="onBackToList()"
-  >
-  </app-report-form>
+  <div class="page-card">
+    <app-report-form
+      [model]="report"
+      mode="create"
+      submitLabel="登録"
+      backLabel="一覧に戻る"
+      (formSubmit)="onCreate($event)"
+      (cancel)="onBack()"
+    >
+    </app-report-form>
+  </div>
 </div>

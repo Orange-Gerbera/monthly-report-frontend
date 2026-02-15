@@ -6,15 +6,18 @@ import { EmployeeService } from '../../services/employee.service';
 import { DepartmentService } from '../../../departments/services/department.service';
 import { DepartmentDto } from '../../../departments/models/department.dto';
 import { EmployeeDto, EmployeeRequest } from '../../models/employee.dto';
+import { ButtonComponent } from '../../../../shared/button/button.component';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-employee-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ButtonComponent, IconComponent],
   templateUrl: './employee-edit.component.html',
 })
 export class EmployeeEditComponent implements OnInit {
   @Input() selfMode = false;
+  @Input() noCard = false;
   isAdmin = false;
   private originalEmploymentStatus?: string;
 

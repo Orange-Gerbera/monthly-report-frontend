@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../services/report.service';
@@ -13,6 +13,7 @@ import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ApproveConfirmDialogComponent } from '../approve-confirm-dialog/approve-confirm-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Location } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -38,6 +39,7 @@ export class ReportDetailComponent {
   timeWorkedMinute: number = 0;
   timeOverHour: number = 0;
   timeOverMinute: number = 0;
+  previousUrl: string = '/reports'; 
 
   private currentReportId: string = '';
   private currentReportMonth: string = '';
@@ -48,13 +50,26 @@ export class ReportDetailComponent {
     private router: Router,
     private authService: AuthService,
     private excelDownloadService: ExcelDownloadService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private location: Location
   ) {
+    const navigation = this.router.getCurrentNavigation();
+    // state自体が存在するか、'previousUrl' が含まれているかをチェック
+    if (navigation?.extras?.state?.['previousUrl']) {
+      this.previousUrl = navigation.extras.state['previousUrl'];
+    }
+
     this.loadReport();
   }
 
   get reportMonth(): string {
     return this.currentReportMonth;
+  }
+
+  // 一覧に戻るボタンの実装
+  onBack() {
+    //取得済みの previousUrl（デフォルトは /reports）へ遷移
+    this.router.navigateByUrl(this.previousUrl);
   }
 
   loadReport(): void {

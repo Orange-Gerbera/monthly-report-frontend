@@ -1,249 +1,255 @@
 <div class="container mt-5 pt-3">
-  <!-- タイトル -->
-  <div class="row mb-4 mt-3 align-items-center">
-    <div class="col-12 col-md-8 offset-md-2">
-      <h1 class="mb-4 border-bottom pb-2">👤 従業員 新規作成</h1>
+  <div class="page-card">
+    <!-- タイトル -->
+    <div class="row mb-4 mt-3 align-items-center">
+      <div class="col-12 col-md-8 offset-md-2">
+       
+        <h1 class="mb-4 border-bottom pb-2 d-flex align-items-center">
+          <app-icon name="user_bk" class="title-icon me-3"></app-icon>
+          従業員 新規作成
+        </h1>
 
-      <form
-        #form="ngForm"
-        (ngSubmit)="onSubmit(form)"
-        class="needs-validation"
-        novalidate
-      >
-        <!-- 従業員番号（数字のみ） -->
-        <div class="row mb-4">
-          <div class="col-12 col-md-6">
-            <label for="code" class="form-label">従業員番号</label>
-            <input
-              type="number"
-              id="code"
-              class="form-control"
-              placeholder="例: 1234"
-              [(ngModel)]="employee.code"
-              name="code"
-              required
-              #codeInput="ngModel"
-            />
-            <div
-              *ngIf="codeInput.invalid && codeInput.touched"
-              class="form-text text-danger"
-            >
-              従業員番号を数字で入力してください。
-            </div>
-          </div>
-        </div>
-
-        <!-- 氏名 -->
-        <div class="row g-3 mb-4">
-          <div class="col-12 col-md-6">
-            <label for="lastName" class="form-label">姓</label>
-            <input
-              type="text"
-              id="lastName"
-              class="form-control"
-              placeholder="例: 山田"
-              [(ngModel)]="employee.lastName"
-              name="lastName"
-              required
-              #lastNameInput="ngModel"
-            />
-            <div
-              *ngIf="lastNameInput.invalid && lastNameInput.touched"
-              class="form-text text-danger"
-            >
-              姓を入力してください。
-            </div>
-          </div>
-          <div class="col-12 col-md-6">
-            <label for="firstName" class="form-label">名</label>
-            <input
-              type="text"
-              id="firstName"
-              class="form-control"
-              placeholder="例: 太郎"
-              [(ngModel)]="employee.firstName"
-              name="firstName"
-              required
-              #firstNameInput="ngModel"
-            />
-            <div
-              *ngIf="firstNameInput.invalid && firstNameInput.touched"
-              class="form-text text-danger"
-            >
-              名を入力してください。
-            </div>
-          </div>
-        </div>
-
-        <!-- パスワード -->
-        <div class="row mb-4">
-          <div class="col-12 col-md-6">
-            <label for="password" class="form-label">
-              パスワード
-              <small class="text-muted d-block">
-                9～16文字で、英大文字・英小文字・数字・記号を含めてください。
-              </small>
-            </label>
-
-            <div class="input-group">
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              id="password"
-              class="form-control"
-              [(ngModel)]="employee.password"
-              name="password"
-              minlength="9"
-              maxlength="16"
-              required
-              pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'&quot;])[^\s]{9,16}$"
-              #passwordInput="ngModel"
-              inputmode="latin"
-              autocomplete="new-password"
-              style="ime-mode: disabled"
-              (input)="sanitizePassword($event)"
-              (ngModelChange)="checkPasswordStrength($event)"
-            />
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              (click)="togglePassword()"
-              tabindex="-1"
-            >
-              <i
-                class="bi"
-                [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
-              ></i>
-            </button>
-          </div>
-            <div
-              *ngIf="
-                passwordInput.invalid &&
-                (passwordInput.dirty || passwordInput.value)
-              "
-              class="form-text text-danger"
-            >
-              9～16文字で、英大文字・英小文字・数字・記号を含めてください。
-            </div>
-
-            <div *ngIf="passwordStrength" class="mt-2">
-              <!-- 色付きバー（レスポンシブ対応） -->
+        <form
+          #form="ngForm"
+          (ngSubmit)="onSubmit(form)"
+          class="needs-validation"
+          novalidate
+        >
+          <!-- 従業員番号（数字のみ） -->
+          <div class="row mb-4">
+            <div class="col-12 col-md-6">
+              <label for="code" class="form-label">従業員番号</label>
+              <input
+                type="number"
+                id="code"
+                class="form-control"
+                placeholder="例: 1234"
+                [(ngModel)]="employee.code"
+                name="code"
+                required
+                #codeInput="ngModel"
+              />
               <div
-                class="progress"
-                style="height: 8px; max-width: 150px; width: 100%"
+                *ngIf="codeInput.invalid && codeInput.touched"
+                class="form-text text-danger"
               >
-                <div
-                  class="progress-bar"
-                  role="progressbar"
-                  [ngClass]="{
-                    'bg-danger': passwordStrengthClass === 'text-danger',
-                    'bg-warning': passwordStrengthClass === 'text-warning',
-                    'bg-success': passwordStrengthClass === 'text-success'
-                  }"
-                  style="width: 100%"
-                ></div>
+                従業員番号を数字で入力してください。
               </div>
+            </div>
+          </div>
 
-              <!-- アイコン＋テキスト -->
-              <div class="d-flex mt-1">
+          <!-- 氏名 -->
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+              <label for="lastName" class="form-label">姓</label>
+              <input
+                type="text"
+                id="lastName"
+                class="form-control"
+                placeholder="例: 山田"
+                [(ngModel)]="employee.lastName"
+                name="lastName"
+                required
+                #lastNameInput="ngModel"
+              />
+              <div
+                *ngIf="lastNameInput.invalid && lastNameInput.touched"
+                class="form-text text-danger"
+              >
+                姓を入力してください。
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="firstName" class="form-label">名</label>
+              <input
+                type="text"
+                id="firstName"
+                class="form-control"
+                placeholder="例: 太郎"
+                [(ngModel)]="employee.firstName"
+                name="firstName"
+                required
+                #firstNameInput="ngModel"
+              />
+              <div
+                *ngIf="firstNameInput.invalid && firstNameInput.touched"
+                class="form-text text-danger"
+              >
+                名を入力してください。
+              </div>
+            </div>
+          </div>
+
+          <!-- パスワード -->
+          <div class="row mb-4">
+            <div class="col-12 col-md-6">
+              <label for="password" class="form-label">
+                パスワード
+                <small class="text-muted d-block">
+                  9～16文字で、英大文字・英小文字・数字・記号を含めてください。
+                </small>
+              </label>
+
+              <div class="input-group">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                class="form-control"
+                [(ngModel)]="employee.password"
+                name="password"
+                minlength="9"
+                maxlength="16"
+                required
+                pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'&quot;])[^\s]{9,16}$"
+                #passwordInput="ngModel"
+                inputmode="latin"
+                autocomplete="new-password"
+                style="ime-mode: disabled"
+                (input)="sanitizePassword($event)"
+                (ngModelChange)="checkPasswordStrength($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="togglePassword()"
+                tabindex="-1"
+              >
                 <i
                   class="bi"
-                  [ngClass]="{
-                    'bi-x-circle-fill text-danger':
-                      passwordStrengthClass === 'text-danger',
-                    'bi-exclamation-circle-fill text-warning':
-                      passwordStrengthClass === 'text-warning',
-                    'bi-check-circle-fill text-success':
-                      passwordStrengthClass === 'text-success'
-                  }"
-                  style="margin-right: 6px"
+                  [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
                 ></i>
-                <small [ngClass]="passwordStrengthClass" class="fw-bold m-0">
-                  {{ passwordStrength }}
-                </small>
+              </button>
+            </div>
+              <div
+                *ngIf="
+                  passwordInput.invalid &&
+                  (passwordInput.dirty || passwordInput.value)
+                "
+                class="form-text text-danger"
+              >
+                9～16文字で、英大文字・英小文字・数字・記号を含めてください。
+              </div>
+
+              <div *ngIf="passwordStrength" class="mt-2">
+                <!-- 色付きバー（レスポンシブ対応） -->
+                <div
+                  class="progress"
+                  style="height: 8px; max-width: 150px; width: 100%"
+                >
+                  <div
+                    class="progress-bar"
+                    role="progressbar"
+                    [ngClass]="{
+                      'bg-danger': passwordStrengthClass === 'text-danger',
+                      'bg-warning': passwordStrengthClass === 'text-warning',
+                      'bg-success': passwordStrengthClass === 'text-success'
+                    }"
+                    style="width: 100%"
+                  ></div>
+                </div>
+
+                <!-- アイコン＋テキスト -->
+                <div class="d-flex mt-1">
+                  <i
+                    class="bi"
+                    [ngClass]="{
+                      'bi-x-circle-fill text-danger':
+                        passwordStrengthClass === 'text-danger',
+                      'bi-exclamation-circle-fill text-warning':
+                        passwordStrengthClass === 'text-warning',
+                      'bi-check-circle-fill text-success':
+                        passwordStrengthClass === 'text-success'
+                    }"
+                    style="margin-right: 6px"
+                  ></i>
+                  <small [ngClass]="passwordStrengthClass" class="fw-bold m-0">
+                    {{ passwordStrength }}
+                  </small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- メールアドレス -->
-        <div class="row mb-4">
-          <div class="col-12 col-md-6">
-            <label for="email" class="form-label">メールアドレス</label>
-            <input
-              type="email"
-              id="email"
-              class="form-control"
-              placeholder="example@example.com"
-              [(ngModel)]="employee.email"
-              name="email"
-              required
-              email
-              #emailInput="ngModel"
-            />
-            <div
-              *ngIf="emailInput.invalid && emailInput.touched"
-              class="form-text text-danger"
-            >
-              有効なメールアドレスを入力してください。
-            </div>
-          </div>
-        </div>
-
-        <!-- 権限 & 所属 -->
-        <div class="row g-3 mb-4">
-          <!-- 権限 -->
-          <div class="col-12 col-md-6">
-            <label for="role" class="form-label">権限</label>
-            <select
-              id="role"
-              class="form-select"
-              [(ngModel)]="employee.role"
-              name="role"
-              required
-              #roleInput="ngModel"
-            >
-              <option *ngFor="let option of roleOptions" [value]="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-            <div
-              *ngIf="roleInput.invalid && roleInput.touched"
-              class="form-text text-danger"
-            >
-              権限を選択してください。
+          <!-- メールアドレス -->
+          <div class="row mb-4">
+            <div class="col-12 col-md-6">
+              <label for="email" class="form-label">メールアドレス</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                placeholder="example@example.com"
+                [(ngModel)]="employee.email"
+                name="email"
+                required
+                email
+                #emailInput="ngModel"
+              />
+              <div
+                *ngIf="emailInput.invalid && emailInput.touched"
+                class="form-text text-danger"
+              >
+                有効なメールアドレスを入力してください。
+              </div>
             </div>
           </div>
 
-          <!-- 所属 -->
-          <div class="col-12 col-md-6">
-            <label for="departmentName" class="form-label">所属</label>
-            <select
-              id="departmentName"
-              class="form-select"
-              [(ngModel)]="employee.departmentName"
-              name="departmentName"
-              required
-              #departmentInput="ngModel"
-            >
-              <option value="" disabled>-- 所属を選択 --</option>
-              <option *ngFor="let dept of departments" [value]="dept.name">
-                {{ dept.name }}
-              </option>
-            </select>
-            <div
-              *ngIf="departmentInput.invalid && departmentInput.touched"
-              class="form-text text-danger"
-            >
-              所属を選択してください。
+          <!-- 権限 & 所属 -->
+          <div class="row g-3 mb-4">
+            <!-- 権限 -->
+            <div class="col-12 col-md-6">
+              <label for="role" class="form-label">権限</label>
+              <select
+                id="role"
+                class="form-select"
+                [(ngModel)]="employee.role"
+                name="role"
+                required
+                #roleInput="ngModel"
+              >
+                <option *ngFor="let option of roleOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <div
+                *ngIf="roleInput.invalid && roleInput.touched"
+                class="form-text text-danger"
+              >
+                権限を選択してください。
+              </div>
+            </div>
+
+            <!-- 所属 -->
+            <div class="col-12 col-md-6">
+              <label for="departmentName" class="form-label">所属</label>
+              <select
+                id="departmentName"
+                class="form-select"
+                [(ngModel)]="employee.departmentName"
+                name="departmentName"
+                required
+                #departmentInput="ngModel"
+              >
+                <option value="" disabled>-- 所属を選択 --</option>
+                <option *ngFor="let dept of departments" [value]="dept.name">
+                  {{ dept.name }}
+                </option>
+              </select>
+              <div
+                *ngIf="departmentInput.invalid && departmentInput.touched"
+                class="form-text text-danger"
+              >
+                所属を選択してください。
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 送信ボタン -->
-        <div class="text-end">
-          <button type="submit" class="btn btn-primary px-4">登録</button>
-        </div>
-      </form>
+          <!-- 送信ボタン -->
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary px-4">登録</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

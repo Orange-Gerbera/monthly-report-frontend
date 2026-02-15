@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatInputModule } from '@angular/material/input';
 import { ButtonComponent } from '../../../../shared/button/button.component';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-due-date-list',
@@ -22,12 +23,13 @@ import { ButtonComponent } from '../../../../shared/button/button.component';
     MatSnackBarModule,
     MatInputModule,
     ButtonComponent,
+    IconComponent,
   ],
   templateUrl: './due-date-list.component.html',
   styleUrls: ['./due-date-list.component.scss'],
 })
 export class DueDateListComponent implements OnInit {
-  displayedColumns: string[] = ['year', 'month', 'dueDateTime'];
+  displayedColumns: string[] = ['firstHalf', 'secondHalf'];
   dueDates: ReportDueDateDto[] = [];
   filteredDueDates: ReportDueDateDto[] = [];
 
@@ -36,7 +38,7 @@ export class DueDateListComponent implements OnInit {
   newYear: number = new Date().getFullYear(); // 新規登録用の年入力欄
   isRegistering: boolean = false;
   isEditing = false;
-  backupDueDates = []; // 編集キャンセル用のバックアップ
+  backupDueDates: ReportDueDateDto[] = [];
 
   hasValidationError = false;
 
@@ -56,7 +58,12 @@ export class DueDateListComponent implements OnInit {
   private loadDueDates(): void {
     this.dueDateService.getAll().subscribe({
       next: (data) => {
-        this.dueDates = data.sort((a, b) => a.month - b.month);
+        this.dueDates = data.sort((a, b) => {
+          if (a.year !== b.year) {
+            return b.year - a.year; // 新しい年を先頭
+          }
+          return a.month - b.month;
+        });
 
         // 年一覧を抽出してソート（重複除去）
         this.years = Array.from(new Set(this.dueDates.map((d) => d.year))).sort(
@@ -142,7 +149,6 @@ export class DueDateListComponent implements OnInit {
     this.filteredDueDates = JSON.parse(JSON.stringify(this.backupDueDates));
     this.isEditing = false;
     this.isRegistering = false; // 年度管理を無効にする
-    this.loadDueDates(); // 元のデータを再読み込み
   }
 
   toggleEdit() {

@@ -11,7 +11,11 @@
 
 /* ボタン本体共通スタイル */
 .app-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
   padding: 0.5rem 1rem;
   font-size: 1rem;
   font-weight: 500;
@@ -29,7 +33,6 @@
   &:hover {
     box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
       0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
-    opacity: 1;
   }
 }
 
@@ -83,7 +86,7 @@
 
 /* ブロック表示 */
 .app-btn-block {
-  display: block;
+  display: flex;
   width: 100%;
 }
 
@@ -110,4 +113,37 @@
   cursor: not-allowed;
   pointer-events: none;
   box-shadow: none;
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-btn-sm {
+  height: 32px;
+  font-size: 0.875rem;
+  padding: 0 0.75rem;
+}
+
+.app-btn-lg {
+  height: 44px;
+  font-size: 1.25rem;
+  padding: 0 1.5rem;
+}
+
+:host-context(.input-group) .app-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
 }

@@ -1,113 +1,106 @@
-<div class="container mt-5 pt-3">
-  <!-- タイトルと操作バー -->
-  <div class="row mb-4 mt-3 align-items-center">
-    <div class="col-12 col-md-6 mb-2 mb-md-0">
-      <h1 class="mb-0">従業員 一覧</h1>
+<div class="container pt-5 pb-5">
+  <div class="page-card">
+    <!-- タイトルと操作バー -->
+    <div class="row mb-5 mt-4 align-items-center">
+      <div class="col mb-2 mb-md-0">
+        <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
+          <app-icon name="users_bk" class="title-icon me-3"></app-icon>
+          従業員 一覧</h1>
+      </div>
+      <div
+        class="col-auto d-flex flex-column flex-md-row align-items-md-center justify-content-md-end"
+      >
+        <app-button
+          label="追加"
+          icon="user-plus"
+          color="blue"
+          size="md"
+          [block]="true"
+          [routerLink]="'/employees/new'"
+          class="me-md-3 mb-2 mb-md-0"
+        ></app-button>
+      </div>
     </div>
-    <div
-      class="col-12 col-md-6 d-flex flex-column flex-md-row align-items-md-center justify-content-md-end"
-    >
-      <app-button
-        label="＋ 新規作成"
-        color="blue"
-        size="sm"
-        [block]="true"
-        routerLink="/employees/new"
-        class="me-md-3 mb-2 mb-md-0"
-      />
-    </div>
-  </div>
 
-  <!-- 読み込み中スピナー -->
-  <div *ngIf="loading" class="d-flex justify-content-center my-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+    <!-- 読み込み中スピナー -->
+    <div *ngIf="loading" class="d-flex justify-content-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
     </div>
-  </div>
 
-  <!-- 読み込み後に表示 -->
-  <div *ngIf="!loading">
-    <!-- テーブルレスポンシブ -->
-    <div
-      *ngIf="employees.length > 0; else noEmployees"
-      class="table-responsive"
-    >
-      <table class="table table-striped table-hover align-middle text-nowrap">
-        <thead>
-          <tr>
-            <th>社員番号</th>
-            <th>氏名</th>
-            <th>所属</th>
-            <th>雇用状態</th>
-            <th>システム利用可否</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let emp of employees" [class.table-secondary]="!emp.active">
-            <td>{{ emp.code }}</td>
-            <td>{{ emp.lastName }} {{ emp.firstName }}</td>
-            <td>{{ emp.departmentName }}</td>
-            <td>{{ statusLabel(emp.employmentStatus) }}</td>
-            <td>
-              <span *ngIf="emp.active" class="badge bg-success">
-                利用可能
-              </span>
-              <span *ngIf="!emp.active" class="badge bg-secondary">
-                利用停止
-              </span>
+    <!-- 読み込み後に表示 -->
+    <div *ngIf="!loading">
+      <!-- テーブルレスポンシブ -->
+      <div
+        *ngIf="employees.length > 0; else noEmployees"
+        class="table-responsive"
+      >
+        <table class="table align-middle text-nowrap">
+          <thead>
+            <tr>
+              <th>社員番号</th>
+              <th>氏名</th>
+              <th>所属</th>
+              <th>雇用状態</th>
+              <th>システム利用可否</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of employees" [class.table-secondary]="!emp.active">
+              <td>{{ emp.code }}</td>
+              <td>{{ emp.lastName }} {{ emp.firstName }}</td>
+              <td>{{ emp.departmentName }}</td>
+              <td>{{ statusLabel(emp.employmentStatus) }}</td>
+              <td>
+                <span *ngIf="emp.active" class="badge bg-success">
+                  利用可能
+                </span>
+                <span *ngIf="!emp.active" class="badge bg-secondary">
+                  利用停止
+                </span>
+              </td>
+              <td class="text-end">
+              <div class="d-flex justify-content-end align-items-center gap-2">
+                <!-- 詳細 -->
+                <app-button
+                  label="詳細"
+                  icon="user_bk"
+                  color="yellow"
+                  size="md"
+                  [routerLink]="['/employees', emp.code]"
+                ></app-button>
+
+                <!-- ロック中表示 -->
+                <span *ngIf="emp.locked" class="badge bg-danger">
+                  ロック中
+                </span>
+
+                <!-- 残り時間 -->
+                <small *ngIf="emp.locked" class="text-danger">
+                  {{ remainingTime(emp.lockUntil) }}
+                </small>
+
+                <!-- ロック解除 -->
+                <app-button
+                  *ngIf="emp.locked"
+                  label="解除"
+                  icon="lock_open"
+                  color="red"
+                  size="sm"
+                  (click)="unlock(emp.code)"
+                ></app-button>
+              </div>
             </td>
-            <td class="text-end">
-            <div class="d-flex justify-content-end align-items-center gap-2">
-              <!-- 詳細 -->
-              <a
-                [routerLink]="['/employees', emp.code]"
-                class="btn btn-outline-secondary btn-sm"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                  class="me-1"
-                >
-                  <path
-                    d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"
-                  />
-                  <path
-                    d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"
-                  />
-                </svg>
-                詳細
-              </a>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-              <!-- ロック中表示 -->
-              <span *ngIf="emp.locked" class="badge bg-danger">
-                ロック中
-              </span>
-
-              <!-- 残り時間 -->
-              <small *ngIf="emp.locked" class="text-danger">
-                {{ remainingTime(emp.lockUntil) }}
-              </small>
-
-              <!-- ロック解除 -->
-              <button
-                *ngIf="emp.locked"
-                class="btn btn-outline-danger btn-sm"
-                (click)="unlock(emp.code)"
-              >
-                ロック解除
-              </button>
-            </div>
-          </td>
-          </tr>
-        </tbody>
-      </table>
+      <ng-template #noEmployees>
+        <p>データが存在しません。</p>
+      </ng-template>
     </div>
-
-    <ng-template #noEmployees>
-      <p>データが存在しません。</p>
-    </ng-template>
   </div>
 </div>

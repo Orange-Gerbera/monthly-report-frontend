@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { SelectComponent } from '../../../../shared/select/select.component';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -27,6 +28,7 @@ import { ActivatedRoute } from '@angular/router';
     FormsModule,
     ButtonComponent,
     SelectComponent,
+    IconComponent,
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,

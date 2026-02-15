@@ -1,11 +1,77 @@
-.button-bar {
+.report-header {
   position: sticky;
-  top: 52px; /* ヘッダー高さに合わせる */
-  z-index: 999;
+  top: 52px;          /* グローバルヘッダー高さ */
+  z-index: 1000;
 
-  background: #fff; /* 背景で透け防止 */
-  padding: 10px; /* 少し余裕をもたせる */
+  background: #fff;
+  padding: 10px 0;
 
-  border-bottom: 1px solid #e0e0e0; /* 薄い境界線 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* ほんのり影 */
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* ボタン行 */
+.button-bar {
+  padding: 6px 0;
+}
+
+.meta-table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.meta-table th {
+  width: 140px;
+  white-space: nowrap;
+}
+
+.meta-table td:nth-child(2) {
+  white-space: nowrap;
+}
+
+/* 余白列 */
+.meta-gap {
+  width: 100px;
+  min-width: 100px;
+}
+
+/* 最後の値は広がる */
+.meta-table td:last-child {
+  width: 100%;
+}
+
+.meta-table tr:last-child td:last-child {
+  white-space: normal;
+}
+
+/* 行ごとの線を消す */
+.meta-table th,
+.meta-table td {
+  border: none !important;
+  padding: 0.35rem 0.6rem;
+  vertical-align: middle;
+}
+
+/* テーブル全体の上下だけ線を付ける */
+.meta-table {
+  margin-bottom: 0; /* 下余白を消す */
+}
+
+/* ラベル列を安定表示 */
+.meta-table th {
+  width: 120px;
+  white-space: nowrap;
+  color: #555;
+}
+
+/* 空白列（gap）を細くする場合 */
+.meta-gap {
+  width: 24px;
+}
+
+.meta-table,
+.meta-table tr,
+.meta-table th,
+.meta-table td {
+  box-shadow: none !important;
+  background-image: none !important;
 }

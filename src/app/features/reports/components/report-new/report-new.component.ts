@@ -7,6 +7,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { EmployeeService } from '../../../employees/services/employee.service';
 import { ActivatedRoute } from '@angular/router';
 import { ReportFormComponent } from '../report-form/report-form.component';
+import { Location } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -19,6 +20,7 @@ import { ReportFormComponent } from '../report-form/report-form.component';
 })
 export class ReportNewComponent {
   useLatest = false;
+  previousUrl: string = '/profile'; 
 
   report: ReportUpsertRequest = {
     reportMonth: '',
@@ -48,8 +50,15 @@ export class ReportNewComponent {
     private router: Router,
     private authService: AuthService,
     private employeeService: EmployeeService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private location: Location
+  ) {
+    const navigation = this.router.getCurrentNavigation();
+    // state自体が存在するか、'previousUrl' が含まれているかをチェック
+    if (navigation?.extras?.state?.['previousUrl']) {
+      this.previousUrl = navigation.extras.state['previousUrl'];
+    }
+  }
 
   ngOnInit(): void {
     const useLatestParam = this.route.snapshot.queryParamMap.get('useLatest');
@@ -94,7 +103,10 @@ export class ReportNewComponent {
     this.reportService.createReport(report).subscribe({
       next: (res) => {
         console.log('登録成功:', res);
-        this.router.navigate(['/reports']);
+        alert('報告書を登録しました');
+        
+        // 固定の ['/reports'] ではなく、保持している previousUrl へ戻る
+        this.router.navigateByUrl(this.previousUrl);
       },
       error: (err) => {
         console.error('登録失敗:', err);
@@ -103,6 +115,17 @@ export class ReportNewComponent {
         alert(message);
       },
     });
+  }
+
+  // 一覧に戻るボタンの実装
+  onBack() {
+     const confirmed = window.confirm(
+      '編集中の内容は保存されません。よろしいですか？'
+    );
+    if (confirmed) {
+      // 取得済みの previousUrl（デフォルトは /profile）へ遷移
+      this.router.navigateByUrl(this.previousUrl);
+    }
   }
 
   /** 最新レポートの読み込み */
@@ -134,15 +157,5 @@ export class ReportNewComponent {
         console.error('直近の報告書取得に失敗しました', err);
       },
     });
-  }
-
-  /** 戻る処理 */
-  onBackToList(): void {
-    const confirmed = window.confirm(
-      '編集中の内容は保存されません。よろしいですか？'
-    );
-    if (confirmed) {
-      this.router.navigate(['/reports']);
-    }
   }
 }

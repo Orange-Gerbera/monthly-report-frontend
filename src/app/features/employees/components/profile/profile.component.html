@@ -1,45 +1,61 @@
 <div class="container py-5">
-  <h2 class="h3 mb-4 border-bottom pb-2">{{ userName }} さん</h2>
+  <div class="page-card">
 
-  <!-- 表示切り替え・チェックボックス・新規作成ボタン -->
-  <div class="d-flex flex-wrap gap-2 flex-md-row flex-column mt-4">
-    <!-- 表示切り替えボタン -->
-    <app-button
-      [label]="showForm ? '編集を閉じる' : 'プロフィールを編集'"
-      color="gray"
-      size="md"
-      (click)="showForm = !showForm"
-      [block]="true"
-    ></app-button>
-
-    <!-- 新規作成ボタン -->
-    <app-button
-      label="＋ 新規作成"
-      color="blue"
-      size="md"
-      [routerLink]="'/reports/new'"
-      [queryParams]="{ useLatest: useLatest }"
-      [block]="true"
-    ></app-button>
-
-    <!-- チェックボックス -->
-    <div class="form-check align-self-center ms-1">
-      <input
-        type="checkbox"
-        class="form-check-input"
-        id="useLatest"
-        [(ngModel)]="useLatest"
-        name="useLatest"
-      />
-      <label class="form-check-label" for="useLatest">
-        直近の報告書を引き継ぐ
-      </label>
+    <!-- プロフィール編集ボタン -->
+    <div class="mb-3">
+      <app-button
+        [label]="showForm ? '編集を閉じる' : 'プロフィール編集'"
+        [icon]="showForm ? 'close':'edit'"
+        color="gray"
+        size="md"
+        (click)="showForm = !showForm"
+      ></app-button>
     </div>
+
+    <!-- タイトル行（右に操作） -->
+    <div class="row align-items-end pb-2 mt-3" *ngIf="!showForm">
+      <!-- 左：タイトル＋アンダーライン -->
+      <div class="col pb-2">
+        <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
+          <app-icon name="user-circle_bk" class="title-icon me-3"></app-icon>
+          {{ userName }} さん
+        </h1>
+      </div>
+
+      <!-- 右：チェック＋作成ボタン -->
+      <div class="col-auto pb-2">
+        <div class="d-flex align-items-center gap-3">
+
+          <app-button
+            label="報告書作成"
+            icon="document-plus"
+            color="blue"
+            size="md"
+            [routerLink]="'/reports/new'"
+            [state]="{ previousUrl: previousUrl }"
+            [queryParams]="{ useLatest: useLatest }"
+          ></app-button>
+
+          <div class="form-check mb-0">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="useLatest"
+              [(ngModel)]="useLatest"
+              name="useLatest"
+            />
+            <label class="form-check-label" for="useLatest">
+              直近を引き継ぐ
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- プロフィール編集フォーム -->
+    <app-employee-edit *ngIf="showForm" [selfMode]="true"></app-employee-edit>
+
+    <!-- 報告書テーブル -->
+    <app-report-table *ngIf="!showForm" [filterByUser]="true"></app-report-table>
   </div>
-
-  <!-- 編集フォーム -->
-  <app-employee-edit *ngIf="showForm" [selfMode]="true"></app-employee-edit>
-
-  <!-- 報告書テーブル -->
-  <app-report-table *ngIf="!showForm" [filterByUser]="true"></app-report-table>
 </div>
