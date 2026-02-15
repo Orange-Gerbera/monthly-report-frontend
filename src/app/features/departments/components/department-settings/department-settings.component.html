@@ -1,63 +1,70 @@
-<div class="container mt-5 pt-3">
-  <!-- タイトル -->
-  <div class="row mb-4 mt-3 align-items-center">
-    <div class="col-12 col-md-8 offset-md-2">
-      <h2 class="h3 mb-3">所属 設定</h2>
+<div class="container pt-5 pt-3">
+  <div class="page-card">
+    <!-- タイトル -->
+    <div class="row mb-4 mt-4 align-items-center">
+      <div class="col-12 col-md-12 offset-md-0">
+        <h1 class="border-bottom pb-2 d-flex align-items-center">
+          <app-icon name="building-office_bk" class="title-icon me-2"></app-icon>
+          所属 設定
+        </h1>
 
-      <!-- 所属追加フォーム -->
-      <div class="input-group mb-1">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="新しい所属名"
-          [(ngModel)]="newDepartmentName"
-        />
-        <button class="btn btn-primary" (click)="addDepartment()">追加</button>
-      </div>
+        <!-- 所属追加フォーム -->
+        <div class="row mb-0 mt-5 align-items-center col-12 col-md-12 offset-md-0">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="新しい所属名"
+              [(ngModel)]="newDepartmentName"
+            />
+            <button class="btn btn-primary" (click)="addDepartment()">追加</button>
+          </div>
 
-      <!-- エラーメッセージ表示 -->
-      <div *ngIf="errorMessage" class="text-danger small mb-3">
-        {{ errorMessage }}
-      </div>
-    </div>
-  </div>
-
-  <!-- 所属一覧テーブル -->
-  <div *ngIf="departments.length > 0; else noDepartments" class="row">
-    <div class="col-12 col-md-8 offset-md-2">
-      <!-- 削除エラーがあれば表示 -->
-      <div *ngIf="deleteErrorMessage" class="text-danger small mb-2">
-        {{ deleteErrorMessage }}
-      </div>
-      <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle text-nowrap">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>所属名</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let dept of departments">
-              <td>{{ dept.id }}</td>
-              <td>{{ dept.name }}</td>
-              <td>
-                <button
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="deleteDepartment(dept.id)"
-                >
-                  削除
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <!-- エラーメッセージ表示 -->
+          <div *ngIf="errorMessage" class="text-danger small mb-3">
+            {{ errorMessage }}
+          </div>
+        </div>       
       </div>
     </div>
-  </div>
 
-  <ng-template #noDepartments>
-    <p class="text-center mt-4">データが存在しません。</p>
-  </ng-template>
+    <!-- 所属一覧テーブル -->
+    <div *ngIf="departments.length > 0; else noDepartments" class="row">
+      <div class="col-12 col-md-12 offset-md-0">
+        <!-- 削除エラーがあれば表示 -->
+        <div *ngIf="deleteErrorMessage" class="text-danger small mb-2">
+          {{ deleteErrorMessage }}
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle text-nowrap w-100 app-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>所属名</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let dept of departments">
+                <td>{{ dept.id }}</td>
+                <td>{{ dept.name }}</td>
+                <td>
+                  <button
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="deleteDepartment(dept.id)"
+                  >
+                    削除
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noDepartments>
+      <p class="text-center mt-4">データが存在しません。</p>
+    </ng-template>
+  </div>
 </div>

@@ -1,21 +1,36 @@
-<a
-  *ngIf="routerLink"
-  [routerLink]="routerLink"
-  [queryParams]="queryParams"
-  class="app-btn"
-  [ngClass]="buttonClasses.concat(disabled ? 'disabled' : [])"
-  [attr.aria-disabled]="disabled ? 'true' : null"
-  (click)="disabled ? $event.preventDefault() : null"
->
-  {{ label }}
-</a>
-
+<!-- 通常ボタン -->
 <button
   *ngIf="!routerLink"
   [type]="type"
   class="app-btn"
   [ngClass]="buttonClasses"
-  [attr.disabled]="disabled ? true : null"
+  [disabled]="disabled"
 >
-  {{ label }}
+  <img
+    *ngIf="iconPath"
+    [src]="iconPath"
+    class="btn-icon"
+    alt=""
+  />
+
+  <span *ngIf="label">{{ label }}</span>
 </button>
+
+<!-- routerLink ボタン -->
+<a
+  *ngIf="routerLink"
+  class="app-btn"
+  [ngClass]="buttonClasses"
+  [routerLink]="routerLink"
+  [queryParams]="queryParams"
+  [class.disabled]="disabled"
+>
+  <img
+    *ngIf="iconPath"
+    [src]="iconPath"
+    class="btn-icon"
+    alt=""
+  />
+
+  <span *ngIf="label">{{ label }}</span>
+</a>

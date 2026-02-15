@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HostListener } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-button',
@@ -24,9 +25,10 @@ export class ButtonComponent {
     | 'teal' = 'blue';
 
   @Input() block: boolean = false;
-  @Input() routerLink?: string;
+  @Input() routerLink?: string | any[];
   @Input() queryParams?: { [key: string]: any };
   @Input() disabled: boolean = false;
+  @Input() icon?: string;
 
   get buttonClasses(): string[] {
     return [
@@ -46,5 +48,9 @@ export class ButtonComponent {
       event.preventDefault();
       event.stopImmediatePropagation();
     }
+  }
+
+  get iconPath(): string | null {
+    return this.icon ? `assets/icons/${this.icon}.svg` : null;
   }
 }

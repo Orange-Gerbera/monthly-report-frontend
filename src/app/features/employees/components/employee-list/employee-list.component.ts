@@ -6,11 +6,12 @@ import { RouterModule } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDto } from '../../models/employee.dto';
 import { ButtonComponent } from '../../../../shared/button/button.component';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonComponent],
+  imports: [CommonModule, RouterModule, ButtonComponent, IconComponent],
   templateUrl: './employee-list.component.html',
 })
 export class EmployeeListComponent implements OnInit, OnDestroy {

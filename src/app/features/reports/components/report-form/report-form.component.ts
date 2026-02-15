@@ -15,6 +15,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatInputModule } from '@angular/material/input';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-report-form',
@@ -28,6 +29,7 @@ import { MatInputModule } from '@angular/material/input';
     MatTooltipModule,
     TextFieldModule,
     MatInputModule,
+    IconComponent,
   ],
   templateUrl: './report-form.component.html',
   styleUrls: ['./report-form.component.scss'],

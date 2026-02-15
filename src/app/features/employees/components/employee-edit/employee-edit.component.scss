@@ -1,0 +1,9 @@
+.input-group app-button,
+.input-group .input-group-text {
+  height: calc(2.25rem + 2px); /* Bootstrap form-control 高さ */
+}
+
+:host ::ng-deep .input-group .app-btn {
+  box-shadow: none !important;
+  border-left: 0;
+}

@@ -1,45 +1,34 @@
-<div class="container mt-5">
-  <!-- タイトル・操作バー -->
-  <div class="row mb-4 mt-3 align-items-center">
-    <div class="col-12 col-md-4 mb-2 mb-md-0">
-      <h1 class="h1 mb-0">報告書 一覧</h1>
+<div class="container pt-5 pb-5">
+  <div class="page-card">
+    <!-- タイトル・操作バー -->
+    <div class="d-flex mt-4 mb-4 pb-2 align-items-end">
+      <!-- タイトル -->
+      <div class="flex-grow-1 border-bottom me-3 pb-2">
+        <h1 class="h1 mb-0 d-flex align-items-center">
+          <app-icon name="document-duplicate_bk" class="me-2"></app-icon>
+          報告書一覧
+        </h1>
+      </div>
+
+      <!-- 操作ボタン -->
+      <div class="col-auto pb-2">
+        <app-button
+          label="選択した報告書を出力"
+          icon="download"
+          color="green"
+          size="md"
+          (click)="exportSelectedReports()"
+        />
+      </div>
     </div>
 
-    <div
-      class="col-12 col-md-8 d-flex flex-column flex-md-row align-items-md-center justify-content-md-end"
-    >
-      <!-- ✅ チェックボックス -->
-      <div class="form-check me-md-3 mb-2 mb-md-0">
-        <input
-          type="checkbox"
-          class="form-check-input"
-          id="useLatest"
-          [(ngModel)]="useLatest"
-          name="useLatest"
-        />
-        <label class="form-check-label" for="useLatest">
-          直近の報告書を引き継ぐ
-        </label>
+    <div [hidden]="!loading" class="d-flex justify-content-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
-      <app-button
-        label="＋ 新規作成"
-        color="blue"
-        size="md"
-        [block]="true"
-        [routerLink]="'/reports/new'"
-        [queryParams]="{ useLatest: useLatest }"
-        class="me-md-3 mb-2 mb-md-0"
-      />
+    </div>
 
-      <app-button
-        label="選択した報告書を出力"
-        color="green"
-        size="md"
-        [block]="true"
-        (click)="exportSelectedReports()"
-        class="me-md-3 mb-2 mb-md-0"
-      />
-
+    <div class="d-flex justify-content-end mb-3">
       <app-select
         label="表示月"
         [options]="reportMonthList"
@@ -47,249 +36,243 @@
         (ngModelChange)="updateTableData()"
         [optionLabelFn]="'formatDate'"
         valueFormat="month"
+        class="month-select"
       />
     </div>
-  </div>
 
-  <div [hidden]="!loading" class="d-flex justify-content-center my-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+    <div class="table-responsive" [hidden]="loading">
+      <!-- MatTable（Material Table） -->
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 app-table">
+        <!-- ✅ チェックボックス列 -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox
+              (change)="toggleAllSelection($event.checked)"
+              [checked]="isAllSelected()"
+              [indeterminate]="isSomeSelected()"
+            ></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let report">
+            <mat-checkbox
+              (change)="toggleSelection(report)"
+              [checked]="isSelected(report)"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- 氏名列 -->
+        <ng-container matColumnDef="employeeName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>氏名</th>
+          <td mat-cell *matCellDef="let report">{{ report.employeeName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="reportMonth">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>日付</th>
+          <td mat-cell *matCellDef="let report">
+            {{ formatDate(report.reportMonth, "month") }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>提出期日</th>
+          <td mat-cell *matCellDef="let report">
+            <ng-container *ngIf="report.dueDate; else noDueDate">
+              {{ formatDate(report.dueDate, "datetime") }}
+            </ng-container>
+            <ng-template #noDueDate>
+              <svg
+                width="22"
+                height="22"
+                fill="currentColor"
+                viewBox="-7 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
+                />
+              </svg>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="submittedAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>提出日</th>
+          <td mat-cell *matCellDef="let report">
+            <ng-container *ngIf="report.submittedAt; else noSubmitted">
+              {{ report.submittedAt | date : "yyyy/MM/dd" }}
+            </ng-container>
+            <ng-template #noSubmitted>
+              <svg
+                width="22"
+                height="22"
+                fill="currentColor"
+                viewBox="-7 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
+                />
+              </svg>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="departmentName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>所属</th>
+          <td mat-cell *matCellDef="let report">
+            {{ report.departmentName }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="completeFlg">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>完了</th>
+          <td mat-cell *matCellDef="let report">
+            <svg
+              *ngIf="report.completeFlg"
+              width="28"
+              height="22"
+              fill="green"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 
+          5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 
+          1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+              />
+            </svg>
+            <svg
+              *ngIf="!report.completeFlg"
+              width="22"
+              height="22"
+              fill="currentColor"
+              viewBox="-7 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
+              />
+            </svg>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="approvalFlg">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>承認</th>
+          <td mat-cell *matCellDef="let report">
+            <ng-container [ngSwitch]="report.approvalFlg">
+              <!-- ✅ 承認 -->
+              <svg
+                *ngSwitchCase="true"
+                width="24"
+                height="24"
+                fill="#1E90FF"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 
+              5 6 5s1 .672 1 1.5M4.285 9.567a.5.5 0 0 1 .683.183A3.5 3.5 0 0 0 
+              8 11.5a3.5 3.5 0 0 0 3.032-1.75.5.5 0 1 1 
+              .866.5A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1-3.898-2.25.5.5 0 0 1 
+              .183-.683M10 8c-.552 0-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5S10.552 8 10 8"
+                />
+              </svg>
+
+              <!-- ❌ 否認 -->
+              <svg
+                *ngSwitchCase="false"
+                width="24"
+                height="24"
+                fill="red"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M4.146 
+              5.146a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 1 1 
+              .708.708l-.647.646.647.646a.5.5 0 1 1-.708.708L5.5 
+              7.207l-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 
+              0 0 1 0-.708m5 0a.5.5 0 0 1 .708 
+              0l.646.647.646-.647a.5.5 0 0 1 
+              .708.708l-.647.646.647.646a.5.5 0 1 
+              1-.708.708l-.646-.647-.646.647a.5.5 0 1 
+              1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708M8 
+              13a2 2 0 1 1 0-4 2 2 0 0 1 0 4"
+                />
+              </svg>
+
+              <!-- 未設定 -->
+              <svg
+                *ngSwitchDefault
+                width="22"
+                height="22"
+                fill="currentColor"
+                viewBox="-7 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
+                />
+              </svg>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="comment">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>コメント</th>
+          <td mat-cell *matCellDef="let report">
+            <svg
+              *ngIf="report.comment"
+              width="28"
+              height="21"
+              fill="#28a745"
+              viewBox="0 -2 9 17"
+            >
+              <path
+                d="M2.165 15.803c.24.046.494.094.76.143.65-.164 
+          1.697-.554 2.615-1.026C7.218 14.618 7.91 
+          14.81 8.72 14.95A7.997 7.997 0 1 0 
+          0 8c0 1.76.743 3.37 1.97 4.6a10.437 
+          10.437 0 0 1-.524 2.318c-.079.186.074.394.273.362zM5 
+          8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 
+          0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 
+          0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"
+              />
+            </svg>
+            <svg
+              *ngIf="!report.comment"
+              width="22"
+              height="22"
+              fill="currentColor"
+              viewBox="-7 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
+              />
+            </svg>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="text-center"></th>
+          <td mat-cell *matCellDef="let report" class="text-center">
+            <app-button
+              label="報告書"
+              icon="document-text_bk"
+              color="yellow"
+              size="md"
+              [routerLink]="'/reports/' + report.id">
+            </app-button>
+          </td>
+        </ng-container>
+
+        <!-- 🔽 テーブルの中に配置する必要あり -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
     </div>
+
+    <!-- データなし -->
+    <ng-template #noReports>
+      <p>データが存在しません。</p>
+    </ng-template>
   </div>
-
-  <div class="table-responsive" [hidden]="loading">
-    <!-- MatTable（Material Table） -->
-    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-      <!-- ✅ チェックボックス列 -->
-      <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef>
-          <mat-checkbox
-            (change)="toggleAllSelection($event.checked)"
-            [checked]="isAllSelected()"
-            [indeterminate]="isSomeSelected()"
-          ></mat-checkbox>
-        </th>
-        <td mat-cell *matCellDef="let report">
-          <mat-checkbox
-            (change)="toggleSelection(report)"
-            [checked]="isSelected(report)"
-          ></mat-checkbox>
-        </td>
-      </ng-container>
-
-      <!-- 氏名列 -->
-      <ng-container matColumnDef="employeeName">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>氏名</th>
-        <td mat-cell *matCellDef="let report">{{ report.employeeName }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="reportMonth">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>日付</th>
-        <td mat-cell *matCellDef="let report">
-          {{ formatDate(report.reportMonth, "month") }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="dueDate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>提出期日</th>
-        <td mat-cell *matCellDef="let report">
-          <ng-container *ngIf="report.dueDate; else noDueDate">
-            {{ formatDate(report.dueDate, "datetime") }}
-          </ng-container>
-          <ng-template #noDueDate>
-            <svg
-              width="22"
-              height="22"
-              fill="currentColor"
-              viewBox="-7 0 16 16"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
-              />
-            </svg>
-          </ng-template>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="submittedAt">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>提出日</th>
-        <td mat-cell *matCellDef="let report">
-          <ng-container *ngIf="report.submittedAt; else noSubmitted">
-            {{ report.submittedAt | date : "yyyy/MM/dd" }}
-          </ng-container>
-          <ng-template #noSubmitted>
-            <svg
-              width="22"
-              height="22"
-              fill="currentColor"
-              viewBox="-7 0 16 16"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
-              />
-            </svg>
-          </ng-template>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="departmentName">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>所属</th>
-        <td mat-cell *matCellDef="let report">
-          {{ report.departmentName }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="completeFlg">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>完了</th>
-        <td mat-cell *matCellDef="let report">
-          <svg
-            *ngIf="report.completeFlg"
-            width="28"
-            height="22"
-            fill="green"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 
-        5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 
-        1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-            />
-          </svg>
-          <svg
-            *ngIf="!report.completeFlg"
-            width="22"
-            height="22"
-            fill="currentColor"
-            viewBox="-7 0 16 16"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
-            />
-          </svg>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="approvalFlg">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>承認</th>
-        <td mat-cell *matCellDef="let report">
-          <ng-container [ngSwitch]="report.approvalFlg">
-            <!-- ✅ 承認 -->
-            <svg
-              *ngSwitchCase="true"
-              width="24"
-              height="24"
-              fill="#1E90FF"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 
-            5 6 5s1 .672 1 1.5M4.285 9.567a.5.5 0 0 1 .683.183A3.5 3.5 0 0 0 
-            8 11.5a3.5 3.5 0 0 0 3.032-1.75.5.5 0 1 1 
-            .866.5A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1-3.898-2.25.5.5 0 0 1 
-            .183-.683M10 8c-.552 0-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5S10.552 8 10 8"
-              />
-            </svg>
-
-            <!-- ❌ 否認 -->
-            <svg
-              *ngSwitchCase="false"
-              width="24"
-              height="24"
-              fill="red"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M4.146 
-            5.146a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 1 1 
-            .708.708l-.647.646.647.646a.5.5 0 1 1-.708.708L5.5 
-            7.207l-.646.647a.5.5 0 1 1-.708-.708l.647-.646-.647-.646a.5.5 
-            0 0 1 0-.708m5 0a.5.5 0 0 1 .708 
-            0l.646.647.646-.647a.5.5 0 0 1 
-            .708.708l-.647.646.647.646a.5.5 0 1 
-            1-.708.708l-.646-.647-.646.647a.5.5 0 1 
-            1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 0-.708M8 
-            13a2 2 0 1 1 0-4 2 2 0 0 1 0 4"
-              />
-            </svg>
-
-            <!-- 未設定 -->
-            <svg
-              *ngSwitchDefault
-              width="22"
-              height="22"
-              fill="currentColor"
-              viewBox="-7 0 16 16"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
-              />
-            </svg>
-          </ng-container>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="comment">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>コメント</th>
-        <td mat-cell *matCellDef="let report">
-          <svg
-            *ngIf="report.comment"
-            width="28"
-            height="21"
-            fill="#28a745"
-            viewBox="0 -2 9 17"
-          >
-            <path
-              d="M2.165 15.803c.24.046.494.094.76.143.65-.164 
-        1.697-.554 2.615-1.026C7.218 14.618 7.91 
-        14.81 8.72 14.95A7.997 7.997 0 1 0 
-        0 8c0 1.76.743 3.37 1.97 4.6a10.437 
-        10.437 0 0 1-.524 2.318c-.079.186.074.394.273.362zM5 
-        8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 
-        0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 
-        0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"
-            />
-          </svg>
-          <svg
-            *ngIf="!report.comment"
-            width="22"
-            height="22"
-            fill="currentColor"
-            viewBox="-7 0 16 16"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"
-            />
-          </svg>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="text-center"></th>
-        <td mat-cell *matCellDef="let report" class="text-center">
-          <a
-            [routerLink]="['/reports', report.id]"
-            mat-raised-button
-            color="accent"
-            class="d-flex align-items-center gap-1"
-          >
-            <span>詳細</span>
-          </a>
-        </td>
-      </ng-container>
-
-      <!-- 🔽 テーブルの中に配置する必要あり -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-  </div>
-
-  <!-- データなし -->
-  <ng-template #noReports>
-    <p>データが存在しません。</p>
-  </ng-template>
 </div>

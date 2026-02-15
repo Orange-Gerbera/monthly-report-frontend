@@ -83,8 +83,8 @@ export const appRoutes: Routes = [
     path: 'employees/:code/edit',
     loadComponent: () =>
       import(
-        './features/employees/components/employee-edit/employee-edit.component'
-      ).then((m) => m.EmployeeEditComponent),
+        './features/employees/pages/employee-edit-page/employee-edit-page.component'
+      ).then((m) => m.EmployeeEditPageComponent),
     canActivate: [AuthGuard, AdminGuard],
   },
 

@@ -1,0 +1,15 @@
+.due-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.due-month {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.due-input {
+  max-width: 260px;
+  width: 100%;
+}

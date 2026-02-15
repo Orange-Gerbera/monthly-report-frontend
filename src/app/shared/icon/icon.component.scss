@@ -1,0 +1,19 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+img {
+  width: 1.4em;
+  height: 1.4em;
+}
+
+:host img,
+:host svg {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}

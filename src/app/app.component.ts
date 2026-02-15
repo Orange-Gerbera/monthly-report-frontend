@@ -22,7 +22,11 @@ export class AppComponent {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event) => {
         const nav = event as NavigationEnd; // キャストが必要
-        this.showHeader.set(!nav.urlAfterRedirects.startsWith('/login'));
+        const url = nav.urlAfterRedirects;
+        const hideHeader =
+          url.startsWith('/login') ||
+          url.startsWith('/password-change');
+        this.showHeader.set(!hideHeader);
       });
   }
 

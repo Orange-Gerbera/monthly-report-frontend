@@ -5,13 +5,14 @@ import { EmployeeDto } from '../../models/employee.dto';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../../../shared/button/button.component';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-employee-detail',
   templateUrl: './employee-detail.component.html',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, FormsModule],
+  imports: [CommonModule, RouterLink, ButtonComponent, IconComponent, FormsModule],
 })
 export class EmployeeDetailComponent implements OnInit {
   employee$!: Observable<EmployeeDto>;

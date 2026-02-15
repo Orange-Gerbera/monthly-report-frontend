@@ -13,6 +13,7 @@ import { ReportFormComponent } from '../report-form/report-form.component';
 })
 export class ReportEditComponent implements OnInit {
   reportId!: string;
+  previousUrl: string = '/reports';
 
   /** 取得した元データ（サーバ管理項目保持用） */
   original: ReportDto | null = null;
@@ -26,7 +27,14 @@ export class ReportEditComponent implements OnInit {
     private route: ActivatedRoute,
     private reportService: ReportService,
     private router: Router
-  ) {}
+  ) {
+    // コンストラクタで詳細画面から渡された state を受け取る
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras.state?.['previousUrl']) {
+      this.previousUrl = navigation.extras.state['previousUrl'];
+    }
+
+  }
 
   ngOnInit(): void {
     this.reportId = this.route.snapshot.paramMap.get('id')!;
@@ -91,7 +99,10 @@ export class ReportEditComponent implements OnInit {
       .subscribe({
         next: () => {
           alert('報告書を更新しました');
-          this.router.navigate(['/reports', this.reportId]);
+          // 詳細画面へ戻る際、受け取った previousUrl を再セットする
+          this.router.navigate(['/reports', this.reportId], { 
+            state: { previousUrl: this.previousUrl } 
+          });
         },
         error: (err) => {
           console.error('更新に失敗しました:', err);
@@ -105,7 +116,10 @@ export class ReportEditComponent implements OnInit {
       '編集中の内容は保存されません。よろしいですか？'
     );
     if (confirmed) {
-      this.router.navigate(['/reports', this.reportId]);
+      // キャンセル時も同様に state を持たせて詳細画面に戻る
+      this.router.navigate(['/reports', this.reportId], { 
+        state: { previousUrl: this.previousUrl } 
+      });
     }
   }
 }

@@ -1,17 +1,19 @@
 <div class="container py-5">
-  <ng-container *ngIf="formModel; else loadingTpl">
-    <app-report-form
-      [model]="formModel"
-      mode="edit"
-      submitLabel="更新"
-      backLabel="詳細へ戻る"
-      (formSubmit)="onSubmitFromForm($event)"
-      (cancel)="onCancel()"
-    >
-    </app-report-form>
-  </ng-container>
+  <div class="page-card">
+    <ng-container *ngIf="formModel; else loadingTpl">
+      <app-report-form
+        [model]="formModel"
+        mode="edit"
+        submitLabel="更新"
+        backLabel="詳細へ戻る"
+        (formSubmit)="onSubmitFromForm($event)"
+        (cancel)="onCancel()"
+      >
+      </app-report-form>
+    </ng-container>
 
-  <ng-template #loadingTpl>
-    <p>読み込み中...</p>
-  </ng-template>
+    <ng-template #loadingTpl>
+      <p>読み込み中...</p>
+    </ng-template>
+  </div>
 </div>

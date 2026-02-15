@@ -2,15 +2,239 @@
 @use "./app/shared/styles/card";
 @import "bootstrap/scss/bootstrap"; // 先に読み込み
 
+html {
+  // スクロールバーを常に表示させる（中身が空でも溝が表示される）
+  overflow-y: scroll;
+  // スクロールバーが必要なときだけ表示しつつ、スペースは常に予約する
+  scrollbar-gutter: stable;
+}
+
+.page-card {
+  // 編集フォームが長くなっても、ページ全体のスクロールバーを出さない工夫
+  app-employee-edit {
+    max-height: 80vh; // 画面の8割までに抑える
+    overflow-y: auto;
+  }
+}
+
 html,
 body {
   height: 100%;
 }
+
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+
+  /* ✅ fixed-top navbar 分の余白 */
+  padding-top: 56px;
 }
 
 [hidden] {
   display: none !important;
+}
+
+/* ===== SaaS風 navbar ===== */
+.app-navbar {
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.app-navbar .navbar-brand {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.app-navbar .nav-link {
+  color: #374151 !important;
+  font-weight: 500;
+  margin-left: 12px;
+}
+
+.app-navbar .nav-link:hover {
+  color: #111827 !important;
+}
+
+.app-navbar .nav-link.active {
+  border-bottom: 2px solid #0d6efd;
+  color: #0d6efd !important;
+}
+
+/* ================================
+   SaaS テーブルスタイル
+================================ */
+.table {
+  border-collapse: separate;
+  border-spacing: 0 6px; /* 行間余白 */
+}
+
+.table thead th {
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* 行をカード風に */
+.table tbody tr {
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+/* hover */
+.table tbody tr:hover {
+  background: #f3f4f6;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* セル余白 */
+.table td,
+.table th {
+  padding: 12px 14px;
+  vertical-align: middle;
+}
+
+/* ストライプ無効化 */
+.table-striped > tbody > tr:nth-of-type(odd) {
+  --bs-table-accent-bg: transparent;
+}
+
+/* ===== Material Table SaaS風 ===== */
+.app-table {
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  width: 100%;
+}
+
+/* ヘッダー */
+.app-table .mat-mdc-header-row {
+  background: #f9fafb;
+}
+
+.app-table .mat-mdc-header-cell {
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 14px;
+}
+
+/* 行カード風 */
+.app-table .mat-mdc-row {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.app-table .mat-mdc-row:hover {
+  background: #f3f4f6;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* セル余白 */
+.app-table .mat-mdc-cell {
+  padding: 12px 14px;
+}
+
+/* ===== SaaS風カード ===== */
+.app-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.app-card:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ヘッダー */
+.app-card .card-header {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+}
+
+/* 本文 */
+.app-card .card-body {
+  padding: 20px 22px;
+}
+
+/* ===== プロっぽい入力フォーム ===== */
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #d0d7de;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* hover */
+.form-control:hover,
+.form-select:hover {
+  border-color: #b6c2cf;
+}
+
+/* フォーカス */
+.form-control:focus,
+.form-select:focus {
+  border-color: #4c8dff;
+  box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.15);
+}
+
+/* 無効 */
+.form-control:disabled {
+  background: #f5f6f8;
+}
+
+/* ラベル少し強調 */
+.form-label {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+/* フォーム間隔をきれいに */
+.row.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+/* ===== SaaS風ページ背景 ===== */
+body {
+  background: #f5f7fb;
+}
+
+/* ページコンテンツをカード化 */
+.container {
+  /* container は触らない */
+}
+
+/* ページカード */
+.page-card {
+  background: #ffffff;
+  padding: 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  margin-bottom: 40px;
+}
+
+.table-scroll {
+  max-height: calc(100vh - 220px); /* 画面高さに応じる */
+  overflow: auto;
+}
+
+.title-icon {
+  width: 28px;
+  height: 28px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.month-select {
+  max-width: 220px;
 }

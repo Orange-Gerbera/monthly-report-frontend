@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light app-navbar fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand ms-1">報告書管理システム</a>
 
@@ -17,18 +17,18 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/reports" (click)="closeNavbar()"
+          <a class="nav-link" routerLink="/reports" routerLinkActive="active" (click)="closeNavbar()"
             >報告書一覧</a
           >
         </li>
 
         <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/employees" (click)="closeNavbar()"
+          <a class="nav-link" routerLink="/employees" routerLinkActive="active" (click)="closeNavbar()"
             >従業員一覧</a
           >
         </li>
         <li class="nav-item" *ngIf="isAdmin">
-          <a class="nav-link" routerLink="/departments" (click)="closeNavbar()"
+          <a class="nav-link" routerLink="/departments" routerLinkActive="active" (click)="closeNavbar()"
             >所属設定</a
           >
         </li>
@@ -37,6 +37,7 @@
           <a
             class="nav-link"
             routerLink="/report-due-dates"
+            routerLinkActive="active" 
             (click)="closeNavbar()"
           >
             提出期日設定
@@ -44,7 +45,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" routerLink="/profile" (click)="closeNavbar()"
+          <a class="nav-link" routerLink="/profile" routerLinkActive="active" (click)="closeNavbar()"
             >{{ userName }} さん</a
           >
         </li>

@@ -7,11 +7,12 @@ import { EmployeeRequest } from '../../models/employee.dto';
 import { DepartmentService } from '../../../departments/services/department.service';
 import { DepartmentDto } from '../../../departments/models/department.dto';
 import { NgForm } from '@angular/forms';
+import { IconComponent } from '../../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-employee-new',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './employee-new.component.html',
 })
 export class EmployeeNewComponent {

@@ -13,8 +13,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { ReportDto } from '../../models/report.dto';
 import { ReportService } from '../../services/report.service';
 import { AuthService } from '../../../auth/services/auth.service';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { ReportDueDateService } from '../../../report-due-dates/services/report-due-date.service';
+import { ButtonComponent } from '../../../../shared/button/button.component';
+import { IconComponent } from '../../../../shared/icon/icon.component';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-report-table',
@@ -26,6 +29,8 @@ import { ReportDueDateService } from '../../../report-due-dates/services/report-
     MatSortModule,
     MatPaginatorModule,
     MatButtonModule,
+    ButtonComponent,
+    IconComponent,
   ],
   templateUrl: './report-table.component.html',
 })
@@ -44,14 +49,16 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
   ];
   dueDateOfCurrentMonth?: Date;
   currentMonth: number = new Date().getMonth() + 1;
-
+  previousUrl: string = '/reports'; 
+ 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private reportService: ReportService,
     private authService: AuthService,
-    private reportDueDateService: ReportDueDateService
+    private reportDueDateService: ReportDueDateService,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -83,6 +90,9 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
       reports.sort((a, b) => b.reportMonth.localeCompare(a.reportMonth));
 
       this.dataSource.data = reports;
+
+      // 自分が今いる場所（/employees/profile など）を保存
+      this.previousUrl = this.location.path();
     });
   }
 
