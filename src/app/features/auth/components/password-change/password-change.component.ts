@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import zxcvbn from 'zxcvbn';
 
 @Component({
   selector: 'app-password-change',
@@ -24,19 +25,29 @@ export class PasswordChangeComponent {
   ) {}
 
   onSubmit(): void {
+    if (!this.password.trim()) {
+      this.errorMessage = 'パスワードを入力してください。';
+      return;
+    }
+
+    const result = zxcvbn(this.password);
     if (!this.isStrongPassword(this.password)) {
-      this.errorMessage =
-        'パスワード条件を満たしていません。';
+      this.errorMessage = 'パスワード形式が正しくありません。';
+      return;
+    }
+
+    if (result.score < 3) {
+      this.errorMessage = 'パスワードが弱すぎます。';
       return;
     }
 
     this.authService.changePassword(this.password).subscribe({
       next: () => {
-        alert('パスワードを変更しました');
+        alert('パスワードを変更しました。');
         this.router.navigate(['/reports']);
       },
       error: () => {
-        this.errorMessage = 'パスワード変更に失敗しました';
+        this.errorMessage = 'パスワード変更に失敗しました。';
       },
     });
   }
@@ -52,12 +63,20 @@ export class PasswordChangeComponent {
       return;
     }
 
-    if (this.isStrongPassword(password)) {
-      this.passwordStrength = '使用可能なパスワードです';
+    if (!this.isStrongPassword(password)) {
+      this.passwordStrength = 'パスワード形式が正しくありません。';
+      this.passwordStrengthClass = 'text-danger';
+      return;
+    }
+
+    const result = zxcvbn(password);
+
+    if (result.score >= 3) {
+      this.passwordStrength = '使用可能なパスワードです。';
       this.passwordStrengthClass = 'text-success';
     } else {
-      this.passwordStrength = '';
-      this.passwordStrengthClass = '';
+      this.passwordStrength = 'パスワードが弱すぎます。';
+      this.passwordStrengthClass = 'text-danger';
     }
   }
 

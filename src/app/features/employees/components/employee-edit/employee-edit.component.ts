@@ -8,6 +8,7 @@ import { DepartmentDto } from '../../../departments/models/department.dto';
 import { EmployeeDto, EmployeeRequest } from '../../models/employee.dto';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
+import zxcvbn from 'zxcvbn';
 
 @Component({
   selector: 'app-employee-edit',
@@ -109,6 +110,20 @@ export class EmployeeEditComponent implements OnInit {
       return;
     }
 
+    // パスワード変更時のみチェック
+    if (this.employee.password) {
+      if (this.isPasswordInvalid(this.employee.password)) {
+        alert('パスワード形式が正しくありません');
+        return;
+      }
+
+      const result = zxcvbn(this.employee.password);
+      if (result.score < 3) {
+        alert('パスワードが弱すぎます');
+        return;
+      }
+    }
+
     // 雇用状態変更時のみ利用状態を連動
     if (this.employee.employmentStatus !== this.originalEmploymentStatus) {
       if (
@@ -149,18 +164,28 @@ export class EmployeeEditComponent implements OnInit {
   }
 
   checkPasswordStrength(password: string): void {
+   // 未入力＝変更なし
     if (!password) {
       this.passwordStrength = '';
       this.passwordStrengthClass = '';
       return;
     }
 
-    if (!this.isPasswordInvalid(password)) {
+    // 形式チェック先
+    if (this.isPasswordInvalid(password)) {
+      this.passwordStrength = 'パスワード形式が正しくありません';
+      this.passwordStrengthClass = 'text-danger';
+      return;
+    }
+
+    const result = zxcvbn(password);
+
+    if (result.score >= 3) {
       this.passwordStrength = '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
-      this.passwordStrength = '';
-      this.passwordStrengthClass = '';
+      this.passwordStrength = 'パスワードが弱すぎます';
+      this.passwordStrengthClass = 'text-danger';
     }
   }
 

@@ -15,7 +15,7 @@ import { take } from 'rxjs';
   selector: 'app-employee-detail',
   templateUrl: './employee-detail.component.html',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, IconComponent, FormsModule, ConfirmDialogComponent],
+  imports: [CommonModule, RouterLink, ButtonComponent, IconComponent, FormsModule],
 })
 export class EmployeeDetailComponent implements OnInit {
   employee$!: Observable<EmployeeDto>;

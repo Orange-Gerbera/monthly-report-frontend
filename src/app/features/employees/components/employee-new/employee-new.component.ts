@@ -8,6 +8,7 @@ import { DepartmentService } from '../../../departments/services/department.serv
 import { DepartmentDto } from '../../../departments/models/department.dto';
 import { NgForm } from '@angular/forms';
 import { IconComponent } from '../../../../shared/icon/icon.component';
+import zxcvbn from 'zxcvbn';
 
 @Component({
   selector: 'app-employee-new',
@@ -61,6 +62,20 @@ export class EmployeeNewComponent {
       return;
     }
 
+    const password = this.employee.password ?? '';
+
+    // パスワードチェック
+    if (!this.isPasswordValid(password)) {
+      alert('パスワード形式が正しくありません');
+      return;
+    }
+
+    const result = zxcvbn(password);
+    if (result.score < 3) {
+      alert('パスワードが弱すぎます');
+      return;
+    }
+
     this.http.post('/api/employees', this.employee).subscribe({
       next: () => this.router.navigate(['/employees']),
       error: (err) =>
@@ -79,19 +94,20 @@ export class EmployeeNewComponent {
       return;
     }
 
-    const lengthOk = password.length >= 9 && password.length <= 16;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
-    const hasSpace = /\s/.test(password);
+    if (!this.isPasswordValid(password)) {
+      this.passwordStrength = 'パスワード形式が正しくありません';
+      this.passwordStrengthClass = 'text-danger';
+      return;
+    }
 
-    if (lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace) {
+    const result = zxcvbn(password);
+
+    if (result.score >= 3) {
       this.passwordStrength = '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
-      this.passwordStrength = '';
-      this.passwordStrengthClass = '';
+      this.passwordStrength = '形式は正しいですが強度が弱いです';
+      this.passwordStrengthClass = 'text-danger';
     }
   }
 
@@ -104,4 +120,16 @@ export class EmployeeNewComponent {
     event.target.value = sanitized;
     this.employee.password = sanitized;
   }
+
+  isPasswordValid(password: string): boolean {
+    const lengthOk = password.length >= 9 && password.length <= 16;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
+    const hasSpace = /\s/.test(password);
+
+    return lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace;
+  }
+
 }
