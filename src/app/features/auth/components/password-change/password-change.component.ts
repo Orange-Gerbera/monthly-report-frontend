@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import zxcvbn from 'zxcvbn';
+import { PasswordUtil } from '../../../../shared/utils/password.util';
 
 @Component({
   selector: 'app-password-change',
@@ -19,10 +19,21 @@ export class PasswordChangeComponent {
   passwordStrength = '';
   passwordStrengthClass = '';
 
+  userEmail = '';
+
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.userEmail = user.email;
+    } else {
+      this.authService.fetchMe().subscribe(u => {
+        this.userEmail = u?.email ?? '';
+      });
+    }
+  }
 
   onSubmit(): void {
     if (!this.password.trim()) {
@@ -30,13 +41,12 @@ export class PasswordChangeComponent {
       return;
     }
 
-    const result = zxcvbn(this.password);
-    if (!this.isStrongPassword(this.password)) {
+    if (!PasswordUtil.isFormatValid(this.password)) {
       this.errorMessage = 'パスワード形式が正しくありません。';
       return;
     }
 
-    if (result.score < 3) {
+    if (!PasswordUtil.isStrong(this.password, this.userEmail)) {
       this.errorMessage = 'パスワードが弱すぎます。';
       return;
     }
@@ -63,13 +73,13 @@ export class PasswordChangeComponent {
       return;
     }
 
-    if (!this.isStrongPassword(password)) {
+    if (!PasswordUtil.isFormatValid(password)) {
       this.passwordStrength = 'パスワード形式が正しくありません。';
       this.passwordStrengthClass = 'text-danger';
       return;
     }
 
-    const result = zxcvbn(password);
+    const result = PasswordUtil.getStrength(password, this.userEmail);
 
     if (result.score >= 3) {
       this.passwordStrength = '使用可能なパスワードです。';
@@ -80,30 +90,11 @@ export class PasswordChangeComponent {
     }
   }
 
-  private isStrongPassword(password: string): boolean {
-    // 9～16文字
-    const lengthOk = password.length >= 9 && password.length <= 16;
-    // 英大文字必須
-    const hasUpper = /[A-Z]/.test(password);
-    // 英小文字必須
-    const hasLower = /[a-z]/.test(password);
-    // 数字必須
-    const hasNumber = /\d/.test(password);
-    // 記号必須
-    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
-    // スペース禁止
-    const hasSpace = /\s/.test(password);
+  sanitizePassword(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = PasswordUtil.sanitize(input.value);
 
-    return (lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace);
-  }
-
-  sanitizePassword(event: any): void {
-    const value = event.target.value;
-
-    // ASCIIのみ許可（日本語・全角除去）
-    const sanitized = value.replace(/[^\x20-\x7E]/g, '');
-
-    event.target.value = sanitized;
+    input.value = sanitized;
     this.password = sanitized;
   }
 }

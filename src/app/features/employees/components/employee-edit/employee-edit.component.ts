@@ -8,7 +8,7 @@ import { DepartmentDto } from '../../../departments/models/department.dto';
 import { EmployeeDto, EmployeeRequest } from '../../models/employee.dto';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
-import zxcvbn from 'zxcvbn';
+import { PasswordUtil } from '../../../../shared/utils/password.util';
 
 @Component({
   selector: 'app-employee-edit',
@@ -43,6 +43,7 @@ export class EmployeeEditComponent implements OnInit {
 
   passwordStrength = '';
   passwordStrengthClass = '';
+  passwordScore = 0;
 
   showPassword = false;
 
@@ -104,6 +105,12 @@ export class EmployeeEditComponent implements OnInit {
     });
   }
 
+  onEmailChange(): void {
+    if (this.employee.password) {
+      this.checkPasswordStrength(this.employee.password);
+    }
+  }
+
   onSubmit(form: NgForm): void {
     if (form.invalid) {
       form.control.markAllAsTouched();
@@ -112,13 +119,13 @@ export class EmployeeEditComponent implements OnInit {
 
     // パスワード変更時のみチェック
     if (this.employee.password) {
-      if (this.isPasswordInvalid(this.employee.password)) {
+
+      if (!PasswordUtil.isFormatValid(this.employee.password)) {
         alert('パスワード形式が正しくありません');
         return;
       }
 
-      const result = zxcvbn(this.employee.password);
-      if (result.score < 3) {
+      if (!PasswordUtil.isStrong(this.employee.password, this.employee.email)) {
         alert('パスワードが弱すぎます');
         return;
       }
@@ -164,21 +171,22 @@ export class EmployeeEditComponent implements OnInit {
   }
 
   checkPasswordStrength(password: string): void {
-   // 未入力＝変更なし
     if (!password) {
       this.passwordStrength = '';
       this.passwordStrengthClass = '';
+      this.passwordScore = 0;
       return;
     }
 
-    // 形式チェック先
-    if (this.isPasswordInvalid(password)) {
+    if (!PasswordUtil.isFormatValid(password)) {
       this.passwordStrength = 'パスワード形式が正しくありません';
       this.passwordStrengthClass = 'text-danger';
+      this.passwordScore = 0;
       return;
     }
 
-    const result = zxcvbn(password);
+    const result = PasswordUtil.getStrength(password, this.employee.email);
+    this.passwordScore = result.score;
 
     if (result.score >= 3) {
       this.passwordStrength = '使用可能なパスワードです';
@@ -189,28 +197,18 @@ export class EmployeeEditComponent implements OnInit {
     }
   }
 
-  isPasswordInvalid(password?: string): boolean {
-    const p = password ?? this.employee.password;
+  isPasswordInvalid(): boolean {
+    if (!this.employee.password) return false;
 
-    if (!p) return false; // 未入力＝変更なしOK
-
-    const lengthOk = p.length >= 9 && p.length <= 16;
-    const hasUpper = /[A-Z]/.test(p);
-    const hasLower = /[a-z]/.test(p);
-    const hasNumber = /\d/.test(p);
-    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(p);
-    const hasSpace = /\s/.test(p);
-
-    return !(lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace);
+    return !!this.employee.password && this.passwordScore < 3;
   }
 
-  sanitizePassword(event: any): void {
-    const value = event.target.value;
+  
+  sanitizePassword(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = PasswordUtil.sanitize(input.value);
 
-    // 全角・日本語を除去（ASCIIのみ許可）
-    const sanitized = value.replace(/[^\x20-\x7E]/g, '');
-
-    event.target.value = sanitized;
+    input.value = sanitized;
     this.employee.password = sanitized;
   }
 

@@ -184,6 +184,7 @@
                 required
                 email
                 #emailInput="ngModel"
+                (ngModelChange)="onEmailChange()"
               />
               <div
                 *ngIf="emailInput.invalid && emailInput.touched"
@@ -246,7 +247,13 @@
 
           <!-- 送信ボタン -->
           <div class="text-end">
-            <button type="submit" class="btn btn-primary px-4">登録</button>
+            <button
+              type="submit"
+              class="btn btn-primary px-4"
+              [disabled]="form.invalid || !employee.password || passwordScore < 3"
+            >
+              登録
+            </button>
           </div>
         </form>
       </div>

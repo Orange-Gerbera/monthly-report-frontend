@@ -8,7 +8,7 @@ import { DepartmentService } from '../../../departments/services/department.serv
 import { DepartmentDto } from '../../../departments/models/department.dto';
 import { NgForm } from '@angular/forms';
 import { IconComponent } from '../../../../shared/icon/icon.component';
-import zxcvbn from 'zxcvbn';
+import { PasswordUtil } from '../../../../shared/utils/password.util';
 
 @Component({
   selector: 'app-employee-new',
@@ -38,6 +38,7 @@ export class EmployeeNewComponent {
 
   passwordStrength = '';
   passwordStrengthClass = '';
+  passwordScore = 0;
 
   showPassword = false;
 
@@ -65,13 +66,12 @@ export class EmployeeNewComponent {
     const password = this.employee.password ?? '';
 
     // パスワードチェック
-    if (!this.isPasswordValid(password)) {
+    if (!PasswordUtil.isFormatValid(password)) {
       alert('パスワード形式が正しくありません');
       return;
     }
 
-    const result = zxcvbn(password);
-    if (result.score < 3) {
+    if (!PasswordUtil.isStrong(password, this.employee.email)) {
       alert('パスワードが弱すぎます');
       return;
     }
@@ -83,6 +83,13 @@ export class EmployeeNewComponent {
     });
   }
 
+  onEmailChange(): void {
+    if (this.employee.password) {
+      this.checkPasswordStrength(this.employee.password);
+    }
+  }
+
+
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
@@ -91,16 +98,19 @@ export class EmployeeNewComponent {
     if (!password) {
       this.passwordStrength = '';
       this.passwordStrengthClass = '';
+      this.passwordScore = 0;
       return;
     }
 
-    if (!this.isPasswordValid(password)) {
+    if (!PasswordUtil.isFormatValid(password)) {
       this.passwordStrength = 'パスワード形式が正しくありません';
       this.passwordStrengthClass = 'text-danger';
+      this.passwordScore = 0;
       return;
     }
 
-    const result = zxcvbn(password);
+    const result = PasswordUtil.getStrength(password, this.employee.email);
+    this.passwordScore = result.score;
 
     if (result.score >= 3) {
       this.passwordStrength = '使用可能なパスワードです';
@@ -111,25 +121,12 @@ export class EmployeeNewComponent {
     }
   }
 
-  sanitizePassword(event: any): void {
-    const value = event.target.value;
 
-    // 全角・日本語を除去（ASCIIのみ）
-    const sanitized = value.replace(/[^\x20-\x7E]/g, '');
+  sanitizePassword(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = PasswordUtil.sanitize(input.value);
 
-    event.target.value = sanitized;
+    input.value = sanitized;
     this.employee.password = sanitized;
   }
-
-  isPasswordValid(password: string): boolean {
-    const lengthOk = password.length >= 9 && password.length <= 16;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSymbol = /[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'"]/.test(password);
-    const hasSpace = /\s/.test(password);
-
-    return lengthOk && hasUpper && hasLower && hasNumber && hasSymbol && !hasSpace;
-  }
-
 }

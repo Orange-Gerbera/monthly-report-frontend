@@ -177,6 +177,7 @@
             required
             email
             #emailInput="ngModel"
+            (ngModelChange)="onEmailChange()"
           />
           <div
             *ngIf="emailInput.invalid && emailInput.touched"
