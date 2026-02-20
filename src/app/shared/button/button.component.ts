@@ -39,6 +39,7 @@ export class ButtonComponent {
         ? 'app-btn-lg'
         : '',
       this.block ? 'app-btn-block' : '',
+      this.isIconOnly ? 'app-btn-icon-only' : '',
     ];
   }
 
@@ -52,5 +53,9 @@ export class ButtonComponent {
 
   get iconPath(): string | null {
     return this.icon ? `assets/icons/${this.icon}.svg` : null;
+  }
+
+  get isIconOnly(): boolean {
+    return !!this.icon && !this.label;
   }
 }

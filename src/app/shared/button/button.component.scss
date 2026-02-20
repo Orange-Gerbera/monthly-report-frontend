@@ -14,7 +14,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
+  line-height: 1;
 
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -118,16 +119,10 @@
 .btn-icon {
   width: 18px;
   height: 18px;
-  display: block;
+  transform: translateY(-1px);
   background: transparent;
   border: none;
   box-shadow: none;
-}
-
-.app-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .app-btn-sm {
@@ -146,4 +141,29 @@
   background: transparent;
   box-shadow: none;
   border: none;
+}
+
+/* アイコンのみボタン */
+.app-btn-icon-only {
+  padding: 0 !important;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-btn-icon-only.app-btn-lg {
+  width: 44px;
+  height: 44px;
+}
+
+.app-btn-icon-only .btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.app-btn span {
+  display: inline-flex;
+  align-items: center;
 }

@@ -42,7 +42,7 @@
 
     <div class="table-responsive" [hidden]="loading">
       <!-- MatTable（Material Table） -->
-      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 app-table">
+      <table mat-table [dataSource]="dataSource" matSort class="app-table">
         <!-- ✅ チェックボックス列 -->
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef>
@@ -259,7 +259,7 @@
               icon="document-text_bk"
               color="yellow"
               size="md"
-              [routerLink]="'/reports/' + report.id">
+              [routerLink]="['/reports', report.id]">
             </app-button>
           </td>
         </ng-container>
