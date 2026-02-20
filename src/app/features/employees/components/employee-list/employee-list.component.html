@@ -1,15 +1,16 @@
 <div class="container pt-5 pb-5">
   <div class="page-card">
-    <!-- タイトルと操作バー -->
+
+    <!-- タイトル -->
     <div class="row mb-5 mt-4 align-items-center">
       <div class="col mb-2 mb-md-0">
         <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
           <app-icon name="users_bk" class="title-icon me-3"></app-icon>
-          従業員 一覧</h1>
+          従業員 一覧
+        </h1>
       </div>
-      <div
-        class="col-auto d-flex flex-column flex-md-row align-items-md-center justify-content-md-end"
-      >
+
+      <div class="col-auto d-flex flex-column flex-md-row align-items-md-center justify-content-md-end">
         <app-button
           label="追加"
           icon="user-plus"
@@ -17,90 +18,120 @@
           size="md"
           [block]="true"
           [routerLink]="'/employees/new'"
-          class="me-md-3 mb-2 mb-md-0"
-        ></app-button>
+          class="me-md-3 mb-2 mb-md-0">
+        </app-button>
       </div>
     </div>
 
-    <!-- 読み込み中スピナー -->
-    <div *ngIf="loading" class="d-flex justify-content-center my-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
+    <!-- データ取得後のみ表示（チラつき防止） -->
+    <div *ngIf="dataLoaded">
 
-    <!-- 読み込み後に表示 -->
-    <div *ngIf="!loading">
-      <!-- テーブルレスポンシブ -->
-      <div
-        *ngIf="employees.length > 0; else noEmployees"
-        class="table-responsive"
-      >
-        <table class="table align-middle text-nowrap">
-          <thead>
-            <tr>
-              <th>社員番号</th>
-              <th>氏名</th>
-              <th>所属</th>
-              <th>雇用状態</th>
-              <th>システム利用可否</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let emp of employees" [class.table-secondary]="!emp.active">
-              <td>{{ emp.code }}</td>
-              <td>{{ emp.lastName }} {{ emp.firstName }}</td>
-              <td>{{ emp.departmentName }}</td>
-              <td>{{ statusLabel(emp.employmentStatus) }}</td>
-              <td>
-                <span *ngIf="emp.active" class="badge bg-success">
-                  利用可能
-                </span>
-                <span *ngIf="!emp.active" class="badge bg-secondary">
-                  利用停止
-                </span>
-              </td>
-              <td class="text-end">
-              <div class="d-flex justify-content-end align-items-center gap-2">
-                <!-- 詳細 -->
+      <table mat-table
+             [dataSource]="dataSource"
+             matSort
+             class="app-table w-100">
+
+        <!-- 社員番号 -->
+        <ng-container matColumnDef="code">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            社員番号
+          </th>
+          <td mat-cell *matCellDef="let emp">
+            {{ emp.code }}
+          </td>
+        </ng-container>
+
+        <!-- 氏名 -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            氏名
+          </th>
+          <td mat-cell *matCellDef="let emp">
+            {{ emp.lastName }} {{ emp.firstName }}
+          </td>
+        </ng-container>
+
+        <!-- 所属 -->
+        <ng-container matColumnDef="department">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            所属
+          </th>
+          <td mat-cell *matCellDef="let emp">
+            {{ emp.departmentName }}
+          </td>
+        </ng-container>
+
+        <!-- 雇用状態 -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>
+            雇用状態
+          </th>
+          <td mat-cell *matCellDef="let emp">
+            {{ statusLabel(emp.employmentStatus) }}
+          </td>
+        </ng-container>
+
+        <!-- システム利用 -->
+        <ng-container matColumnDef="system">
+          <th mat-header-cell *matHeaderCellDef>
+            システム利用可否
+          </th>
+          <td mat-cell *matCellDef="let emp">
+            <span *ngIf="emp.active" class="badge bg-success">
+              利用可能
+            </span>
+            <span *ngIf="!emp.active" class="badge bg-secondary">
+              利用停止
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- 操作 -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let emp" class="text-end">
+
+            <div class="d-flex justify-content-end align-items-center gap-2">
+
+              <app-button
+                label="詳細"
+                icon="user_bk"
+                color="yellow"
+                size="sm"
+                [routerLink]="['/employees', emp.code]">
+              </app-button>
+
+              <ng-container *ngIf="emp.locked">
+                <div class="d-flex flex-column align-items-end">
+                  <span class="badge bg-danger">ロック中</span>
+                  <small class="text-danger">
+                    {{ remainingTime(emp.lockUntil) }}
+                  </small>
+                </div>
+
                 <app-button
-                  label="詳細"
-                  icon="user_bk"
-                  color="yellow"
-                  size="md"
-                  [routerLink]="['/employees', emp.code]"
-                ></app-button>
-
-                <!-- ロック中表示 -->
-                <span *ngIf="emp.locked" class="badge bg-danger">
-                  ロック中
-                </span>
-
-                <!-- 残り時間 -->
-                <small *ngIf="emp.locked" class="text-danger">
-                  {{ remainingTime(emp.lockUntil) }}
-                </small>
-
-                <!-- ロック解除 -->
-                <app-button
-                  *ngIf="emp.locked"
                   label="解除"
                   icon="lock_open"
                   color="red"
                   size="sm"
-                  (click)="unlock(emp.code)"
-                ></app-button>
-              </div>
-            </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                  (click)="unlock(emp.code)">
+                </app-button>
+              </ng-container>
 
-      <ng-template #noEmployees>
-        <p>データが存在しません。</p>
-      </ng-template>
+            </div>
+
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            [class.table-secondary]="!row.active">
+        </tr>
+
+      </table>
+
     </div>
+
   </div>
 </div>

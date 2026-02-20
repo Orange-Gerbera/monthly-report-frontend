@@ -18,6 +18,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActivatedRoute } from '@angular/router';
+import { from } from 'rxjs';
+import { concatMap, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-report-list',
@@ -60,7 +62,7 @@ export class ReportListComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
   selectedReports: Set<number> = new Set();
 
-  dataSource = new MatTableDataSource<ReportDto>(this.filteredReports);
+  dataSource = new MatTableDataSource<ReportDto>([]);
 
   constructor(
     private reportService: ReportService,
@@ -141,10 +143,7 @@ export class ReportListComponent implements OnInit {
 
   updateTableData(): void {
     this.dataSource.data = this.filteredReports;
-
-    // ソートを再度バインド（selectedMonth変更後にも必要）
     this.dataSource.sort = this.sort;
-
     // 選択状態をリセット
     this.selectedReports = new Set<number>();
   }
@@ -211,16 +210,23 @@ export class ReportListComponent implements OnInit {
     ).length;
     return selectedCount > 0 && selectedCount < this.filteredReports.length;
   }
+  
   exportSelectedReports(): void {
     if (this.selectedReports.size === 0) {
       alert('少なくとも1件の報告書を選択してください。');
       return;
     }
 
-    this.selectedReports.forEach((id) => {
-      this.reportService.downloadReportExcel(id).subscribe((res) => {
-        this.excelDownloadService.download(res, `report-${id}.xlsx`);
-      });
-    });
+    from([...this.selectedReports])
+      .pipe(
+        concatMap((id) =>
+          this.reportService.downloadReportExcel(id).pipe(
+            tap((res) =>
+              this.excelDownloadService.download(res, `report-${id}.xlsx`)
+            )
+          )
+        )
+      )
+      .subscribe();
   }
 }

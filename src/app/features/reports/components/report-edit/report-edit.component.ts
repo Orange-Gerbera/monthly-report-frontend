@@ -10,7 +10,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 @Component({
   selector: 'app-report-edit',
   standalone: true,
-  imports: [CommonModule, ReportFormComponent, ConfirmDialogComponent],
+  imports: [CommonModule, ReportFormComponent],
   templateUrl: './report-edit.component.html',
 })
 export class ReportEditComponent implements OnInit {

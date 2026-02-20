@@ -29,42 +29,54 @@
     </div>
 
     <!-- 所属一覧テーブル -->
-    <div *ngIf="departments.length > 0; else noDepartments" class="row">
-      <div class="col-12 col-md-12 offset-md-0">
-        <!-- 削除エラーがあれば表示 -->
-        <div *ngIf="deleteErrorMessage" class="text-danger small mb-2">
-          {{ deleteErrorMessage }}
-        </div>
-        <div class="table-responsive">
-          <table class="table align-middle text-nowrap w-100 app-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>所属名</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let dept of departments">
-                <td>{{ dept.id }}</td>
-                <td>{{ dept.name }}</td>
-                <td>
-                  <button
-                    class="btn btn-outline-danger btn-sm"
-                    (click)="deleteDepartment(dept.id)"
-                  >
-                    削除
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <!-- 削除エラー表示 -->
+    <div *ngIf="deleteErrorMessage" class="text-danger small mb-2">
+      {{ deleteErrorMessage }}
     </div>
 
-    <ng-template #noDepartments>
-      <p class="text-center mt-4">データが存在しません。</p>
-    </ng-template>
+    <table mat-table
+          [dataSource]="dataSource"
+          class="app-table w-100">
+
+      <!-- ID -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>
+          ID
+        </th>
+        <td mat-cell *matCellDef="let dept">
+          {{ dept.id }}
+        </td>
+      </ng-container>
+
+      <!-- 所属名 -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>
+          所属名
+        </th>
+        <td mat-cell *matCellDef="let dept">
+          {{ dept.name }}
+        </td>
+      </ng-container>
+
+      <!-- 操作 -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let dept" class="text-end">
+
+          <app-button
+            icon="delete"
+            color="red"
+            size="sm"
+            (click)="deleteDepartment(dept.id)"
+            title="削除">
+          </app-button>
+
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    </table>
   </div>
 </div>
