@@ -91,36 +91,41 @@
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let emp" class="text-end">
 
-            <div class="d-flex justify-content-end align-items-center gap-2">
+          <div class="d-flex justify-content-end align-items-center gap-2">
+
+            <!-- ロック中表示 -->
+            <ng-container *ngIf="emp.locked">
+
+              <span class="badge bg-danger">
+                ロック中
+              </span>
+
+              <small class="text-danger">
+                {{ remainingTime(emp.lockUntil) }}
+              </small>
 
               <app-button
-                label="詳細"
-                icon="user_bk"
-                color="yellow"
+                label="解除"
+                icon="lock-open"
+                color="red"
                 size="sm"
-                [routerLink]="['/employees', emp.code]">
+                (click)="unlock(emp.code)">
               </app-button>
 
-              <ng-container *ngIf="emp.locked">
-                <div class="d-flex flex-column align-items-end">
-                  <span class="badge bg-danger">ロック中</span>
-                  <small class="text-danger">
-                    {{ remainingTime(emp.lockUntil) }}
-                  </small>
-                </div>
+            </ng-container>
 
-                <app-button
-                  label="解除"
-                  icon="lock_open"
-                  color="red"
-                  size="sm"
-                  (click)="unlock(emp.code)">
-                </app-button>
-              </ng-container>
+            <!-- 詳細は常に表示 -->
+            <app-button
+              label="詳細"
+              icon="user_bk"
+              color="yellow"
+              size="sm"
+              [routerLink]="['/employees', emp.code]">
+            </app-button>
 
-            </div>
+          </div>
 
-          </td>
+        </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
