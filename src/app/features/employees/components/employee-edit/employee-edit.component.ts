@@ -149,6 +149,10 @@ export class EmployeeEditComponent implements OnInit {
       ...this.employee,
     };
 
+    if (!updateData.password) {
+      delete updateData.password;
+    }
+
     this.employeeService.update(this.employee.code, updateData).subscribe({
       next: () => {
         alert('従業員情報を更新しました');
@@ -199,8 +203,10 @@ export class EmployeeEditComponent implements OnInit {
 
   isPasswordInvalid(): boolean {
     if (!this.employee.password) return false;
-
-    return !!this.employee.password && this.passwordScore < 3;
+    return (
+      !PasswordUtil.isFormatValid(this.employee.password) ||
+      this.passwordScore < 3
+    );
   }
 
   

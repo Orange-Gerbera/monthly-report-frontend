@@ -100,7 +100,6 @@
                 minlength="9"
                 maxlength="16"
                 required
-                pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\^$+\-*/|()\[\]{}<>.,?!_=&@~%#:;'&quot;])[^\s]{9,16}$"
                 #passwordInput="ngModel"
                 inputmode="latin"
                 autocomplete="new-password"
@@ -250,7 +249,7 @@
             <button
               type="submit"
               class="btn btn-primary px-4"
-              [disabled]="form.invalid || !employee.password || passwordScore < 3"
+              [disabled]="form.invalid || isPasswordInvalid()"
             >
               登録
             </button>

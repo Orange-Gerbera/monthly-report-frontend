@@ -121,6 +121,14 @@ export class EmployeeNewComponent {
     }
   }
 
+  isPasswordInvalid(): boolean {
+    if (!this.employee.password) return true;
+
+    return (
+      !PasswordUtil.isFormatValid(this.employee.password) ||
+      this.passwordScore < 3
+    );
+  }
 
   sanitizePassword(event: Event): void {
     const input = event.target as HTMLInputElement;
