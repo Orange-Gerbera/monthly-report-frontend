@@ -17,7 +17,6 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
   imports: [
     CommonModule,
     ReportFormComponent, // 共通フォームを利用
-    ConfirmDialogComponent,
   ],
   templateUrl: './report-new.component.html',
 })
