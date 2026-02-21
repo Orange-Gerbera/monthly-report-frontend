@@ -64,11 +64,11 @@
         <td mat-cell *matCellDef="let dept" class="text-end">
 
           <app-button
+            label="削除"
             icon="delete"
             color="red"
-            size="sm"
-            (click)="deleteDepartment(dept.id)"
-            title="削除">
+            size="md"
+            (click)="deleteDepartment(dept.id)">
           </app-button>
 
         </td>
