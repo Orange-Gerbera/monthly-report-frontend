@@ -206,6 +206,7 @@
                 name="role"
                 required
                 #roleInput="ngModel"
+                (ngModelChange)="onRoleChange()"
               >
                 <option *ngFor="let option of roleOptions" [value]="option.value">
                   {{ option.label }}

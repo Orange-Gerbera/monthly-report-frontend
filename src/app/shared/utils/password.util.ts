@@ -37,9 +37,9 @@ export class PasswordUtil {
   }
 
   /** zxcvbn強度チェック */
-  static isStrong(password: string, email?: string): boolean {
+  static isStrong(password: string, email?: string, requiredScore: number = 3): boolean {
     const result = zxcvbn(password, this.buildUserInputs(email));
-    return result.score >= 3;
+    return result.score >= requiredScore;
   }
 
   /** パスワード強度取得 */

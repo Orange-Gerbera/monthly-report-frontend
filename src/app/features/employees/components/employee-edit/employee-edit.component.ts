@@ -20,6 +20,8 @@ export class EmployeeEditComponent implements OnInit {
   @Input() selfMode = false;
   @Input() noCard = false;
   isAdmin = false;
+
+  private originalRole?: string;
   private originalEmploymentStatus?: string;
 
   employee: EmployeeRequest = {
@@ -65,6 +67,7 @@ export class EmployeeEditComponent implements OnInit {
             role: this.convertRoleToEnum(user.role),
             password: '',
           };
+          this.originalRole = user.role;  // 役職を保存
           this.originalEmploymentStatus = user.employmentStatus;
           this.isAdmin = this.employee.role === 'ADMIN';
           console.log(
@@ -88,6 +91,7 @@ export class EmployeeEditComponent implements OnInit {
               role: this.convertRoleToEnum(employee.role),
               password: '',
             };
+            this.originalRole = employee.role;
             this.originalEmploymentStatus = employee.employmentStatus;
           },
 
@@ -95,6 +99,12 @@ export class EmployeeEditComponent implements OnInit {
             console.error('従業員データの取得に失敗しました', err),
         });
       }
+    }
+  }
+
+  onRoleChange(): void {
+    if (this.employee.password) {
+      this.checkPasswordStrength(this.employee.password);
     }
   }
 
@@ -117,6 +127,19 @@ export class EmployeeEditComponent implements OnInit {
       return;
     }
 
+    // 役職変更時にパスワード強度を再確認
+    if (this.employee.role !== this.originalRole && this.employee.password) {
+      const requiredScore = this.getRequiredScore();
+      if (!PasswordUtil.isStrong(this.employee.password, this.employee.email, requiredScore)) {
+        alert(
+          this.employee.role === 'ADMIN'
+            ? '管理者用のパスワードとしては強度が足りません'
+            : 'パスワードが弱すぎます'
+        );
+        return;
+      }
+    }
+
     // パスワード変更時のみチェック
     if (this.employee.password) {
 
@@ -125,8 +148,17 @@ export class EmployeeEditComponent implements OnInit {
         return;
       }
 
-      if (!PasswordUtil.isStrong(this.employee.password, this.employee.email)) {
-        alert('パスワードが弱すぎます');
+      const requiredScore = this.getRequiredScore();
+      if (!PasswordUtil.isStrong(
+            this.employee.password,
+            this.employee.email,
+            requiredScore
+      )) {
+        alert(
+          this.employee.role === 'ADMIN'
+            ? '管理者用のパスワードとしては強度が足りません'
+            : 'パスワードが弱すぎます'
+        );
         return;
       }
     }
@@ -159,10 +191,14 @@ export class EmployeeEditComponent implements OnInit {
         const redirectUrl = this.selfMode ? '/profile' : '/employees';
         this.router.navigate([redirectUrl]);
       },
-      error: () => alert('更新に失敗しました'),
+      error: (err) => 
+        alert('保存に失敗しました: ' + (err.error?.message || err.statusText)),
     });
   }
 
+  private getRequiredScore(): number {
+    return this.employee.role === 'ADMIN' ? 4 : 3;
+  }
 
   private convertRoleToEnum(role: string): 'GENERAL' | 'ADMIN' {
     if (role === 'ADMIN' || role === 'GENERAL')
@@ -192,20 +228,28 @@ export class EmployeeEditComponent implements OnInit {
     const result = PasswordUtil.getStrength(password, this.employee.email);
     this.passwordScore = result.score;
 
-    if (result.score >= 3) {
-      this.passwordStrength = '使用可能なパスワードです';
+    const requiredScore = this.getRequiredScore();
+    if (result.score >= requiredScore) {
+      this.passwordStrength =
+        this.employee.role === 'ADMIN'
+          ? '管理者用として使用可能なパスワードです'
+          : '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
-      this.passwordStrength = 'パスワードが弱すぎます';
+      this.passwordStrength =
+        this.employee.role === 'ADMIN'
+          ? '管理者用のパスワードとしては強度が足りません'
+          : 'パスワードが弱すぎます';
       this.passwordStrengthClass = 'text-danger';
     }
   }
 
   isPasswordInvalid(): boolean {
     if (!this.employee.password) return false;
+    const requiredScore = this.getRequiredScore();
     return (
       !PasswordUtil.isFormatValid(this.employee.password) ||
-      this.passwordScore < 3
+      this.passwordScore < requiredScore
     );
   }
 

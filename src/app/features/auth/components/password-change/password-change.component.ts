@@ -20,6 +20,7 @@ export class PasswordChangeComponent {
   passwordStrengthClass = '';
 
   userEmail = '';
+  userRole = '';
 
   constructor(
     private authService: AuthService,
@@ -28,9 +29,11 @@ export class PasswordChangeComponent {
     const user = this.authService.getCurrentUser();
     if (user) {
       this.userEmail = user.email;
+      this.userRole = user.role;
     } else {
       this.authService.fetchMe().subscribe(u => {
         this.userEmail = u?.email ?? '';
+        this.userRole = u?.role ?? '';
       });
     }
   }
@@ -46,8 +49,13 @@ export class PasswordChangeComponent {
       return;
     }
 
-    if (!PasswordUtil.isStrong(this.password, this.userEmail)) {
-      this.errorMessage = 'パスワードが弱すぎます。';
+    const requiredScore = this.getRequiredScore();
+
+    if (!PasswordUtil.isStrong(this.password, this.userEmail, requiredScore)) {
+      this.errorMessage = 
+        this.userRole === 'ADMIN'
+          ? '管理者用のパスワードとしては強度が足りません。'
+          : 'パスワードが弱すぎます。';
       return;
     }
 
@@ -56,8 +64,8 @@ export class PasswordChangeComponent {
         alert('パスワードを変更しました。');
         this.router.navigate(['/reports']);
       },
-      error: () => {
-        this.errorMessage = 'パスワード変更に失敗しました。';
+      error: (err) => {
+        this.errorMessage = 'パスワード変更に失敗しました。: ' + (err.error?.message || err.statusText);
       },
     });
   }
@@ -80,14 +88,24 @@ export class PasswordChangeComponent {
     }
 
     const result = PasswordUtil.getStrength(password, this.userEmail);
-
-    if (result.score >= 3) {
-      this.passwordStrength = '使用可能なパスワードです。';
+    const requiredScore = this.getRequiredScore();
+    if (result.score >= requiredScore) {
+      this.passwordStrength =
+        this.userRole === 'ADMIN'
+          ? '管理者用として使用可能なパスワードです。'
+          : '使用可能なパスワードです。';
       this.passwordStrengthClass = 'text-success';
     } else {
-      this.passwordStrength = 'パスワードが弱すぎます。';
+      this.passwordStrength =
+        this.userRole === 'ADMIN'
+          ? '管理者用のパスワードとしては強度が足りません。'
+          : 'パスワードが弱すぎます。';
       this.passwordStrengthClass = 'text-danger';
     }
+  }
+
+  private getRequiredScore(): number {
+    return this.userRole === 'ADMIN' ? 4 : 3;
   }
 
   sanitizePassword(event: Event): void {

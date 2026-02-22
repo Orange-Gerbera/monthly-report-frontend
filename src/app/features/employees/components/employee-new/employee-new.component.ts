@@ -41,6 +41,7 @@ export class EmployeeNewComponent {
   passwordScore = 0;
 
   showPassword = false;
+  private originalRole?: string;
 
   constructor(
     private http: HttpClient,
@@ -57,6 +58,11 @@ export class EmployeeNewComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.fetchDepartments();
+    this.originalRole = this.employee.role;
+  }
+
   onSubmit(form: NgForm): void {
     if (form.invalid) {
       form.control.markAllAsTouched();
@@ -70,9 +76,27 @@ export class EmployeeNewComponent {
       alert('パスワード形式が正しくありません');
       return;
     }
+ 
+    // 役職が変更されている場合、パスワードの強度を再チェック
+    if (this.employee.role !== this.originalRole && password) {
+      const requiredScore = this.getRequiredScore();
+      if (!PasswordUtil.isStrong(password, this.employee.email, requiredScore)) {
+        alert(
+          this.employee.role === 'ADMIN'
+            ? '管理者用のパスワードとしては強度が足りません'
+            : 'パスワードが弱すぎます'
+        );
+        return;
+      }
+    }
 
-    if (!PasswordUtil.isStrong(password, this.employee.email)) {
-      alert('パスワードが弱すぎます');
+    const requiredScore = this.getRequiredScore();
+    if (!PasswordUtil.isStrong(password, this.employee.email, requiredScore)) {
+      alert(
+        this.employee.role === 'ADMIN'
+          ? '管理者用のパスワードとしては強度が足りません'
+          : 'パスワードが弱すぎます'
+      );
       return;
     }
 
@@ -89,6 +113,11 @@ export class EmployeeNewComponent {
     }
   }
 
+  onRoleChange(): void {
+    if (this.employee.password) {
+      this.checkPasswordStrength(this.employee.password);
+    }
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -112,11 +141,19 @@ export class EmployeeNewComponent {
     const result = PasswordUtil.getStrength(password, this.employee.email);
     this.passwordScore = result.score;
 
-    if (result.score >= 3) {
-      this.passwordStrength = '使用可能なパスワードです';
+    const requiredScore = this.getRequiredScore();
+
+    if (result.score >= requiredScore) {
+      this.passwordStrength =
+        this.employee.role === 'ADMIN'
+          ? '管理者用として使用可能なパスワードです'
+          : '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
-      this.passwordStrength = '形式は正しいですが強度が弱いです';
+      this.passwordStrength =
+        this.employee.role === 'ADMIN'
+          ? '管理者用のパスワードとしては強度が足りません'
+          : 'パスワードが弱すぎます';
       this.passwordStrengthClass = 'text-danger';
     }
   }
@@ -126,8 +163,12 @@ export class EmployeeNewComponent {
 
     return (
       !PasswordUtil.isFormatValid(this.employee.password) ||
-      this.passwordScore < 3
+      this.passwordScore < this.getRequiredScore()
     );
+  }
+
+  private getRequiredScore(): number {
+    return this.employee.role === 'ADMIN' ? 4 : 3;
   }
 
   sanitizePassword(event: Event): void {
