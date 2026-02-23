@@ -64,12 +64,4 @@ export class EmployeeService {
       withCredentials: true,
     });
   }
-
-  unlock(code: string) {
-    return this.http.post(
-      `${environment.apiBaseUrl}/auth/unlock`,
-      { code },
-      { withCredentials: true }
-    );
-  }
 }

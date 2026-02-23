@@ -112,4 +112,12 @@ export const appRoutes: Routes = [
       ).then((m) => m.DueDateListComponent),
     canActivate: [AuthGuard, AdminGuard],
   },
+  {
+    path: 'security-locks',
+    loadComponent: () =>
+      import(
+        './features/security/pages/security-lock-page/security-lock-page.component'
+      ).then((m) => m.SecurityLockPageComponent),
+    canActivate: [AuthGuard, AdminGuard], // 管理者のみアクセス可能
+  },
 ];

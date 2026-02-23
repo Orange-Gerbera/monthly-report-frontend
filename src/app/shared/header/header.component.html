@@ -44,6 +44,12 @@
           </a>
         </li>
 
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/security-locks" routerLinkActive="active" (click)="closeNavbar()">
+            セキュリティ管理
+          </a>
+        </li>
+        
         <li class="nav-item">
           <a class="nav-link" routerLink="/profile" routerLinkActive="active" (click)="closeNavbar()"
             >{{ userName }} さん</a
