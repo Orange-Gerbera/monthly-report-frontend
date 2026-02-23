@@ -10,7 +10,7 @@
         </h1>
       </div>
 
-      <div class="col-auto d-flex flex-column flex-md-row align-items-md-center justify-content-md-end">
+      <div *ngIf="isAdmin" class="col-auto d-flex flex-column flex-md-row align-items-md-center justify-content-md-end">
         <app-button
           label="追加"
           icon="user-plus"
@@ -58,6 +58,15 @@
           </th>
           <td mat-cell *matCellDef="let emp">
             {{ emp.departmentName }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            権限
+          </th>
+          <td mat-cell *matCellDef="let emp">
+            {{ emp.role }}
           </td>
         </ng-container>
 

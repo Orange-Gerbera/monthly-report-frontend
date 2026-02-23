@@ -12,6 +12,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SecurityLockService } from '../../../security/services/security-lock.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-employee-list',
@@ -35,6 +36,7 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
     'code',
     'name',
     'department',
+    'role',
     'status',
     'system',
     'actions'
@@ -42,12 +44,14 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   dataLoaded = false;
   private timer?: any;
+  isAdmin = false;
 
   @ViewChild(MatSort) sort?: MatSort;
 
   constructor(private employeeService: EmployeeService,
     private securityService: SecurityLockService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {
 
     // ソート用マッピング
@@ -59,6 +63,8 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
           return item.departmentName;
         case 'status':
           return item.employmentStatus;
+        case 'role':
+          return item.role;
         case 'system':
           return item.active ? 1 : 0;
         default:
@@ -69,6 +75,17 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.loadEmployees();
+
+    // ログインユーザーの権限を確認
+    this.authService.fetchMe().subscribe({
+      next: () => {
+        this.isAdmin = this.authService.isAdmin();
+      },
+      error: (err) => {
+        console.error('Auth error:', err);
+        this.isAdmin = false;
+      }
+    });
 
     // 残り時間更新（旧仕様維持）
     this.timer = setInterval(() => {
