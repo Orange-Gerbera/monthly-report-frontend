@@ -1,0 +1,124 @@
+<div class="container pt-5 pb-5">
+  <div class="page-card">
+
+    <div class="row mb-5 mt-4 align-items-center">
+      <div class="col">
+        <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
+          <app-icon name="shield-check_bk" class="title-icon me-3"></app-icon>
+          セキュリティ管理
+        </h1>
+      </div>
+      <div class="col-auto">
+        <app-button
+          label="再読み込み"
+          icon="arrow-path"
+          color="blue" 
+          size="md"
+          (click)="fetchLocks()"
+          [disabled]="loading">
+        </app-button>
+      </div>
+    </div>
+
+    <div *ngIf="!loading">
+      
+      <div class="mb-5">
+        <h3 class="h5 mb-3 d-flex align-items-center text-danger">
+          <app-icon name="globe-alt_bk" class="me-2" style="width: 24px;"></app-icon>
+          IPアクセス制限
+        </h3>
+        
+        <div class="alert alert-secondary shadow-sm" *ngIf="ipLockDataSource.data.length === 0">
+          現在ロックされているIPアドレスはありません。
+        </div>
+
+        <table mat-table [dataSource]="ipLockDataSource" class="app-table w-100" *ngIf="ipLockDataSource.data.length > 0">
+          <ng-container matColumnDef="ip">
+            <th mat-header-cell *matHeaderCellDef>対象IPアドレス</th>
+            <td mat-cell *matCellDef="let lock">{{ lock.key }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="until">
+            <th mat-header-cell *matHeaderCellDef>自動解除予定</th>
+            <td mat-cell *matCellDef="let lock">
+              <span class="text-danger font-weight-bold">
+                {{ lock.value | date:'yyyy/MM/dd HH:mm' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let lock" class="text-end">
+              <app-button
+                label="制限解除"
+                icon="lock-open"
+                color="red"
+                size="md"
+                (click)="onUnlockIp(lock.key)">
+              </app-button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['ip', 'until', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['ip', 'until', 'actions']"></tr>
+        </table>
+      </div>
+
+      <hr class="my-5">
+
+      <div>
+        <h3 class="h5 mb-3 d-flex align-items-center text-danger">
+          <app-icon name="user-circle_bk" class="me-2" style="width: 24px;"></app-icon>
+          アカウントロック制限
+        </h3>
+
+        <div class="alert alert-secondary shadow-sm" *ngIf="userLockDataSource.data.length === 0">
+          現在ロックされているアカウントはありません。
+        </div>
+
+        <table mat-table [dataSource]="userLockDataSource" class="app-table w-100" *ngIf="userLockDataSource.data.length > 0">
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>社員番号</th>
+            <td mat-cell *matCellDef="let lock">
+              {{ lock.key.split(':')[1] }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="until">
+            <th mat-header-cell *matHeaderCellDef>自動解除予定</th>
+            <td mat-cell *matCellDef="let lock">
+              <span class="text-danger font-weight-bold">
+                {{ lock.value | date:'yyyy/MM/dd HH:mm' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let lock" class="text-end">
+              <app-button
+                label="ロック解除"
+                icon="lock-open"
+                color="red"
+                size="md"
+                (click)="onUnlockUser(lock.key)">
+              </app-button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['code', 'until', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['code', 'until', 'actions']"></tr>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">データを取得中...</p>
+    </div>
+
+  </div>
+</div>

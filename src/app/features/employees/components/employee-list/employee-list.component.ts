@@ -9,6 +9,9 @@ import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDto } from '../../models/employee.dto';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { SecurityLockService } from '../../../security/services/security-lock.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-employee-list',
@@ -19,7 +22,8 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
     ButtonComponent,
     IconComponent,
     MatTableModule,
-    MatSortModule
+    MatSortModule,
+    MatDialogModule
   ],
   templateUrl: './employee-list.component.html',
 })
@@ -41,7 +45,10 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @ViewChild(MatSort) sort?: MatSort;
 
-  constructor(private employeeService: EmployeeService) {
+  constructor(private employeeService: EmployeeService,
+    private securityService: SecurityLockService,
+    private dialog: MatDialog
+  ) {
 
     // ソート用マッピング
     this.dataSource.sortingDataAccessor = (item, property) => {
@@ -97,14 +104,26 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   unlock(code: string) {
-    if (!confirm(`${code} のロックを解除しますか？`)) return;
+   const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'アカウントロック解除',
+        message: `社員番号 ${code} のロックを解除してもよろしいですか？`,
+        okLabel: '解除する',
+        okColor: 'red'
+      }
+    });
 
-    this.employeeService.unlock(code).subscribe({
-      next: () => {
-        alert('ロックを解除しました');
-        this.loadEmployees();
-      },
-      error: () => alert('解除に失敗しました'),
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // SecurityLockService 経由で API を叩く
+        this.securityService.unlockUser(code).subscribe({
+          next: () => {
+            // 成功したら再読み込み
+            this.loadEmployees();
+          },
+          error: () => alert('解除に失敗しました')
+        });
+      }
     });
   }
 
