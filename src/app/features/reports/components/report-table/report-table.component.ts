@@ -85,6 +85,30 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
         reports = reports.filter(
           (r) => String(r.employeeCode) === currentUser.code
         );
+
+        // --- 未提出のダミー報告書追加---
+        const now = new Date();
+        const targetDate = this.getCurrentTargetMonth(now); // 判定された年・月を取得
+
+        const year = targetDate.getFullYear();
+        const month = ('0' + (targetDate.getMonth() + 1)).slice(-2);
+        const currentMonthStr = `${year}-${month}`; // 例: "2024-02"
+
+        // 今月分（判定された月）のデータがあるか確認
+        const hasCurrentMonthReport = reports.some(r => r.reportMonth.startsWith(currentMonthStr));
+
+        if (!hasCurrentMonthReport) {
+          const placeholder: any = {
+            id: null,
+            reportMonth: currentMonthStr,
+            dueDate: this.dueDateOfCurrentMonth,
+            submittedAt: null,
+            completeFlg: false,
+            employeeCode: currentUser.code
+          };
+          reports.push(placeholder);
+        }
+         // --- 10日基準の月判定ロジック ---
       }
 
       reports.sort((a, b) => b.reportMonth.localeCompare(a.reportMonth));
@@ -127,5 +151,21 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
       default:
         return '';
     }
+  }
+
+  /**
+   * 10日基準で「何月分の報告書か」を判定する
+   * 10日〜末日 -> その月
+   * 1日〜9日   -> 前の月
+   */
+  getCurrentTargetMonth(date: Date): Date {
+    const d = new Date(date.getTime());
+    const day = d.getDate();
+    
+    if (day < 10) {
+      // 9日以前なら、1ヶ月前の日付を返す
+      d.setMonth(d.getMonth() - 1);
+    }
+    return d;
   }
 }
