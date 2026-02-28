@@ -56,6 +56,7 @@ export class EmployeeStore {
         departmentName: req.departmentName,
         employmentStatus: req.employmentStatus ?? cur.employmentStatus,
         active: req.active ?? cur.active,
+        enabled: req.password ? true : cur.enabled,
       };
       this.employees[idx] = updated;
 
@@ -73,6 +74,7 @@ export class EmployeeStore {
         departmentName: req.departmentName,
         employmentStatus: req.employmentStatus ?? 'EMPLOYED',
         active: req.active ?? true,
+        enabled: req.password ? true : false,
       };
       this.employees.push(created);
 
@@ -96,6 +98,9 @@ export class EmployeeStore {
 
   /** 認証: パスワード検証 */
   verifyPassword(code: string, password: string): boolean {
+    const employee = this.findByCode(code);
+    if (!employee || !employee.enabled || !employee.active) return false;
+
     const stored = this.credentials.get(code);
     return !!stored && stored === password;
   }

@@ -116,6 +116,7 @@ export const employeeHandlers = [
       departmentName: body.departmentName,
       employmentStatus: body.employmentStatus ?? 'EMPLOYED',
       active: body.active ?? true,
+      enabled: body.password ? true : false,
     };
 
     employeeStore.employees.push(created);
@@ -162,6 +163,7 @@ export const employeeHandlers = [
       employmentStatus:
         body.employmentStatus ?? current.employmentStatus,
       active: body.active ?? current.active,
+      enabled: body.password ? true : current.enabled, 
     };
 
     employeeStore.employees[idx] = updated;

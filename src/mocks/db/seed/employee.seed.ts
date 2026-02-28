@@ -19,12 +19,16 @@ export function seedEmployees(): EmployeeDto[] {
     departmentName,
     employmentStatus: 'EMPLOYED',
     active: true,
+    enabled: true,
   });
 
   return [
     build('1234', '田中', '太郎', 'taro@example.com', 'ADMIN', '営業部'),
     build('9999', '管理', '次郎', 'kanri@example.com', '管理者', '総務部'),
-    build('5678', '山田', '花子', 'hanako@example.com', '一般', '開発部'),
+    {
+      ...build('5678', '山田', '花子', 'hanako@example.com', '一般', '開発部'),
+      enabled: false,
+    },
   ];
 }
 
