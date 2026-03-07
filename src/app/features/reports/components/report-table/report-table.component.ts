@@ -95,18 +95,29 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
         const currentMonthStr = `${year}-${month}`; // 例: "2024-02"
 
         // 今月分（判定された月）のデータがあるか確認
-        const hasCurrentMonthReport = reports.some(r => r.reportMonth.startsWith(currentMonthStr));
-
+        const hasCurrentMonthReport =
+          reports.some(r => r.reportMonth === currentMonthStr);
         if (!hasCurrentMonthReport) {
-          const placeholder: any = {
-            id: null,
-            reportMonth: currentMonthStr,
-            dueDate: this.dueDateOfCurrentMonth,
-            submittedAt: null,
-            completeFlg: false,
-            employeeCode: currentUser.code
-          };
-          reports.push(placeholder);
+          const [y, m] = currentMonthStr.split('-');
+
+          this.reportDueDateService
+            .getDueDate(Number(y), Number(m))
+            .subscribe(dueDate => {
+                const placeholder: any = {
+                  id: null,
+                  reportMonth: currentMonthStr,
+                  dueDate: dueDate,
+                  submittedAt: '',
+                  completeFlg: false,
+                  employeeCode: currentUser.code
+                };
+                reports.push(placeholder);
+
+                reports.sort((a, b) => b.reportMonth.localeCompare(a.reportMonth));
+                this.dataSource.data = reports;
+            });
+
+            return;
         }
          // --- 10日基準の月判定ロジック ---
       }

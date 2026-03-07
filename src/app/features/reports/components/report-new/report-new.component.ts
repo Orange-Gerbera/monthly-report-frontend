@@ -85,10 +85,12 @@ export class ReportNewComponent {
           }
 
           const now = new Date();
+          const targetDate = this.getCurrentTargetMonth(now);
+
           this.report = {
             ...this.report,
-            reportMonth: `${now.getFullYear()}-${String(
-              now.getMonth() + 1
+            reportMonth: `${targetDate.getFullYear()}-${String(
+              targetDate.getMonth() + 1
             ).padStart(2, '0')}`,
           };
         },
@@ -169,5 +171,15 @@ export class ReportNewComponent {
         console.error('直近の報告書取得に失敗しました', err);
       },
     });
+  }
+
+  private getCurrentTargetMonth(date: Date): Date {
+    const d = new Date(date);
+
+    if (d.getDate() < 10) {
+      d.setMonth(d.getMonth() - 1);
+    }
+
+    return d;
   }
 }
