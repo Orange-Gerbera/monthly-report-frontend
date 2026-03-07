@@ -16,12 +16,28 @@ export const authHandlers = [
       return HttpResponse.json({ message: 'Bad Request' }, { status: 400 });
     }
 
+    const user = employeeStore.findByCode(body.code);
+
+    if (!user) {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!user.active) {
+      return HttpResponse.json({ message: 'Account disabled' }, { status: 403 });
+    }
+
+    if (!user.enabled) {
+      return HttpResponse.json(
+        { message: 'Initial password not set' },
+        { status: 403 }
+      );
+    }
+
     // パスワード検証を store に委譲
     if (!employeeStore.verifyPassword(body.code, body.password)) {
       return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    const user = employeeStore.findByCode(body.code)!;
-
+  
     const token = makeToken(user.code);
     employeeStore.setSession(token, user.code);
 

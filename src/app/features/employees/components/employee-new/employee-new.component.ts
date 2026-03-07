@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { EmployeeRequest } from '../../models/employee.dto';
 import { DepartmentService } from '../../../departments/services/department.service';
 import { DepartmentDto } from '../../../departments/models/department.dto';
-import { NgForm } from '@angular/forms';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { PasswordUtil } from '../../../../shared/utils/password.util';
 
@@ -17,6 +16,7 @@ import { PasswordUtil } from '../../../../shared/utils/password.util';
   templateUrl: './employee-new.component.html',
 })
 export class EmployeeNewComponent {
+
   employee: EmployeeRequest = {
     code: '',
     lastName: '',
@@ -41,13 +41,19 @@ export class EmployeeNewComponent {
   passwordScore = 0;
 
   showPassword = false;
-  private originalRole?: string;
 
   constructor(
     private http: HttpClient,
     private router: Router,
     private departmentService: DepartmentService
   ) {
+    this.fetchDepartments();
+  }
+
+  // =========================
+  // 初期化
+  // =========================
+  ngOnInit(): void {
     this.fetchDepartments();
   }
 
@@ -58,12 +64,11 @@ export class EmployeeNewComponent {
     });
   }
 
-  ngOnInit(): void {
-    this.fetchDepartments();
-    this.originalRole = this.employee.role;
-  }
-
+  // =========================
+  // 登録処理
+  // =========================
   onSubmit(form: NgForm): void {
+
     if (form.invalid) {
       form.control.markAllAsTouched();
       return;
@@ -71,15 +76,16 @@ export class EmployeeNewComponent {
 
     const password = this.employee.password ?? '';
 
-    // パスワードチェック
-    if (!PasswordUtil.isFormatValid(password)) {
-      alert('パスワード形式が正しくありません');
-      return;
-    }
- 
-    // 役職が変更されている場合、パスワードの強度を再チェック
-    if (this.employee.role !== this.originalRole && password) {
+    // 🔹 パスワードが入力されている場合のみチェック
+    if (password) {
+
+      if (!PasswordUtil.isFormatValid(password)) {
+        alert('パスワード形式が正しくありません');
+        return;
+      }
+
       const requiredScore = this.getRequiredScore();
+
       if (!PasswordUtil.isStrong(password, this.employee.email, requiredScore)) {
         alert(
           this.employee.role === 'ADMIN'
@@ -90,40 +96,44 @@ export class EmployeeNewComponent {
       }
     }
 
-    const requiredScore = this.getRequiredScore();
-    if (!PasswordUtil.isStrong(password, this.employee.email, requiredScore)) {
-      alert(
-        this.employee.role === 'ADMIN'
-          ? '管理者用のパスワードとしては強度が足りません'
-          : 'パスワードが弱すぎます'
-      );
-      return;
-    }
-
     this.http.post('/api/employees', this.employee).subscribe({
-      next: () => this.router.navigate(['/employees']),
+      next: () => {
+
+        if (!password) {
+          alert('登録が完了しました。\n招待メールを送信しました。');
+        } else {
+          alert('登録が完了しました。');
+        }
+
+        this.router.navigate(['/employees']);
+      },
       error: (err) =>
         alert('登録に失敗しました: ' + (err.error?.message || err.statusText)),
     });
   }
 
+  // =========================
+  // email / role変更時の再チェック
+  // =========================
   onEmailChange(): void {
-    if (this.employee.password) {
-      this.checkPasswordStrength(this.employee.password);
-    }
+    this.recheckPassword();
   }
 
   onRoleChange(): void {
+    this.recheckPassword();
+  }
+
+  private recheckPassword(): void {
     if (this.employee.password) {
       this.checkPasswordStrength(this.employee.password);
     }
   }
 
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-  }
-
+  // =========================
+  // パスワード強度表示
+  // =========================
   checkPasswordStrength(password: string): void {
+
     if (!password) {
       this.passwordStrength = '';
       this.passwordStrengthClass = '';
@@ -158,17 +168,28 @@ export class EmployeeNewComponent {
     }
   }
 
+  // =========================
+  // 送信ボタン制御
+  // =========================
   isPasswordInvalid(): boolean {
-    if (!this.employee.password) return true;
+
+    const password = this.employee.password ?? '';
+
+    // 🔹 空欄はOK（招待メールモード）
+    if (!password) return false;
 
     return (
-      !PasswordUtil.isFormatValid(this.employee.password) ||
+      !PasswordUtil.isFormatValid(password) ||
       this.passwordScore < this.getRequiredScore()
     );
   }
 
   private getRequiredScore(): number {
     return this.employee.role === 'ADMIN' ? 4 : 3;
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   sanitizePassword(event: Event): void {

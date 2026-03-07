@@ -2,7 +2,7 @@
   <div class="page-card">
     <!-- タイトル -->
     <div class="row mb-4 mt-3 align-items-center">
-      <div class="col-12 col-md-8 offset-md-2">
+      <div class="col-12 col-md-12 offset-md-0">
        
         <h1 class="mb-4 border-bottom pb-2 d-flex align-items-center">
           <app-icon name="user_bk" class="title-icon me-3"></app-icon>
@@ -84,45 +84,50 @@
           <div class="row mb-4">
             <div class="col-12 col-md-6">
               <label for="password" class="form-label">
-                パスワード
+                仮パスワード（ログイン後にパスワード再設定画面が開きます。）
                 <small class="text-muted d-block">
                   9～16文字で、英大文字・英小文字・数字・記号を含めてください。
+                </small>
+                <small class="text-success d-block">
+                  ※空欄の場合、本人にメールでパスワード設定用リンクを送信します。
                 </small>
               </label>
 
               <div class="input-group">
-              <input
-                [type]="showPassword ? 'text' : 'password'"
-                id="password"
-                class="form-control"
-                [(ngModel)]="employee.password"
-                name="password"
-                minlength="9"
-                maxlength="16"
-                required
-                #passwordInput="ngModel"
-                inputmode="latin"
-                autocomplete="new-password"
-                style="ime-mode: disabled"
-                (input)="sanitizePassword($event)"
-                (ngModelChange)="checkPasswordStrength($event)"
-              />
-              <button
-                type="button"
-                class="btn btn-outline-secondary"
-                (click)="togglePassword()"
-                tabindex="-1"
-              >
-                <i
-                  class="bi"
-                  [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
-                ></i>
-              </button>
-            </div>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  class="form-control"
+                  [(ngModel)]="employee.password"
+                  name="password"
+                  minlength="9"
+                  maxlength="16"
+                  #passwordInput="ngModel"
+                  inputmode="latin"
+                  autocomplete="new-password"
+                  style="ime-mode: disabled"
+                  (input)="sanitizePassword($event)"
+                  (ngModelChange)="checkPasswordStrength($event)"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="togglePassword()"
+                  tabindex="-1"
+                >
+                  <i
+                    class="bi"
+                    [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
+                  ></i>
+                </button>
+              </div>
+
+              <!-- 入力がある場合のみ形式エラー表示 -->
               <div
                 *ngIf="
-                  passwordInput.invalid &&
-                  (passwordInput.dirty || passwordInput.value)
+                  employee.password &&
+                  !isPasswordInvalid() &&
+                  passwordInput.dirty
                 "
                 class="form-text text-danger"
               >

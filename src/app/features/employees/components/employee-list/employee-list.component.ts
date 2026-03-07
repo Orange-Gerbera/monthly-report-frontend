@@ -27,6 +27,7 @@ import { AuthService } from '../../../auth/services/auth.service';
     MatDialogModule
   ],
   templateUrl: './employee-list.component.html',
+  styleUrls: ['./employee-list.component.scss']
 })
 export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
 

@@ -163,7 +163,7 @@ export const employeeHandlers = [
       employmentStatus:
         body.employmentStatus ?? current.employmentStatus,
       active: body.active ?? current.active,
-      enabled: body.password ? true : current.enabled, 
+      enabled: body.password ? true : current.enabled,
     };
 
     employeeStore.employees[idx] = updated;

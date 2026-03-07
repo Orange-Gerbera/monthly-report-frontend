@@ -24,6 +24,13 @@ export const appRoutes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'setup-password',
+    loadComponent: () =>
+      import(
+        './features/auth/components/setup-password/setup-password.component'
+      ).then((m) => m.SetupPasswordComponent),
+  },
+  {
     path: 'reports',
     loadComponent: () =>
       import(

@@ -64,4 +64,18 @@ export class EmployeeService {
       withCredentials: true,
     });
   }
+
+  issuePasswordResetAdmin(code: string, email: string): Observable<any> {
+    return this.http.post(
+      `${environment.apiBaseUrl}/password/admin/request`,
+      {
+        code,
+        email
+      },
+      {
+        withCredentials: true
+      }
+    );
+  }
+
 }
