@@ -86,12 +86,23 @@
             システム利用可否
           </th>
           <td mat-cell *matCellDef="let emp">
-            <span *ngIf="emp.active" class="badge bg-success">
-              利用可能
-            </span>
-            <span *ngIf="!emp.active" class="badge bg-secondary">
+
+            <!-- システム停止 -->
+            <span *ngIf="!emp.active" class="badge bg-secondary system-badge">
               利用停止
             </span>
+
+            <!-- ログイン不可 -->
+            <span *ngIf="emp.active && !emp.enabled"
+                  class="badge system-badge status-ng">
+              パスワード✕
+            </span>
+
+            <!-- 正常 -->
+            <span *ngIf="emp.active && emp.enabled" class="badge bg-success system-badge">
+              利用可能
+            </span>
+
           </td>
         </ng-container>
 

@@ -1,0 +1,93 @@
+/* ===== レイアウト ===== */
+
+.detail-card {
+  display: grid;
+  grid-template-columns: 14fr 5fr;   /* ← 14:5 */
+  gap: 80px;
+  max-width: 1100px;
+  margin: 40px auto 0;
+}
+
+/* 左右カラム */
+
+.detail-left,
+.detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ===== 各項目 ===== */
+
+.detail-item {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ラベル */
+
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* 値 */
+
+.detail-value {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* ===== パスワードバッジ ===== */
+
+.status-badge {
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.status-ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-ng {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== スイッチ ===== */
+
+.detail-item .form-check {
+  display: flex;
+  align-items: center;
+}
+
+.form-check-input:checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.detail-right {
+  padding-left: 40px;
+  border-left: 1px solid #e5e7eb;
+}
+
+/* ===== モバイル対応 ===== */
+
+@media (max-width: 992px) {
+  .detail-card {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}

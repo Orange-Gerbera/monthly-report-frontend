@@ -1,89 +1,95 @@
-<div *ngIf="employee$ | async as employee; else loading">
+<div *ngIf="employee$ | async as employee">
   <div class="container mt-5 pt-4">
-    <div class="page-card">
-      <h1 class="mb-1 border-bottom mt-4 pb-2 d-flex align-items-center">
-        <app-icon name="user_bk" class="title-icon me-2"></app-icon>
-        従業員 詳細
-      </h1>
-
-      <!-- 一覧・編集ボタン -->
-      <div class="d-flex flex-wrap gap-2 flex-md-row flex-column mt-4">
-        <app-button
-          label="一覧に戻る"
-          icon="arrow_back"
-          color="gray"
-          [routerLink]="'/employees'"
-          [block]="true"
-        ></app-button>
-        <app-button
-          label="プロフィール編集"
-          icon="edit"
-          color="blue"
-          [routerLink]="'/employees/' + employee.code + '/edit'"
-          [block]="true"
-        ></app-button>
-        <app-button
-          label="削除"
-          icon="delete"
-          color="red"
-          (click)="onDelete(employee.code)"
-          [block]="true"
-        ></app-button>
+    <div class="page-card employee-detail-card">
+      <!-- タイトル行（一覧と統一） -->
+      <div class="d-flex mt-4 mb-4 pb-2 align-items-end">
+        <div class="flex-grow-1 border-bottom me-3 pb-2">
+          <h1 class="mb-0 d-flex align-items-center">
+            <app-icon name="user_bk" class="title-icon me-2"></app-icon>
+            従業員 詳細
+          </h1>
+        </div>
+        <div class="col-auto pb-2">
+          <app-button 
+          label="プロフィール編集" 
+          icon="edit" 
+          color="blue" 
+          [routerLink]="'/employees/' + employee.code + '/edit'">
+          </app-button>
+        </div>
       </div>
-
+      <!-- 戻る + 削除 -->
+      <div class="d-flex gap-2 mb-4">
+        <app-button 
+        label="一覧に戻る" 
+        icon="arrow_back" 
+        color="gray" 
+        [routerLink]="'/employees'">
+        </app-button>
+        <app-button 
+        label="削除" 
+        icon="delete" 
+        color="red" 
+        (click)="onDelete(employee.code)">
+        </app-button>
+      </div>
       <!-- 基本情報 -->
-      <h5 class="mt-4 mb-3 border-bottom pb-2">基本情報</h5>
-      <div class="table-responsive">
-        <table class="table">
-          <tbody>
-            <tr>
-              <th scope="row" class="w-25">従業員番号</th>
-              <td>{{ employee.code }}</td>
-            </tr>
-            <tr>
-              <th scope="row">氏名</th>
-              <td>{{ employee.lastName }} {{ employee.firstName }}</td>
-            </tr>
-            <tr>
-              <th scope="row">メールアドレス</th>
-              <td>{{ employee.email }}</td>
-            </tr>
-            <tr>
-              <th scope="row">権限</th>
-              <td>{{ employee.role }}</td>
-            </tr>
-            <tr>
-              <th scope="row">所属</th>
-              <td>{{ employee.departmentName }}</td>
-            </tr>
-            <tr>
-              <th scope="row">雇用状態</th>
-              <td>{{ statusLabel(employee.employmentStatus) }}</td>
-            </tr>
-            <tr>
-              <th scope="row">システム利用可否</th>
-              <td>
-                <div class="form-check form-switch">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    [(ngModel)]="employee.active"
-                    (change)="toggleActive(employee)"
-                    id="activeSwitch"
-                  />
-                  <label class="form-check-label" for="activeSwitch">
-                    {{ employee.active ? '利用可能' : '利用停止' }}
-                  </label>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="detail-card">
+        <div class="detail-left">
+          <div class="detail-item">
+            <div class="detail-label">従業員番号</div>
+            <div class="detail-value">{{ employee.code }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">氏名</div>
+            <div class="detail-value">
+              {{ employee.lastName }} {{ employee.firstName }}
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">メールアドレス</div>
+            <div class="detail-value">{{ employee.email }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">所属</div>
+            <div class="detail-value">{{ employee.departmentName }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">権限</div>
+            <div class="detail-value">{{ employee.role }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">雇用状態</div>
+            <div class="detail-value">
+              {{ statusLabel(employee.employmentStatus) }}
+            </div>
+          </div>
+        </div>
+        <div class="detail-right">
+          <div class="detail-item">
+            <div class="detail-label">パスワード</div>
+            <div class="detail-value d-flex align-items-center gap-3">
+              <span class="status-badge" [ngClass]="employee.enabled ? 'status-ok' : 'status-ng'">
+                {{ employee.enabled ? '設定済み' : '未設定' }}
+              </span>
+              <app-button label="トークン発行" icon="envelope" size="sm" color="blue" (click)="issueToken(employee)">
+              </app-button>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">システム利用可否</div>
+            <div class="detail-value">
+              <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="employee.active"
+                  (change)="toggleActive(employee)" />
+                <label class="form-check-label ms-2">
+                  {{ employee.active ? '利用可能' : '利用停止' }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div> 
+    </div>
   </div>
 </div>
-
-<ng-template #loading>
-  <div class="text-center mt-5">読み込み中...</div>
-</ng-template>

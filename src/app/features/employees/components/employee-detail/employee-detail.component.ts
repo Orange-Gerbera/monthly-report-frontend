@@ -14,10 +14,18 @@ import { take } from 'rxjs';
 @Component({
   selector: 'app-employee-detail',
   templateUrl: './employee-detail.component.html',
+  styleUrl: './employee-detail.component.scss',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonComponent, IconComponent, FormsModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ButtonComponent,
+    IconComponent,
+    FormsModule
+  ],
 })
 export class EmployeeDetailComponent implements OnInit {
+
   employee$!: Observable<EmployeeDto>;
 
   constructor(
@@ -47,7 +55,7 @@ export class EmployeeDetailComponent implements OnInit {
     }
   }
 
-  toggleActive(employee: EmployeeDto) {
+  toggleActive(employee: EmployeeDto): void {
     const req = { ...employee };
 
     this.employeeService.update(employee.code, req).subscribe({
@@ -69,6 +77,7 @@ export class EmployeeDetailComponent implements OnInit {
         okColor: 'red'
       }
     });
+
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
         this.executeDelete(code);
@@ -87,5 +96,14 @@ export class EmployeeDetailComponent implements OnInit {
         alert('削除に失敗しました');
       },
     });
+  }
+
+  issueToken(employee: EmployeeDto): void {
+    this.employeeService
+      .issuePasswordResetAdmin(employee.code, employee.email)
+      .subscribe({
+        next: () => alert('リセットメールを送信しました'),
+        error: () => alert('送信に失敗しました')
+      });
   }
 }
