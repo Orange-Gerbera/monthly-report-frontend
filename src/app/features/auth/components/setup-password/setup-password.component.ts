@@ -38,33 +38,39 @@ export class SetupPasswordComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.token = this.route.snapshot.queryParamMap.get('token');
+    this.route.queryParamMap.subscribe(params => {
 
-    if (!this.token) {
-      this.errorMessage = 'トークンが指定されていません。';
-      this.loading = false;
-      return;
-    }
+      const token = params.get('token');
 
-    this.http
-      .get<any>(`${this.API_BASE}/validate`, {
-        params: { token: this.token },
-      })
-      .subscribe({
+      if (!token) {
+        this.errorMessage = 'トークンが不足しています。';
+        this.loading = false;
+        return;
+      }
+
+      this.token = token;
+
+      const url = `${this.API_BASE}/validate?token=${encodeURIComponent(token)}`;
+
+      this.http.get<{role:string,email:string}>(url).subscribe({
         next: (res) => {
+
           this.validToken = true;
 
-          // validate API が role と email を返す前提
-          this.userRole = res?.role ?? '';
-          this.userEmail = res?.email ?? '';
+          this.userRole = res.role;
+          this.userEmail = res.email;
 
           this.loading = false;
         },
-        error: () => {
+        error: (err) => {
+
+          console.error('Validation Error:', err);
+
           this.errorMessage = '無効または期限切れトークンです。';
           this.loading = false;
-        },
+        }
       });
+    });
   }
 
   togglePassword(): void {
@@ -124,6 +130,8 @@ export class SetupPasswordComponent implements OnInit {
     if (this.submitting) return;
     if (!this.validToken) return;
 
+    this.errorMessage = '';
+
     if (!this.password.trim()) {
       this.errorMessage = 'パスワードを入力してください。';
       return;
@@ -148,7 +156,7 @@ export class SetupPasswordComponent implements OnInit {
 
     this.http
       .post<{message:string}>(`${this.API_BASE}/reset`, {
-        token: this.token,
+        token: this.token!,
         newPassword: this.password,
       }, { observe: 'response' })
       .subscribe({
