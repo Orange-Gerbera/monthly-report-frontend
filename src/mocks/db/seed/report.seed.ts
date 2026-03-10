@@ -17,6 +17,7 @@ export function seedReports(): ReportDto[] {
       reportMonth: '2025-10',
       submittedAt: now,
       updatedAt: now,
+
       contentBusiness: '新規開拓と保守対応を実施',
       timeWorked: 160,
       timeOver: 12,
@@ -32,10 +33,19 @@ export function seedReports(): ReportDto[] {
       goalStudy: 'RxJSの理解',
       contentCompany: '社内LT登壇',
       contentOthers: '特になし',
+
       completeFlg: false,
       comment: '',
       reportDeadline: lastDay('2025-10'),
+
       approvalFlg: null,
+      approvedAt: null,
+      approvedBy: null,
+
+      receivedFlg: null,
+      receivedAt: null,
+      receivedBy: null,
+
       employeeCode: '1234',
       employeeName: '田中 太郎',
       departmentName: '営業部',
@@ -46,6 +56,7 @@ export function seedReports(): ReportDto[] {
       reportMonth: '2025-09',
       submittedAt: now,
       updatedAt: now,
+
       contentBusiness: '資料作成と運用保守',
       timeWorked: 152,
       timeOver: 8,
@@ -61,10 +72,19 @@ export function seedReports(): ReportDto[] {
       goalStudy: 'テスト自動化',
       contentCompany: '社内勉強会参加',
       contentOthers: '',
+
       completeFlg: true,
       comment: 'OK',
       reportDeadline: lastDay('2025-09'),
+
       approvalFlg: true,
+      approvedAt: now,
+      approvedBy: '2345',
+
+      receivedFlg: true,
+      receivedAt: now,
+      receivedBy: '2345',
+
       employeeCode: '5678',
       employeeName: '山田 花子',
       departmentName: '開発部',

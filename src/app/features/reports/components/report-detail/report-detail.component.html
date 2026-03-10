@@ -18,7 +18,7 @@
               [block]="true"
             ></app-button>
 
-            <ng-container *ngIf="isMine(report)">
+            <ng-container *ngIf="isMine(report) && !report.receivedFlg">
               <span
                 [matTooltip]="
                   report.approvalFlg ? '承認済みのため編集できません' : ''

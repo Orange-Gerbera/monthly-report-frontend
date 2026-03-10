@@ -21,7 +21,17 @@ export interface ReportDto {
   completeFlg: boolean;
   comment: string;
   reportDeadline: string; // ISO日付
+  
+  // 承認
   approvalFlg: boolean | null;
+  approvedAt: string | null;
+  approvedBy: string | null;
+
+  // 受理 ← 追加
+  receivedFlg: boolean | null;
+  receivedAt: string | null;
+  receivedBy: string | null;
+
   employeeCode: string;
   employeeName: string;
   departmentName: string;
@@ -46,6 +56,11 @@ export type ReportUpsertRequest = Omit<
   | 'updatedAt'
   | 'reportDeadline'
   | 'approvalFlg'
+  | 'approvedAt'
+  | 'approvedBy'
+  | 'receivedFlg'
+  | 'receivedAt'
+  | 'receivedBy'
   | 'comment'
   | 'dueDate'
 >;

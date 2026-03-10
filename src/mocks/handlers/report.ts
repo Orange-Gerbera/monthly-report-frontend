@@ -166,6 +166,14 @@ export const reportHandlers = [
       reportMonth: body.reportMonth,
       submittedAt: now,
       updatedAt: now,
+
+      approvedAt: null,
+      approvedBy: null,
+
+      receivedFlg: null,
+      receivedAt: null,
+      receivedBy: null,
+
       contentBusiness: body.contentBusiness ?? '',
       timeWorked: body.timeWorked ?? 0,
       timeOver: body.timeOver ?? 0,
