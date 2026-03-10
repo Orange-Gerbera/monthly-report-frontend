@@ -9,24 +9,31 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { RoleLabelPipe } from '../../../../shared/pipes/role-label.pipe';
+import { EmploymentStatusLabelPipe } from '../../../../shared/pipes/employment-status-label.pipe';
 import { take } from 'rxjs';
 
 @Component({
   selector: 'app-employee-detail',
   templateUrl: './employee-detail.component.html',
-  styleUrl: './employee-detail.component.scss',
+  styleUrls: ['./employee-detail.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
     RouterLink,
     ButtonComponent,
     IconComponent,
-    FormsModule
+    FormsModule,
+    RoleLabelPipe,
+    EmploymentStatusLabelPipe
   ],
 })
 export class EmployeeDetailComponent implements OnInit {
 
   employee$!: Observable<EmployeeDto>;
+
+  currentUserCode = '';
+  currentUserRole = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -36,43 +43,79 @@ export class EmployeeDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.employeeService.getCurrentUser().subscribe(user => {
+      this.currentUserCode = user.code;
+      this.currentUserRole = user.role;
+    });
+
     const code = this.route.snapshot.paramMap.get('code');
     if (code) {
       this.employee$ = this.employeeService.getByCode(code);
     }
   }
 
-  statusLabel(status: string): string {
-    switch (status) {
-      case 'EMPLOYED':
-        return '在職';
-      case 'SUSPENDED':
-        return '休職';
-      case 'RETIRED':
-        return '退職';
-      default:
-        return status;
+  canEdit(employee: EmployeeDto): boolean {
+
+    console.log('currentUserRole=', this.currentUserRole);
+    console.log('employeeRole=', employee.role);
+
+    // SYSTEM_ADMINは全員編集可
+    if (this.currentUserRole === 'SYSTEM_ADMIN') {
+      return true;
     }
+
+    // ADMINはSYSTEM_ADMIN以外編集可
+    if (this.currentUserRole === 'ADMIN') {
+      return employee.role !== 'SYSTEM_ADMIN';
+    }
+
+    // GENERALは自分のみ
+    if (this.currentUserRole === 'GENERAL') {
+      return employee.code === this.currentUserCode;
+    }
+
+    return false;
   }
 
   toggleActive(employee: EmployeeDto): void {
-    const req = { ...employee };
+     if (employee.role === 'SYSTEM_ADMIN') {
+      alert('システム管理者は利用停止できません');
+      employee.active = true;
+      return;
+    }
+
+      const req = {
+        code: employee.code,
+        lastName: employee.lastName,
+        firstName: employee.firstName,
+        email: employee.email,
+        role: employee.role,
+        departmentName: employee.departmentName,
+        employmentStatus: employee.employmentStatus,
+        active: employee.active
+      };
 
     this.employeeService.update(employee.code, req).subscribe({
       next: () => console.log('利用状況更新成功'),
-      error: () => {
-        alert('更新に失敗しました');
+      error: (err) => {
+        const message = err?.error?.message;
+        alert(message || '更新に失敗しました');
         employee.active = !employee.active;
-      },
+      }
     });
   }
 
-  onDelete(code: string): void {
+  onDelete(employee: EmployeeDto): void {
+    if (employee.role === 'SYSTEM_ADMIN') {
+      alert('システム管理者は削除できません');
+      return;
+    }
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
         title: '従業員の削除',
-        message: `従業員コード [${code}] の情報を削除してもよろしいですか？\nこの操作は取り消せません。`,
+        message: `従業員コード [${employee.code}] の情報を削除してもよろしいですか？\nこの操作は取り消せません。`,
         okLabel: '削除する',
         okColor: 'red'
       }
@@ -80,7 +123,7 @@ export class EmployeeDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
-        this.executeDelete(code);
+        this.executeDelete(employee.code);
       }
     });
   }
@@ -99,6 +142,12 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   issueToken(employee: EmployeeDto): void {
+
+    if (employee.role === 'SYSTEM_ADMIN') {
+      alert('システム管理者にはリセットメールを送信できません');
+      return;
+    }
+
     this.employeeService
       .issuePasswordResetAdmin(employee.code, employee.email)
       .subscribe({

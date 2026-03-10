@@ -198,13 +198,17 @@
             [(ngModel)]="employee.role"
             name="role"
             required
+            [disabled]="employee.role === 'SYSTEM_ADMIN'"
             #roleInput="ngModel"
             (ngModelChange)="onRoleChange()"
           >
-            <option *ngFor="let option of roleOptions" [value]="option.value">
+            <option *ngFor="let option of filteredRoleOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
+          <div *ngIf="employee.role === 'SYSTEM_ADMIN'" class="alert alert-warning mt-3">
+            システム管理者の権限は変更できません。
+          </div>
           <div
             *ngIf="roleInput.invalid && roleInput.touched"
             class="form-text text-danger"
@@ -222,6 +226,7 @@
             [(ngModel)]="employee.departmentName"
             name="departmentName"
             required
+            [disabled]="employee.role === 'SYSTEM_ADMIN'"
             #departmentInput="ngModel"
           >
             <option value="" disabled>-- 所属を選択 --</option>
@@ -248,6 +253,7 @@
             class="form-select"
             [(ngModel)]="employee.employmentStatus"
             name="employmentStatus"
+            [disabled]="employee.role === 'SYSTEM_ADMIN'"
           >
             <option
               *ngFor="let s of employmentStatusOptions"

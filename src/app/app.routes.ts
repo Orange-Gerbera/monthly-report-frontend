@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { SystemAdminGuard } from './guards/system-admin.guard';
 
 export const appRoutes: Routes = [
   {
@@ -125,6 +126,6 @@ export const appRoutes: Routes = [
       import(
         './features/security/pages/security-lock-page/security-lock-page.component'
       ).then((m) => m.SecurityLockPageComponent),
-    canActivate: [AuthGuard, AdminGuard], // 管理者のみアクセス可能
+    canActivate: [AuthGuard, SystemAdminGuard], // システム管理者のみアクセス可能
   },
 ];

@@ -69,7 +69,14 @@ export class AuthService {
 
   isAdmin(): boolean {
     return (
-      this.currentUser?.role === '管理者' || this.currentUser?.role === 'ADMIN'
+      this.currentUser?.role === 'ADMIN' ||
+      this.currentUser?.role === 'SYSTEM_ADMIN' ||
+      this.currentUser?.role === '管理者' ||
+      this.currentUser?.role === 'システム管理者'
     );
+  }
+
+  isSystemAdmin(): boolean {
+    return this.currentUser?.role === 'SYSTEM_ADMIN';
   }
 }

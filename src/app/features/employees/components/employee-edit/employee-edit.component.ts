@@ -20,6 +20,7 @@ export class EmployeeEditComponent implements OnInit {
   @Input() selfMode = false;
   @Input() noCard = false;
   isAdmin = false;
+  isSystemAdmin = false;
 
   private originalRole?: string;
   private originalEmploymentStatus?: string;
@@ -39,6 +40,7 @@ export class EmployeeEditComponent implements OnInit {
   roleOptions = [
     { label: '一般', value: 'GENERAL' },
     { label: '管理者', value: 'ADMIN' },
+    { label: 'システム管理者', value: 'SYSTEM_ADMIN' },
   ];
 
   departments: DepartmentDto[] = [];
@@ -62,6 +64,8 @@ export class EmployeeEditComponent implements OnInit {
     if (this.selfMode) {
       this.employeeService.getCurrentUser().subscribe({
         next: (user) => {
+          this.isSystemAdmin =
+            user.role === 'SYSTEM_ADMIN';
           this.employee = {
             ...user,
             role: this.convertRoleToEnum(user.role),
@@ -69,7 +73,9 @@ export class EmployeeEditComponent implements OnInit {
           };
           this.originalRole = user.role;  // 役職を保存
           this.originalEmploymentStatus = user.employmentStatus;
-          this.isAdmin = this.employee.role === 'ADMIN';
+          this.isAdmin =
+              this.employee.role === 'ADMIN' ||
+              this.employee.role === 'SYSTEM_ADMIN';
           console.log(
             '取得したrole:',
             user.role,
@@ -103,6 +109,12 @@ export class EmployeeEditComponent implements OnInit {
   }
 
   onRoleChange(): void {
+
+    if (this.originalRole === 'SYSTEM_ADMIN') {
+      this.employee.role = 'SYSTEM_ADMIN';
+      return;
+    }
+
     if (this.employee.password) {
       this.checkPasswordStrength(this.employee.password);
     }
@@ -113,6 +125,15 @@ export class EmployeeEditComponent implements OnInit {
       next: (data) => (this.departments = data),
       error: (err) => console.error('所属一覧の取得に失敗しました', err),
     });
+  }
+
+  get filteredRoleOptions() {
+    if (this.isSystemAdmin) {
+      return this.roleOptions;
+    }
+    return this.roleOptions.filter(
+      r => r.value !== 'SYSTEM_ADMIN'
+    );
   }
 
   onEmailChange(): void {
@@ -197,13 +218,20 @@ export class EmployeeEditComponent implements OnInit {
   }
 
   private getRequiredScore(): number {
-    return this.employee.role === 'ADMIN' ? 4 : 3;
+    if (this.employee.role === 'SYSTEM_ADMIN') return 4;
+    if (this.employee.role === 'ADMIN') return 4;
+    return 3;
   }
 
-  private convertRoleToEnum(role: string): 'GENERAL' | 'ADMIN' {
-    if (role === 'ADMIN' || role === 'GENERAL')
-      return role as 'GENERAL' | 'ADMIN';
-    return role === '管理者' ? 'ADMIN' : 'GENERAL';
+  private convertRoleToEnum(role: string): 'GENERAL' | 'ADMIN' | 'SYSTEM_ADMIN' {
+    if (role === 'SYSTEM_ADMIN' || role === 'ADMIN' || role === 'GENERAL') {
+      return role as 'GENERAL' | 'ADMIN' | 'SYSTEM_ADMIN';
+    }
+
+    if (role === 'システム管理者') return 'SYSTEM_ADMIN';
+    if (role === '管理者') return 'ADMIN';
+
+    return 'GENERAL';
   }
 
   togglePassword(): void {

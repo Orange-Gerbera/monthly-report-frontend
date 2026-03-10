@@ -13,6 +13,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SecurityLockService } from '../../../security/services/security-lock.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { AuthService } from '../../../auth/services/auth.service';
+import { RoleLabelPipe } from '../../../../shared/pipes/role-label.pipe';
+import { EmploymentStatusLabelPipe } from '../../../../shared/pipes/employment-status-label.pipe';
 
 @Component({
   selector: 'app-employee-list',
@@ -24,7 +26,9 @@ import { AuthService } from '../../../auth/services/auth.service';
     IconComponent,
     MatTableModule,
     MatSortModule,
-    MatDialogModule
+    MatDialogModule,
+    RoleLabelPipe,
+    EmploymentStatusLabelPipe   
   ],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss']
@@ -158,18 +162,5 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
     const m = Math.floor((diff % 3600000) / 60000);
 
     return `残り ${h}時間 ${m}分`;
-  }
-
-  statusLabel(status: string): string {
-    switch (status) {
-      case 'EMPLOYED':
-        return '在職';
-      case 'SUSPENDED':
-        return '休職';
-      case 'RETIRED':
-        return '退職';
-      default:
-        return status;
-    }
   }
 }

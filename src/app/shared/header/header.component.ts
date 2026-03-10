@@ -30,6 +30,10 @@ export class HeaderComponent {
     return this.authService.isAdmin();
   }
 
+  get isSystemAdmin(): boolean {
+    return this.authService.isSystemAdmin();
+  }
+
   get userName(): string | null {
     return this.authService.getCurrentUser()?.name || null;
   }
