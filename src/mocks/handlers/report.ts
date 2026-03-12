@@ -38,10 +38,11 @@ function filterByQuery(url: URL, rows: ReportDto[]) {
     });
   }
 
-  res.sort((a, b) =>
-    a.updatedAt > b.updatedAt ? -1 : a.updatedAt < b.updatedAt ? 1 : 0
-  );
-  return res;
+  res.sort((a, b) => {
+    const av = a.updatedAt ?? '';
+    const bv = b.updatedAt ?? '';
+    return av > bv ? -1 : av < bv ? 1 : 0;
+  });
 }
 
 function buildListExtras(rows: ReportDto[]) {
@@ -164,15 +165,17 @@ export const reportHandlers = [
     const created: ReportDto = {
       id: reportStore.nextId(),
       reportMonth: body.reportMonth,
-      submittedAt: now,
+      submittedAt: null,
       updatedAt: now,
 
       approvedAt: null,
       approvedBy: null,
+      approvedByName: null,
 
       receivedFlg: null,
       receivedAt: null,
       receivedBy: null,
+      receivedByName: null,
 
       contentBusiness: body.contentBusiness ?? '',
       timeWorked: body.timeWorked ?? 0,

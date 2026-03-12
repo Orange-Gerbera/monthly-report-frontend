@@ -41,10 +41,12 @@ export function seedReports(): ReportDto[] {
       approvalFlg: null,
       approvedAt: null,
       approvedBy: null,
+      approvedByName: null,
 
       receivedFlg: null,
       receivedAt: null,
       receivedBy: null,
+      receivedByName: null,
 
       employeeCode: '1234',
       employeeName: '田中 太郎',
@@ -80,10 +82,12 @@ export function seedReports(): ReportDto[] {
       approvalFlg: true,
       approvedAt: now,
       approvedBy: '2345',
+      approvedByName: '田中 太郎',
 
       receivedFlg: true,
       receivedAt: now,
       receivedBy: '2345',
+      receivedByName: '田中 太郎',
 
       employeeCode: '5678',
       employeeName: '山田 花子',

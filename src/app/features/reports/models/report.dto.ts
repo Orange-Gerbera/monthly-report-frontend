@@ -1,8 +1,8 @@
 export interface ReportDto {
   id: number;
   reportMonth: string; // "2025-05" のようなフォーマット（YearMonth）
-  submittedAt: string; // ISO文字列
-  updatedAt: string;
+  submittedAt: string | null; // ISO文字列
+  updatedAt: string | null;
   contentBusiness: string;
   timeWorked: number;
   timeOver: number;
@@ -19,18 +19,20 @@ export interface ReportDto {
   contentCompany: string;
   contentOthers: string;
   completeFlg: boolean;
-  comment: string;
+  comment: string | null;
   reportDeadline: string; // ISO日付
   
   // 承認
   approvalFlg: boolean | null;
   approvedAt: string | null;
   approvedBy: string | null;
+  approvedByName: string | null;
 
   // 受理 ← 追加
   receivedFlg: boolean | null;
   receivedAt: string | null;
   receivedBy: string | null;
+  receivedByName: string | null;
 
   employeeCode: string;
   employeeName: string;
@@ -58,9 +60,11 @@ export type ReportUpsertRequest = Omit<
   | 'approvalFlg'
   | 'approvedAt'
   | 'approvedBy'
+  | 'approvedByName'
   | 'receivedFlg'
   | 'receivedAt'
   | 'receivedBy'
+  | 'receivedByName'
   | 'comment'
   | 'dueDate'
 >;
