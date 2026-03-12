@@ -95,15 +95,8 @@
           <button class="mini-dot" [class.accept]="report.receivedFlg === true"
             [class.reject]="report.receivedFlg === false" [class.cancel]="report.receivedFlg === null"
             [disabled]="!isAdmin() || report.approvalFlg !== null" 
-            matTooltip="
-            {{ 
-              !isAdmin() 
-                ? '管理者以外は変更できません'
-                : (report.approvalFlg !== null 
-                    ? '承認済みのため受理は変更できません'
-                    : '') 
-            }}
-          " [matTooltipDisabled]="isAdmin() && report.approvalFlg === null" (click)="onReceive(report.id)">
+            [matTooltip]="!isAdmin() ? '管理者以外は変更できません' : (report.approvalFlg !== null ? '承認済みのため受理は変更できません' : '')"
+            [matTooltipDisabled]="isAdmin() && report.approvalFlg === null" (click)="onReceive(report.id)">
           </button>
 
           <span class="mini-line" [class.done]="report.receivedFlg === true">
@@ -135,8 +128,8 @@
 
         <div class="mini-users">
 
-          <span>
-            {{ getLastName(report.employeeName)}}
+          <span [class.empty]="!report.submittedAt">
+            {{ report.submittedAt ? getLastName(report.employeeName) : '' }}
           </span>
 
           <span [class.empty]="!report.receivedByName">
