@@ -1,4 +1,5 @@
 <div class="confirm-dialog-container">
+
   <h2 mat-dialog-title class="dialog-title">
     {{ data.title }}
   </h2>
@@ -8,16 +9,14 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end" class="dialog-actions px-3 pb-3">
+
     <app-button
-      label="キャンセル"
-      color="gray"
-      (click)="onCancel()"
-    ></app-button>
-    
-    <app-button
-      [label]="data.okLabel || 'OK'"
-      [color]="data.okColor || 'blue'"
-      (click)="onConfirm()"
-    ></app-button>
+      *ngFor="let btn of buttons"
+      [label]="btn.label"
+      [color]="btn.color || 'gray'"
+      (click)="onSelect(btn.value)">
+    </app-button>
+
   </mat-dialog-actions>
+
 </div>

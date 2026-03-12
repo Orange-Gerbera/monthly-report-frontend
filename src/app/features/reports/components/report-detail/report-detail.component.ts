@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../services/report.service';
-import { Observable, map } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { ReportDto } from '../../models/report.dto';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,9 +11,7 @@ import { ButtonComponent } from '../../../../shared/button/button.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ApproveConfirmDialogComponent } from '../approve-confirm-dialog/approve-confirm-dialog.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Location } from '@angular/common';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -32,7 +30,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
   templateUrl: './report-detail.component.html',
   styleUrls: ['./report-detail.component.scss'],
 })
-export class ReportDetailComponent {
+export class ReportDetailComponent implements OnInit {
   report$!: Observable<ReportDto>;
 
   isCommentFormVisible = false;
@@ -41,7 +39,7 @@ export class ReportDetailComponent {
   timeWorkedMinute: number = 0;
   timeOverHour: number = 0;
   timeOverMinute: number = 0;
-  previousUrl: string = '/reports'; 
+  previousUrl: string = '/reports';
 
   private currentReportId: string = '';
   private currentReportMonth: string = '';
@@ -53,19 +51,20 @@ export class ReportDetailComponent {
     private authService: AuthService,
     private excelDownloadService: ExcelDownloadService,
     private dialog: MatDialog,
-    private location: Location
   ) {
     const navigation = this.router.getCurrentNavigation();
     // state自体が存在するか、'previousUrl' が含まれているかをチェック
     if (navigation?.extras?.state?.['previousUrl']) {
       this.previousUrl = navigation.extras.state['previousUrl'];
     }
-
-    this.loadReport();
   }
 
   get reportMonth(): string {
     return this.currentReportMonth;
+  }
+
+  ngOnInit(): void {
+    this.loadReport();
   }
 
   // 一覧に戻るボタンの実装
@@ -79,20 +78,21 @@ export class ReportDetailComponent {
     this.currentReportId = id;
 
     this.report$ = this.reportService.getReportById(id, true).pipe(
-      map((res) => {
+
+      tap(res => {
         const report = res.report;
 
-        // 年月を保持（例: "2025-07"）
         this.currentReportMonth = report.reportMonth;
 
-        // 分 → 時間＋分
         this.timeWorkedHour = Math.floor(report.timeWorked / 60);
         this.timeWorkedMinute = report.timeWorked % 60;
+
         this.timeOverHour = Math.floor(report.timeOver / 60);
         this.timeOverMinute = report.timeOver % 60;
+      }),
 
-        return report;
-      })
+      map(res => res.report)
+
     );
   }
 
@@ -106,8 +106,8 @@ export class ReportDetailComponent {
         okColor: 'red' // 削除なので注意を促す赤
       },
       // Safari/iOSでの挙動を安定させるためのオプション（任意）
-      autoFocus: false, 
-      restoreFocus: true 
+      autoFocus: false,
+      restoreFocus: true
     });
     dialogRef.afterClosed().subscribe((result: boolean) => {
       // result にはダイアログで「削除する」を押した時に true が入る
@@ -131,36 +131,147 @@ export class ReportDetailComponent {
   }
 
   onApprove(id: number): void {
-    const dialogRef = this.dialog.open(ApproveConfirmDialogComponent);
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'approve' || result === 'deny') {
-        const approve = result === 'approve';
-
-        this.reportService.approveReport(id, approve).subscribe({
-          next: () => {
-            alert(approve ? '承認しました。' : '否認にしました。');
-            this.router.navigate(['/reports'], {
-              queryParams: { selectedMonth: this.currentReportMonth },
-            });
-          },
-          error: (err) => {
-            console.error('承認処理に失敗しました:', err);
-            alert('承認処理に失敗しました。');
-          },
-        });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: '承認処理',
+        message: '処理を選択してください',
+        buttons: [
+          { label: '承認する', value: true, color: 'green' },
+          { label: '否認', value: false, color: 'red' },
+          { label: '取消し', value: null, color: 'gray' }
+        ]
       }
-      // キャンセル（×）やESCキーで閉じたときは何もしない
     });
+
+    dialogRef.afterClosed().subscribe(result => {
+
+      if (result === undefined) return;
+
+      this.reportService.approveReport(id, result).subscribe({
+
+        next: () => {
+          this.loadReport();
+        },
+
+        error: err => {
+          console.error(err);
+          alert('処理に失敗しました');
+        }
+
+      });
+
+    });
+
   }
 
-  onSubmitComment(id: number): void {
-    if (!this.commentText.trim()) {
-      alert('コメントを入力してください。');
+  onReceive(id: number): void {
+
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '420px',
+    data: {
+      title: '受理処理',
+      message: '処理を選択してください',
+      buttons: [
+        { label: '受理する', value: true, color: 'green' },
+        { label: '差戻し', value: false, color: 'red' },
+        { label: '取消し', value: null, color: 'gray' }
+      ]
+    }
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+
+    if (result === undefined) return;
+
+    // ★ 差戻しのとき確認を出す
+    if (result === false) {
+
+      const confirmRef = this.dialog.open(ConfirmDialogComponent, {
+        width: '420px',
+        data: {
+          title: '差戻し確認',
+          message:
+            '差戻しを選択すると提出が解除されます。\n' +
+            '受理するには再提出が必要になりますが、差戻しを設定してもよろしいですか？',
+          okLabel: '差戻しする',
+          okColor: 'red'
+        }
+      });
+
+      confirmRef.afterClosed().subscribe(confirm => {
+
+        if (!confirm) return;
+
+        this.executeReceive(id, result);
+
+      });
+
       return;
     }
 
-    this.reportService.commentOnReport(id, this.commentText).subscribe({
+    this.executeReceive(id, result);
+
+  });
+
+}
+
+  private executeReceive(id: number, result: boolean | null) {
+
+    this.reportService.receiveReport(id, result).subscribe({
+
+      next: () => {
+        this.loadReport();
+      },
+
+      error: err => {
+        console.error(err);
+        alert('処理に失敗しました');
+      }
+
+    });
+
+  }
+
+  onSubmitToggle(id: number, submit: boolean): void {
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: submit ? '提出確認' : '提出取り下げ確認',
+        message: submit ? 'この報告書を提出しますか？' : '報告書の提出を取り下げますか？',
+        okLabel: submit ? '提出する' : '取り下げする',
+        okColor: submit ? 'blue' : 'gray'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+
+      if (!result) return;
+
+      this.reportService.submitReport(id, submit).subscribe({
+
+        next: () => {
+          alert(submit ? '提出しました' : '提出を取り下げました');
+          this.loadReport();
+        },
+
+        error: err => {
+          console.error(err);
+          alert('提出処理に失敗しました');
+        }
+
+      });
+
+    });
+
+  }
+
+  onSubmitComment(id: number): void {
+    const comment = this.commentText ?? '';
+
+    this.reportService.commentOnReport(id, comment).subscribe({
       next: () => {
         alert('コメントを追加しました。');
         this.commentText = '';
@@ -200,27 +311,6 @@ export class ReportDetailComponent {
     return this.authService.isAdmin();
   }
 
-  formatDate(input: string, mode: 'month' | 'date' | 'datetime'): string {
-    if (!input) return '';
-    const date = new Date(input);
-    const y = date.getFullYear();
-    const m = ('0' + (date.getMonth() + 1)).slice(-2);
-    const d = ('0' + date.getDate()).slice(-2);
-    const hh = ('0' + date.getHours()).slice(-2);
-    const mm = ('0' + date.getMinutes()).slice(-2);
-
-    switch (mode) {
-      case 'month':
-        return `${y}/${m}`;
-      case 'date':
-        return `${m}/${d}`;
-      case 'datetime':
-        return `${y}/${m}/${d} ${hh}:${mm}`;
-      default:
-        return '';
-    }
-  }
-
   openReportInNewTab(offset: number): void {
     if (!this.currentReportId || !this.currentReportMonth) return;
 
@@ -247,5 +337,10 @@ export class ReportDetailComponent {
         error: () =>
           alert(`指定された月（${ym}）の報告書は見つかりませんでした。`),
       });
+  }
+
+  getLastName(name: string | null | undefined): string {
+    if (!name) return '-';
+    return name.trim().split(/\s+/)[0];
   }
 }

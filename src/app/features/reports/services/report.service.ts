@@ -62,9 +62,41 @@ export class ReportService {
     });
   }
 
-  approveReport(id: number, approve: boolean): Observable<ReportResponse> {
+  approveReport(id: number, approve: boolean | null): Observable<ReportResponse> {
+
+    let url = `${this.API_URL}/${id}/approval`;
+
+    if (approve !== null) {
+      url += `?approve=${approve}`;
+    }
+
     return this.http.patch<ReportResponse>(
-      `${this.API_URL}/${id}/approval?approve=${approve}`,
+      url,
+      null,
+      { withCredentials: true }
+    );
+  }
+
+  submitReport(id: number, submit: boolean): Observable<ReportResponse> {
+
+    return this.http.patch<ReportResponse>(
+      `${this.API_URL}/${id}/submit?submit=${submit}`,
+      null,
+      { withCredentials: true }
+    );
+
+  }
+
+  receiveReport(id: number, receive: boolean | null) {
+
+    let url = `${this.API_URL}/${id}/receive`;
+
+    if (receive !== null) {
+      url += `?receive=${receive}`;
+    }
+
+    return this.http.patch(
+      url,
       null,
       { withCredentials: true }
     );
