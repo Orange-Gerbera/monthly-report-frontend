@@ -20,6 +20,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActivatedRoute } from '@angular/router';
 import { from } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-report-list',
@@ -37,6 +38,7 @@ import { concatMap, tap } from 'rxjs/operators';
     MatIconModule,
     MatButtonModule,
     MatCheckboxModule,
+    MatTooltipModule,
   ],
   templateUrl: './report-list.component.html',
   styleUrls: ['./report-list.component.scss'],
@@ -54,8 +56,7 @@ export class ReportListComponent implements OnInit {
     'dueDate',
     'submittedAt',
     'departmentName',
-    'completeFlg',
-    'approvalFlg',
+    'status',
     'comment',
     'actions',
   ];
@@ -74,6 +75,7 @@ export class ReportListComponent implements OnInit {
       return typeof value === 'string' ? value : value ?? '';
     };
   }
+  
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {

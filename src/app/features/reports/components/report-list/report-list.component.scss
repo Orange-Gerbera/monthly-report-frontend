@@ -2,6 +2,39 @@
   min-width: 160px;
 }
 
-.app-table .mat-mdc-row {
-  transition: background-color 0.15s;
+.status-timeline {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ノード */
+.node {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #dcdcdc;
+  border: 2px solid #fff;
+  box-sizing: content-box;
+}
+
+/* 完了（メニュー寄りブルー） */
+.node.active {
+  background: #1e88e5;
+}
+
+/* 差戻し */
+.node.reject {
+  background: #e53935;
+}
+
+/* ライン */
+.bar {
+  width: 55px;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+/* 完了ライン */
+.bar.active {
+  background: #1e88e5;
 }

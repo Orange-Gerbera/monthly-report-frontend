@@ -55,22 +55,48 @@
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="completeFlg">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>完了</th>
-            <td mat-cell *matCellDef="let report">
-              <app-icon *ngIf="report.completeFlg" name="check_bk"></app-icon>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef class="status-header">
+              提出　→　受理　→　承認
+            </th>
+
+            <td mat-cell *matCellDef="let report" class="status-cell">
+
+              <div class="status-timeline">
+
+                <!-- 提出 -->
+                <span
+                  class="node"
+                  [class.active]="report.completeFlg"
+                  matTooltip="{{ report.completeFlg ? '提出済み' : '未提出' }}">
+                </span>
+
+                <span class="bar" [class.active]="report.completeFlg"></span>
+
+                <!-- 受理 -->
+                <span
+                  class="node"
+                  [class.active]="report.receivedFlg === true"
+                  [class.reject]="report.receivedFlg === false"
+                  matTooltip="{{ report.receivedFlg === true ? '受理' : report.receivedFlg === false ? '差戻し' : '未処理' }}">
+                </span>
+
+                <span class="bar" [class.active]="report.receivedFlg === true"></span>
+
+                <!-- 承認 -->
+                <span
+                  class="node"
+                  [class.active]="report.approvalFlg === true"
+                  [class.reject]="report.approvalFlg === false"
+                  matTooltip="{{ report.approvalFlg === true ? '承認' : report.approvalFlg === false ? '否認' : '未処理' }}">
+                </span>
+
+              </div>
+
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="approvalFlg">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>承認</th>
-            <td mat-cell *matCellDef="let report">
-              <ng-container [ngSwitch]="report.approvalFlg">
-                <app-icon *ngSwitchCase="true" name="check_bk"></app-icon>
-                <span *ngSwitchCase="false" class="text-danger">否認</span>
-              </ng-container>
-            </td>
-          </ng-container>
+
 
           <ng-container matColumnDef="comment">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>コメント</th>

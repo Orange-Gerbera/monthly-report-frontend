@@ -18,6 +18,7 @@ import { ReportDueDateService } from '../../../report-due-dates/services/report-
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { Location } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-report-table',
@@ -31,8 +32,10 @@ import { Location } from '@angular/common';
     MatButtonModule,
     ButtonComponent,
     IconComponent,
+    MatTooltipModule,
   ],
   templateUrl: './report-table.component.html',
+  styleUrls: ['./report-table.component.scss'],
 })
 export class ReportTableComponent implements OnInit, AfterViewInit {
   @Input() filterByUser = false;
@@ -42,8 +45,7 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
     'reportMonth',
     'dueDate',
     'submittedAt',
-    'completeFlg',
-    'approvalFlg',
+    'status',
     'comment',
     'actions',
   ];
@@ -103,14 +105,42 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
           this.reportDueDateService
             .getDueDate(Number(y), Number(m))
             .subscribe(dueDate => {
-                const placeholder: any = {
-                  id: null,
-                  reportMonth: currentMonthStr,
-                  dueDate: dueDate,
-                  submittedAt: '',
-                  completeFlg: false,
-                  employeeCode: currentUser.code
-                };
+                const placeholder: ReportDto = {
+                    id: 0,
+                    reportMonth: currentMonthStr,
+                    submittedAt: null,
+                    updatedAt: null,
+                    contentBusiness: '',
+                    timeWorked: 0,
+                    timeOver: 0,
+                    rateBusiness: 0,
+                    rateStudy: 0,
+                    trendBusiness: 0,
+                    contentMember: '',
+                    contentCustomer: '',
+                    contentProblem: '',
+                    evaluationBusiness: '',
+                    evaluationStudy: '',
+                    goalBusiness: '',
+                    goalStudy: '',
+                    contentCompany: '',
+                    contentOthers: '',
+                    completeFlg: false,
+                    comment: null,
+                    reportDeadline: '',
+                    approvalFlg: null,
+                    approvedAt: null,
+                    approvedBy: null,
+                    approvedByName: null,
+                    receivedFlg: null,
+                    receivedAt: null,
+                    receivedBy: null,
+                    receivedByName: null,
+                    employeeCode: currentUser.code,
+                    employeeName: '',
+                    departmentName: '',
+                    dueDate: dueDate ? dueDate.toISOString() : null
+                  };
                 reports.push(placeholder);
 
                 reports.sort((a, b) => b.reportMonth.localeCompare(a.reportMonth));
