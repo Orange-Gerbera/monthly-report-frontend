@@ -129,7 +129,7 @@ export class ReportService {
 
   // 年月を指定して報告書を取得
   getReportByYearMonth(
-    baseReportId: string,
+    baseReportId: number,
     yearMonth: string
   ): Observable<ReportResponse> {
     return this.http.get<ReportResponse>(

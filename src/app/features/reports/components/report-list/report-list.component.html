@@ -9,13 +9,8 @@
       </div>
 
       <div class="col-auto pb-2">
-        <app-button
-          label="選択した報告書を出力"
-          icon="arrow-down-on-square-stack"
-          color="green"
-          size="md"
-          (click)="exportSelectedReports()"
-        />
+        <app-button label="選択した報告書を出力" icon="arrow-down-on-square-stack" color="green" size="md"
+          (click)="exportSelectedReports()" />
       </div>
     </div>
 
@@ -26,32 +21,19 @@
     </div>
 
     <div class="d-flex justify-content-end mb-3">
-      <app-select
-        label="表示月"
-        [options]="reportMonthList"
-        [(ngModel)]="selectedMonth"
-        (ngModelChange)="updateTableData()"
-        [optionLabelFn]="'formatDate'"
-        valueFormat="month"
-        class="month-select"
-      />
+      <app-select label="表示月" [options]="reportMonthList" [(ngModel)]="selectedMonth"
+        (ngModelChange)="updateTableData()" [optionLabelFn]="'formatDate'" valueFormat="month" class="month-select" />
     </div>
 
     <div class="table-responsive" [hidden]="loading">
       <table mat-table [dataSource]="dataSource" matSort class="app-table">
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef>
-            <mat-checkbox
-              (change)="toggleAllSelection($event.checked)"
-              [checked]="isAllSelected()"
-              [indeterminate]="isSomeSelected()"
-            ></mat-checkbox>
+            <mat-checkbox (change)="toggleAllSelection($event.checked)" [checked]="isAllSelected()"
+              [indeterminate]="isSomeSelected()"></mat-checkbox>
           </th>
           <td mat-cell *matCellDef="let report">
-            <mat-checkbox
-              (change)="toggleSelection(report)"
-              [checked]="isSelected(report)"
-            ></mat-checkbox>
+            <mat-checkbox (change)="toggleSelection(report)" [checked]="isSelected(report)"></mat-checkbox>
           </td>
         </ng-container>
 
@@ -105,22 +87,16 @@
             <div class="status-timeline">
 
               <!-- 提出 -->
-              <span
-                class="node"
-                [class.active]="report.completeFlg"
+              <span class="node" [class.active]="report.completeFlg"
                 matTooltip="{{ report.completeFlg ? '提出済み' : '未提出' }}">
               </span>
 
-              <span class="bar"
-                [class.active]="report.completeFlg">
+              <span class="bar" [class.active]="report.completeFlg">
               </span>
 
               <!-- 受理 -->
-              <span
-                class="node"
-                [class.active]="report.receivedFlg === true"
-                [class.reject]="report.receivedFlg === false"
-                matTooltip="
+              <span class="node" [class.active]="report.receivedFlg === true"
+                [class.reject]="report.receivedFlg === false" matTooltip="
                 {{
                   report.receivedFlg === true
                     ? '受理'
@@ -130,16 +106,12 @@
                 }}">
               </span>
 
-              <span class="bar"
-                [class.active]="report.receivedFlg === true">
+              <span class="bar" [class.active]="report.receivedFlg === true">
               </span>
 
               <!-- 承認 -->
-              <span
-                class="node"
-                [class.active]="report.approvalFlg === true"
-                [class.reject]="report.approvalFlg === false"
-                matTooltip="
+              <span class="node" [class.active]="report.approvalFlg === true"
+                [class.reject]="report.approvalFlg === false" matTooltip="
                 {{
                   report.approvalFlg === true
                     ? '承認'
@@ -165,12 +137,11 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="text-center"></th>
           <td mat-cell *matCellDef="let report" class="text-center">
-            <app-button
-              label="報告書"
-              icon="document-text_bk"
-              color="yellow"
-              size="md"
-              [routerLink]="['/reports', report.id]">
+            <app-button label="報告書" icon="document-text_bk" color="yellow" size="md"
+              [routerLink]="['/reports', report.id]" [state]="{
+                previousUrl: '/reports',
+                reportIds: reportIds
+              }">
             </app-button>
           </td>
         </ng-container>

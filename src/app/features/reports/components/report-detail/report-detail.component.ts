@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../services/report.service';
-import { Observable, map, tap } from 'rxjs';
+import { switchMap, map, tap } from 'rxjs';
 import { ReportDto } from '../../models/report.dto';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,10 @@ import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HostListener } from '@angular/core';
+import { DestroyRef, inject } from '@angular/core';
 
 @Component({
   standalone: true,
@@ -26,12 +30,12 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
     MatDialogModule,
     MatTooltipModule,
     ConfirmDialogComponent,
+    MatIconModule,
   ],
   templateUrl: './report-detail.component.html',
   styleUrls: ['./report-detail.component.scss'],
 })
 export class ReportDetailComponent implements OnInit {
-  report$!: Observable<ReportDto>;
 
   isCommentFormVisible = false;
   commentText = '';
@@ -39,10 +43,12 @@ export class ReportDetailComponent implements OnInit {
   timeWorkedMinute: number = 0;
   timeOverHour: number = 0;
   timeOverMinute: number = 0;
+  reportIds: number[] = [];
+  currentIndex = 0;
+  report?: ReportDto;
   previousUrl: string = '/reports';
 
-  private currentReportId: string = '';
-  private currentReportMonth: string = '';
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private route: ActivatedRoute,
@@ -53,18 +59,43 @@ export class ReportDetailComponent implements OnInit {
     private dialog: MatDialog,
   ) {
     const navigation = this.router.getCurrentNavigation();
-    // state自体が存在するか、'previousUrl' が含まれているかをチェック
-    if (navigation?.extras?.state?.['previousUrl']) {
-      this.previousUrl = navigation.extras.state['previousUrl'];
+
+    const state = navigation?.extras?.state || history.state;
+
+    if (state?.['reportIds']) {
+      this.reportIds = state['reportIds'];
+    }
+
+    if (state?.['previousUrl']) {
+      this.previousUrl = state['previousUrl'];
     }
   }
 
   get reportMonth(): string {
-    return this.currentReportMonth;
+    return this.report?.reportMonth ?? '';
   }
 
   ngOnInit(): void {
-    this.loadReport();
+    this.route.paramMap.pipe(
+      map(params => params.get('id')!),
+      switchMap(id => this.reportService.getReportById(id, true)),
+      tap(res => {
+
+        const report = res.report;
+        this.report = report;
+      
+        this.timeWorkedHour = Math.floor(report.timeWorked / 60);
+        this.timeWorkedMinute = report.timeWorked % 60;
+
+        this.timeOverHour = Math.floor(report.timeOver / 60);
+        this.timeOverMinute = report.timeOver % 60;
+
+        const index = this.reportIds.indexOf(report.id);
+        this.currentIndex = index >= 0 ? index : 0;
+
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe();
   }
 
   // 一覧に戻るボタンの実装
@@ -73,27 +104,25 @@ export class ReportDetailComponent implements OnInit {
     this.router.navigateByUrl(this.previousUrl);
   }
 
-  loadReport(): void {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.currentReportId = id;
+  @HostListener('document:keydown', ['$event'])
+  handleKey(event: KeyboardEvent) {
 
-    this.report$ = this.reportService.getReportById(id, true).pipe(
+    const target = event.target as HTMLElement;
 
-      tap(res => {
-        const report = res.report;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      return;
+    }
 
-        this.currentReportMonth = report.reportMonth;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();   // ←追加
+      this.nextReport();
+    }
 
-        this.timeWorkedHour = Math.floor(report.timeWorked / 60);
-        this.timeWorkedMinute = report.timeWorked % 60;
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();   // ←追加
+      this.prevReport();
+    }
 
-        this.timeOverHour = Math.floor(report.timeOver / 60);
-        this.timeOverMinute = report.timeOver % 60;
-      }),
-
-      map(res => res.report)
-
-    );
   }
 
   onDelete(id: number): void {
@@ -113,6 +142,35 @@ export class ReportDetailComponent implements OnInit {
       // result にはダイアログで「削除する」を押した時に true が入る
       if (result) {
         this.executeDelete(id);
+      }
+    });
+  }
+
+  nextReport() {
+
+    if (this.currentIndex >= this.reportIds.length - 1) return;
+
+    const nextId = this.reportIds[this.currentIndex + 1];
+
+    this.router.navigate(['/reports', nextId], {
+      state: {
+        reportIds: this.reportIds,
+        previousUrl: this.previousUrl
+      }
+    });
+
+  }
+
+  prevReport() {
+
+    if (this.currentIndex <= 0) return;
+
+    const prevId = this.reportIds[this.currentIndex - 1];
+
+    this.router.navigate(['/reports', prevId], {
+      state: {
+        reportIds: this.reportIds,
+        previousUrl: this.previousUrl
       }
     });
   }
@@ -152,73 +210,67 @@ export class ReportDetailComponent implements OnInit {
       this.reportService.approveReport(id, result).subscribe({
 
         next: () => {
-          this.loadReport();
+          this.refresh();
         },
-
         error: err => this.showError(err)
       });
+
+    });
+  }
+
+  onReceive(id: number): void {
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: '受理処理',
+        message: '処理を選択してください',
+        buttons: [
+          { label: '受理する', value: true, color: 'green' },
+          { label: '差戻し', value: false, color: 'red' },
+          { label: '取消し', value: null, color: 'gray' }
+        ]
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+
+      if (result === undefined) return;
+
+      // 差戻しのとき確認を出す
+      if (result === false) {
+
+        const confirmRef = this.dialog.open(ConfirmDialogComponent, {
+          width: '420px',
+          data: {
+            title: '差戻し確認',
+            message:
+              '差戻しを選択すると提出が解除されます。\n' +
+              '受理するには再提出が必要になりますが、差戻しを設定してもよろしいですか？',
+            okLabel: '差戻しする',
+            okColor: 'red'
+          }
+        });
+
+        confirmRef.afterClosed().subscribe(confirm => {
+          if (!confirm) return;
+          this.executeReceive(id, result);
+        });
+
+        return;
+      }
+
+      this.executeReceive(id, result);
 
     });
 
   }
 
-  onReceive(id: number): void {
-
-  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    width: '420px',
-    data: {
-      title: '受理処理',
-      message: '処理を選択してください',
-      buttons: [
-        { label: '受理する', value: true, color: 'green' },
-        { label: '差戻し', value: false, color: 'red' },
-        { label: '取消し', value: null, color: 'gray' }
-      ]
-    }
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-
-    if (result === undefined) return;
-
-    // ★ 差戻しのとき確認を出す
-    if (result === false) {
-
-      const confirmRef = this.dialog.open(ConfirmDialogComponent, {
-        width: '420px',
-        data: {
-          title: '差戻し確認',
-          message:
-            '差戻しを選択すると提出が解除されます。\n' +
-            '受理するには再提出が必要になりますが、差戻しを設定してもよろしいですか？',
-          okLabel: '差戻しする',
-          okColor: 'red'
-        }
-      });
-
-      confirmRef.afterClosed().subscribe(confirm => {
-
-        if (!confirm) return;
-
-        this.executeReceive(id, result);
-
-      });
-
-      return;
-    }
-
-    this.executeReceive(id, result);
-
-  });
-
-}
-
   private executeReceive(id: number, result: boolean | null) {
 
     this.reportService.receiveReport(id, result).subscribe({
-
       next: () => {
-        this.loadReport();
+        this.refresh();
       },
 
       error: err => this.showError(err)
@@ -245,8 +297,9 @@ export class ReportDetailComponent implements OnInit {
       this.reportService.submitReport(id, submit).subscribe({
 
         next: () => {
+          this.refresh();
           alert(submit ? '提出しました' : '提出を取り下げました');
-          this.loadReport();
+          // this.loadReport();
         },
 
         error: err => this.showError(err)
@@ -263,7 +316,9 @@ export class ReportDetailComponent implements OnInit {
       next: () => {
         this.commentText = '';
         this.isCommentFormVisible = false;
-        this.loadReport();
+
+        this.refresh();
+        // this.loadReport();
       },
       error: (err) => {
         console.error('コメント送信失敗:', err);
@@ -299,9 +354,9 @@ export class ReportDetailComponent implements OnInit {
   }
 
   openReportInNewTab(offset: number): void {
-    if (!this.currentReportId || !this.currentReportMonth) return;
+   if (!this.report) return;
 
-    const [year, month] = this.currentReportMonth.split('-').map(Number);
+    const [year, month] = this.report.reportMonth.split('-').map(Number);
     let targetYear = year;
     let targetMonth = month + offset;
 
@@ -318,12 +373,25 @@ export class ReportDetailComponent implements OnInit {
     const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
 
     this.reportService
-      .getReportByYearMonth(this.currentReportId, ym)
+      .getReportByYearMonth(this.report.id, ym)
       .subscribe({
         next: (res) => window.open(`/reports/${res.report.id}`, '_blank'),
         error: () =>
           alert(`指定された月（${ym}）の報告書は見つかりませんでした。`),
       });
+  }
+
+  private refresh() {
+    if (!this.report) return;
+
+    const id = this.report.id;
+
+    this.router.navigate(['/reports', id], {
+      state: {
+        reportIds: this.reportIds,
+        previousUrl: this.previousUrl
+      }
+    });
   }
 
   getLastName(name: string | null | undefined): string {
@@ -332,27 +400,19 @@ export class ReportDetailComponent implements OnInit {
   }
 
   private showError(err: any) {
-
     console.error('API Error:', err);
-
     let message = '処理に失敗しました';
-
     if (err?.error) {
-
       if (typeof err.error === 'string') {
         message = err.error;
       }
-
       else if (err.error.message) {
         message = err.error.message;
       }
-
       else if (err.error.error) {
         message = err.error.error;
       }
-
     }
-
     alert(message);
   }
 }

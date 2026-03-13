@@ -1,342 +1,361 @@
-<div *ngIf="report$ | async as report; else loading">
+<div class="report-container">
+  <ng-container *ngIf="report">
+    <div class="report-slide">
 
-  <div class="pt-4 pb-4 report-container">
-
-    <!-- =========================
+      <!-- =========================
          操作ボタン
     ========================== -->
-    <div class="action-bar">
+      <div class="action-bar">
 
-      <div class="nav-actions">
+        <div class="nav-actions">
 
-        <app-button label="一覧" icon="arrow_back" color="gray" (click)="onBack()">
-        </app-button>
+          <app-button label="一覧" icon="arrow_back" color="gray" (click)="onBack()">
+          </app-button>
 
-        <app-button label="前月" icon="chevron_left" color="gray" (click)="openReportInNewTab(-1)">
-        </app-button>
+          <app-button label="前月" icon="backward" color="gray" (click)="openReportInNewTab(-1)">
+          </app-button>
+
+        </div>
+
+        <div class="right-actions">
+
+          <ng-container *ngIf="isMine(report) && !report.completeFlg">
+
+            <app-button label="編集" icon="edit" color="blue" [routerLink]="'/reports/' + report.id + '/edit'">
+            </app-button>
+
+            <app-button label="削除" icon="delete" color="red" (click)="onDelete(report.id)">
+            </app-button>
+
+          </ng-container>
+
+          <app-button label="Excel" icon="arrow-down-on-square" color="green" (click)="onExportExcel(report.id)">
+          </app-button>
+
+        </div>
 
       </div>
 
-      <div class="right-actions">
 
-        <ng-container *ngIf="isMine(report) && !report.completeFlg">
-
-          <app-button label="編集" icon="edit" color="blue" [routerLink]="'/reports/' + report.id + '/edit'">
-          </app-button>
-
-          <app-button label="削除" icon="delete" color="red" (click)="onDelete(report.id)">
-          </app-button>
-
-        </ng-container>
-
-        <app-button label="Excel" icon="arrow-down-on-square" color="green" (click)="onExportExcel(report.id)">
-        </app-button>
-
-      </div>
-
-    </div>
-
-
-    <!-- =========================
+      <!-- =========================
          固定ヘッダー
     ========================== -->
-    <div class="header-main">
+      <div class="header-main">
 
-      <div class="header-left">
+        <div class="header-left">
 
-        <div class="employee-row">
+          <div class="employee-row">
 
-          <div class="employee-name">
-            {{ report.employeeName }}
+            <div class="employee-name">
+              {{ report.employeeName }}
+            </div>
+
+            <div class="department-badge">
+              {{ report.departmentName }}
+            </div>
+
           </div>
 
-          <div class="department-badge">
-            {{ report.departmentName }}
+          <div class="report-month">
+            {{ report.reportMonth | date:'yyyy年M月' }} 月次レポート
+          </div>
+
+          <div class="meta-info">
+
+            <span class="meta-label">更新日時</span>
+
+            <span class="meta-value">
+              {{ report.updatedAt | date:'yyyy/MM/dd HH:mm' }}
+            </span>
+
           </div>
 
         </div>
 
-        <div class="report-month">
-          {{ report.reportMonth | date:'yyyy年M月' }} 月次レポート
+        <!-- ステータス -->
+        <div class="status-mini">
+
+          <div class="mini-labels">
+            <span>提出</span>
+            <span>受理</span>
+            <span>承認</span>
+          </div>
+
+          <div class="mini-flow">
+
+            <button class="mini-dot" [class.active]="report.completeFlg"
+              [disabled]="!isMine(report) || report.receivedFlg === true"
+              matTooltip="{{ !isMine(report) ? '本人以外は変更できません' : (report.receivedFlg === true ? '受理済みのため変更できません' : '') }}"
+              (click)="isMine(report) && report.receivedFlg !== true && onSubmitToggle(report.id, !report.completeFlg)">
+            </button>
+
+            <span class="mini-line" [class.done]="report.completeFlg">
+            </span>
+
+            <button class="mini-dot" [class.accept]="report.receivedFlg === true"
+              [class.reject]="report.receivedFlg === false" [class.cancel]="report.receivedFlg === null"
+              [disabled]="!isAdmin() || report.approvalFlg !== null"
+              [matTooltip]="!isAdmin() ? '管理者以外は変更できません' : (report.approvalFlg !== null ? '承認済みのため受理は変更できません' : '')"
+              [matTooltipDisabled]="isAdmin() && report.approvalFlg === null" (click)="onReceive(report.id)">
+            </button>
+
+            <span class="mini-line" [class.done]="report.receivedFlg === true">
+            </span>
+
+            <button class="mini-dot" [class.accept]="report.approvalFlg === true"
+              [class.reject]="report.approvalFlg === false" [class.cancel]="report.approvalFlg === null"
+              [disabled]="!isAdmin() || report.receivedFlg !== true" matTooltip="管理者以外は変更できません"
+              [matTooltipDisabled]="isAdmin()" (click)="onApprove(report.id)">
+            </button>
+
+          </div>
+
+          <div class="mini-dates">
+
+            <span [class.empty]="!report.submittedAt">
+              {{ report.submittedAt ? (report.submittedAt | date:'MM/dd') : '00/00' }}
+            </span>
+
+            <span [class.empty]="!report.receivedAt">
+              {{ report.receivedAt ? (report.receivedAt | date:'MM/dd') : '00/00' }}
+            </span>
+
+            <span [class.empty]="!report.approvedAt">
+              {{ report.approvedAt ? (report.approvedAt | date:'MM/dd') : '00/00' }}
+            </span>
+
+          </div>
+
+          <div class="mini-users">
+
+            <span [class.empty]="!report.submittedAt">
+              {{ report.submittedAt ? getLastName(report.employeeName) : '' }}
+            </span>
+
+            <span [class.empty]="!report.receivedByName">
+              {{ getLastName(report.receivedByName)}}
+            </span>
+
+            <span [class.empty]="!report.approvedByName">
+              {{ getLastName(report.approvedByName)}}
+            </span>
+
+          </div>
+
         </div>
 
-        <div class="meta-info">
+        <!-- レポート切替 -->
+        <div class="report-nav" *ngIf="reportIds.length > 1">
 
-          <span class="meta-label">更新日時</span>
+          <div class="arrow-up" (click)="prevReport()" [class.nav-disabled]="currentIndex === 0">
 
-          <span class="meta-value">
-            {{ report.updatedAt | date:'yyyy/MM/dd HH:mm' }}
-          </span>
+            <mat-icon>expand_less</mat-icon>
+          </div>
+
+          <div class="nav-line"></div>
+
+          <div class="nav-dot"></div>
+
+          <div class="nav-line"></div>
+
+          <div class="arrow-down" (click)="nextReport()" [class.nav-disabled]="currentIndex === reportIds.length - 1">
+
+            <mat-icon>expand_more</mat-icon>
+          </div>
 
         </div>
 
       </div>
 
-      <!-- ステータス -->
-      <div class="status-mini">
 
-        <div class="mini-labels">
-          <span>提出</span>
-          <span>受理</span>
-          <span>承認</span>
-        </div>
-
-        <div class="mini-flow">
-
-          <button class="mini-dot" [class.active]="report.completeFlg"
-            [disabled]="!isMine(report) || report.receivedFlg === true"
-            matTooltip="{{ !isMine(report) ? '本人以外は変更できません' : (report.receivedFlg === true ? '受理済みのため変更できません' : '') }}"
-            (click)="isMine(report) && report.receivedFlg !== true && onSubmitToggle(report.id, !report.completeFlg)">
-          </button>
-
-          <span class="mini-line" [class.done]="report.completeFlg">
-          </span>
-
-          <button class="mini-dot" [class.accept]="report.receivedFlg === true"
-            [class.reject]="report.receivedFlg === false" [class.cancel]="report.receivedFlg === null"
-            [disabled]="!isAdmin() || report.approvalFlg !== null" 
-            [matTooltip]="!isAdmin() ? '管理者以外は変更できません' : (report.approvalFlg !== null ? '承認済みのため受理は変更できません' : '')"
-            [matTooltipDisabled]="isAdmin() && report.approvalFlg === null" (click)="onReceive(report.id)">
-          </button>
-
-          <span class="mini-line" [class.done]="report.receivedFlg === true">
-          </span>
-
-          <button class="mini-dot" [class.accept]="report.approvalFlg === true"
-            [class.reject]="report.approvalFlg === false" [class.cancel]="report.approvalFlg === null"
-            [disabled]="!isAdmin() || report.receivedFlg !== true" matTooltip="管理者以外は変更できません"
-            [matTooltipDisabled]="isAdmin()" (click)="onApprove(report.id)">
-          </button>
-
-        </div>
-
-        <div class="mini-dates">
-
-          <span [class.empty]="!report.submittedAt">
-            {{ report.submittedAt ? (report.submittedAt | date:'MM/dd') : '00/00' }}
-          </span>
-
-          <span [class.empty]="!report.receivedAt">
-            {{ report.receivedAt ? (report.receivedAt | date:'MM/dd') : '00/00' }}
-          </span>
-
-          <span [class.empty]="!report.approvedAt">
-            {{ report.approvedAt ? (report.approvedAt | date:'MM/dd') : '00/00' }}
-          </span>
-
-        </div>
-
-        <div class="mini-users">
-
-          <span [class.empty]="!report.submittedAt">
-            {{ report.submittedAt ? getLastName(report.employeeName) : '' }}
-          </span>
-
-          <span [class.empty]="!report.receivedByName">
-            {{ getLastName(report.receivedByName)}}
-          </span>
-
-          <span [class.empty]="!report.approvedByName">
-            {{ getLastName(report.approvedByName)}}
-          </span>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-
-
-    <!-- =========================
+      <!-- =========================
      承認コメント
     ========================= -->
 
-    <div *ngIf="report.approvalFlg !== null && (isAdmin() || report.comment)" class="app-card">
+      <div *ngIf="report.approvalFlg !== null && (isAdmin() || report.comment)" class="app-card">
 
-      <div class="card-header">
-        <h2 class="m-0">承認コメント</h2>
-      </div>
-
-      <div class="card-body">
-
-        <!-- 表示 -->
-        <div class="comment-value" style="white-space: pre-wrap">
-          {{ report.comment || '-' }}
-        </div>
-         <div class="comment-meta" *ngIf="report.commentByName">
-           ({{ report.commentByName }})
+        <div class="card-header">
+          <h2 class="m-0">承認コメント</h2>
         </div>
 
-        <!-- 入力 -->
-        <div *ngIf="isCommentFormVisible">
+        <div class="card-body">
 
-          <textarea class="form-control" rows="3" [(ngModel)]="commentText" placeholder="コメントを入力してください">
+          <!-- 表示 -->
+          <div class="comment-value" style="white-space: pre-wrap">
+            {{ report.comment || '-' }}
+          </div>
+          <div class="comment-meta" *ngIf="report.commentByName">
+            ({{ report.commentByName }})
+          </div>
+
+          <!-- 入力 -->
+          <div *ngIf="isCommentFormVisible">
+
+            <textarea class="form-control" rows="3" [(ngModel)]="commentText" placeholder="コメントを入力してください">
           </textarea>
 
-          <div style="margin-top:10px; display:flex; gap:8px;">
+            <div style="margin-top:10px; display:flex; gap:8px;">
 
-            <app-button label="保存" color="green" (click)="onSubmitComment(report.id)">
-            </app-button>
+              <app-button label="保存" color="green" (click)="onSubmitComment(report.id)">
+              </app-button>
 
-            <app-button label="取消" color="gray" (click)="toggleCommentForm(report.comment)">
+              <app-button label="取消" color="gray" (click)="toggleCommentForm(report.comment)">
+              </app-button>
+
+            </div>
+
+          </div>
+
+          <div *ngIf="isAdmin() && report.approvalFlg !== null" style="margin-top:8px;">
+
+            <app-button label="コメント編集" icon="edit" color="blue" (click)="toggleCommentForm(report.comment)">
             </app-button>
 
           </div>
 
         </div>
 
-        <div *ngIf="isAdmin() && report.approvalFlg !== null" style="margin-top:8px;">
-
-          <app-button label="コメント編集" icon="edit" color="blue" (click)="toggleCommentForm(report.comment)">
-          </app-button>
-
-        </div>
-
       </div>
 
-    </div>
-
-    <!-- =========================
+      <!-- =========================
          業務内容
     ========================== -->
 
-    <div class="card mb-4 app-card">
+      <div class="card mb-4 app-card">
 
-      <div class="card-header">
-        <h2 class="m-0">業務内容</h2>
+        <div class="card-header">
+          <h2 class="m-0">業務内容</h2>
+        </div>
+
+        <div class="card-body">
+
+          <div class="mb-4">
+            <label class="form-label">業務環境 / 開発環境</label>
+            <div class="form-control bg-light" style="white-space: pre-wrap">
+              {{ report.contentBusiness }}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">メンバー関連</label>
+            <div class="form-control bg-light" style="white-space: pre-wrap">
+              {{ report.contentMember }}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">お客様情報</label>
+            <div class="form-control bg-light" style="white-space: pre-wrap">
+              {{ report.contentCustomer }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">作業における問題点と解決策</label>
+            <div class="form-control bg-light" style="white-space: pre-wrap">
+              {{ report.contentProblem }}
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="card-body">
-
-        <div class="mb-4">
-          <label class="form-label">業務環境 / 開発環境</label>
-          <div class="form-control bg-light" style="white-space: pre-wrap">
-            {{ report.contentBusiness }}
+      <!-- 勤務・残業・達成率 -->
+      <div class="card mb-4 app-card">
+        <div class="card-header">
+          <h2 class="m-0">勤務・残業・達成率</h2>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3 mb-3">
+              <label class="form-label">勤務時間</label>
+              <div class="form-control bg-light">
+                {{ timeWorkedHour }} 時間 {{ timeWorkedMinute }} 分
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">残業時間</label>
+              <div class="form-control bg-light">
+                {{ timeOverHour }} 時間 {{ timeOverMinute }} 分
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">業務目標達成率</label>
+              <div class="form-control bg-light">{{ report.rateBusiness }} %</div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">学習目標達成率</label>
+              <div class="form-control bg-light">{{ report.rateStudy }} %</div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">業務量推移</label>
+              <div class="form-control bg-light">
+                {{ report.trendBusiness }} %
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="mb-4">
-          <label class="form-label">メンバー関連</label>
-          <div class="form-control bg-light" style="white-space: pre-wrap">
-            {{ report.contentMember }}
+      <!-- 自己評価・来月の目標 -->
+      <div class="card mb-4 app-card">
+        <div class="card-header">
+          <h2 class="m-0">自己評価・来月の目標</h2>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">業務目標（自己評価）</label>
+              <div class="form-control bg-light" style="white-space: pre-wrap">
+                {{ report.evaluationBusiness }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">学習目標（自己評価）</label>
+              <div class="form-control bg-light" style="white-space: pre-wrap">
+                {{ report.evaluationStudy }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">業務目標（来月）</label>
+              <div class="form-control bg-light" style="white-space: pre-wrap">
+                {{ report.goalBusiness }}
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">学習目標（来月）</label>
+              <div class="form-control bg-light" style="white-space: pre-wrap">
+                {{ report.goalStudy }}
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="mb-4">
-          <label class="form-label">お客様情報</label>
-          <div class="form-control bg-light" style="white-space: pre-wrap">
-            {{ report.contentCustomer }}
+      <!-- 会社・その他 -->
+      <div class="card mb-4 app-card">
+        <div class="card-header">
+          <h2 class="m-0">会社・その他</h2>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <label class="form-label">会社関係</label>
+            <div class="form-control bg-light" style="white-space: pre-wrap">
+              {{ report.contentCompany }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">その他</label>
+            <div class="form-control bg-light" style="white-space: pre-wrap">
+              {{ report.contentOthers }}
+            </div>
           </div>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label">作業における問題点と解決策</label>
-          <div class="form-control bg-light" style="white-space: pre-wrap">
-            {{ report.contentProblem }}
-          </div>
-        </div>
-
       </div>
 
     </div>
 
-    <!-- 勤務・残業・達成率 -->
-    <div class="card mb-4 app-card">
-      <div class="card-header">
-        <h2 class="m-0">勤務・残業・達成率</h2>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-3 mb-3">
-            <label class="form-label">勤務時間</label>
-            <div class="form-control bg-light">
-              {{ timeWorkedHour }} 時間 {{ timeWorkedMinute }} 分
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">残業時間</label>
-            <div class="form-control bg-light">
-              {{ timeOverHour }} 時間 {{ timeOverMinute }} 分
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">業務目標達成率</label>
-            <div class="form-control bg-light">{{ report.rateBusiness }} %</div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">学習目標達成率</label>
-            <div class="form-control bg-light">{{ report.rateStudy }} %</div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">業務量推移</label>
-            <div class="form-control bg-light">
-              {{ report.trendBusiness }} %
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  </ng-container>
 
-    <!-- 自己評価・来月の目標 -->
-    <div class="card mb-4 app-card">
-      <div class="card-header">
-        <h2 class="m-0">自己評価・来月の目標</h2>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6 mb-3">
-            <label class="form-label">業務目標（自己評価）</label>
-            <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.evaluationBusiness }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">学習目標（自己評価）</label>
-            <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.evaluationStudy }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">業務目標（来月）</label>
-            <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.goalBusiness }}
-            </div>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">学習目標（来月）</label>
-            <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.goalStudy }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 会社・その他 -->
-    <div class="card mb-4 app-card">
-      <div class="card-header">
-        <h2 class="m-0">会社・その他</h2>
-      </div>
-      <div class="card-body">
-        <div class="mb-4">
-          <label class="form-label">会社関係</label>
-          <div class="form-control bg-light" style="white-space: pre-wrap">
-            {{ report.contentCompany }}
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">その他</label>
-          <div class="form-control bg-light" style="white-space: pre-wrap">
-            {{ report.contentOthers }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
-
-<ng-template #loading>
-  <div class="text-center mt-5">読み込み中...</div>
-</ng-template>

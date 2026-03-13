@@ -17,7 +17,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { from } from 'rxjs';
 import { concatMap, tap } from 'rxjs/operators';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -49,6 +49,8 @@ export class ReportListComponent implements OnInit {
   loading: boolean = true;
   selectedMonth: string = '';
   useLatest = false;
+  reportIds: number[] = [];
+
   displayedColumns: string[] = [
     'select',
     'employeeName',
@@ -68,14 +70,14 @@ export class ReportListComponent implements OnInit {
   constructor(
     private reportService: ReportService,
     private excelDownloadService: ExcelDownloadService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.dataSource.sortingDataAccessor = (item, property) => {
       const value = (item as any)[property];
       return typeof value === 'string' ? value : value ?? '';
     };
   }
-  
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
@@ -146,7 +148,10 @@ export class ReportListComponent implements OnInit {
   updateTableData(): void {
     this.dataSource.data = this.filteredReports;
     this.dataSource.sort = this.sort;
-    // 選択状態をリセット
+
+    this.reportIds = this.filteredReports
+      .map(r => r.id)
+      .filter((id): id is number => id != null);
     this.selectedReports = new Set<number>();
   }
 
@@ -212,7 +217,7 @@ export class ReportListComponent implements OnInit {
     ).length;
     return selectedCount > 0 && selectedCount < this.filteredReports.length;
   }
-  
+
   exportSelectedReports(): void {
     if (this.selectedReports.size === 0) {
       alert('少なくとも1件の報告書を選択してください。');

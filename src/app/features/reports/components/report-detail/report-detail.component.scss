@@ -6,6 +6,20 @@
   max-width:1400px;
   margin:0 auto;
   padding:0 12px;
+  min-height:800px;
+  position:relative;
+  overflow:visible;
+}
+
+:host{
+  display:block;
+}
+
+.report-slide .form-control,
+.report-slide .employee-name,
+.report-slide .report-month,
+.report-slide .meta-value{
+  transition:background-color .2s ease,color .2s ease;
 }
 
 /* =========================
@@ -25,19 +39,121 @@
   gap:10px;
 }
 
+.nav-arrow{
+  border:none;
+  background:none;
+  cursor:pointer;
+  padding:4px 8px;
+  border-radius:6px;
+}
+
+.nav-arrow:hover{
+  background:#f3f3f3;
+}
+
+.nav-arrow:disabled{
+  opacity:.3;
+  cursor:default;
+}
+
+.nav-position{
+  font-weight:600;
+  padding:0 10px;
+}
+
+.nav-divider{
+  margin:0 10px;
+  color:#ccc;
+}
+
+/* =========================
+   レポートナビ（↑ │ ↓）
+========================= */
+
+
+.report-nav{
+  position:absolute;
+  right:12px;
+  top:0;
+  bottom:0;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+
+  pointer-events:none;
+}
+
+.arrow-up,
+.arrow-down{
+  pointer-events:auto;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  width:32px;
+  height:32px;
+
+  border-radius:8px;
+  cursor:pointer;
+
+  opacity:.6;
+  transition:opacity .15s;
+}
+
+.arrow-up:hover,
+.arrow-down:hover{
+  opacity:1;
+  background:#f3f3f3;
+}
+
+.arrow-up mat-icon,
+.arrow-down mat-icon{
+  font-size:22px;
+  color:#6b7280;
+}
+
+.arrow-up:hover mat-icon,
+.arrow-down:hover mat-icon{
+  color:#111;
+}
+
+.nav-line{
+  flex:1;
+  width:2px;
+  background:#e5e7eb;
+  margin:-6px 0;
+
+  transform:translateX(-1px);
+}
+
+.nav-dot{
+  width:6px;
+  height:6px;
+  z-index:2;
+
+  border-radius:50%;
+  background:#9ca3af;
+
+  transform:translateX(-1px);
+}
+
+.nav-disabled{
+  opacity:.3;
+  pointer-events:none;
+}
 /* =========================
    ヘッダー
 ========================= */
 
 .report-header{
-  background:#ffffff;
+  background:#fff;
   border-radius:14px;
   border:1px solid #e5e7eb;
-
   padding:22px 28px;
   margin-bottom:32px;
-
-  box-shadow:none;
 }
 
 .header-inner{
@@ -54,30 +170,26 @@
    メインヘッダー
 ========================= */
 
-.header-main.scrolled{
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-
 .header-main{
-  position: sticky;
-  top: 53px;
-  z-index: 1000;
+  position:sticky;
+  top:53px;
+  z-index:1000;
 
   background:#fff;
-
   padding:12px 24px;
-
   border:1px solid #e5e7eb;
-
-  // box-shadow:0 2px 6px rgba(0,0,0,0.06);
 
   display:grid;
   grid-template-columns:1fr auto;
-
   gap:28px;
 
   align-items:start;
-  backdrop-filter: blur(6px);
+
+  backdrop-filter:blur(6px);
+}
+
+.header-main.scrolled{
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
 }
 
 /* =========================
@@ -99,7 +211,7 @@
 .employee-name{
   font-size:24px;
   font-weight:700;
-  letter-spacing:0.02em;
+  letter-spacing:.02em;
 }
 
 .department-badge{
@@ -121,13 +233,12 @@
 ========================= */
 
 .status-mini{
-   display:grid;
+  display:grid;
   grid-template-rows:auto auto auto;
   justify-items:center;
   gap:10px;
+  margin-right:0px; 
 }
-
-/* ラベル */
 
 .mini-labels{
   display:grid;
@@ -138,16 +249,12 @@
   color:#6b7280;
 }
 
-/* フロー */
-
 .mini-flow{
   display:flex;
   align-items:center;
   width:320px;
   justify-content:center;
 }
-
-/* 丸 */
 
 .mini-dot{
   width:22px;
@@ -156,17 +263,14 @@
   background:#9ca3af;
   border:none;
   flex-shrink:0;
+  transition:.15s;
 }
-
 
 .mini-dot:hover{
   transform:scale(1.1);
 }
 
-.mini-dot.active{
-  background:#22c55e;
-}
-
+.mini-dot.active,
 .mini-dot.accept{
   background:#22c55e;
 }
@@ -179,8 +283,6 @@
   background:#9ca3af;
 }
 
-/* 線 */
-
 .mini-line{
   width:110px;
   height:4px;
@@ -191,8 +293,6 @@
   background:#22c55e;
 }
 
-/* 日付 */
-
 .mini-dates{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
@@ -200,14 +300,8 @@
   text-align:center;
   font-size:13px;
   color:#6b7280;
-  margin-bottom:-12px;  
+  margin-bottom:-12px;
 }
-
-.mini-dates span.empty{
-  color:transparent;
-}
-
-/* 処理者 */
 
 .mini-users{
   display:grid;
@@ -218,6 +312,14 @@
   color:#6b7280;
 }
 
+.mini-flow,
+.mini-labels,
+.mini-dates,
+.mini-users{
+  user-select: none;
+}
+
+.mini-dates span.empty,
 .mini-users span.empty{
   color:transparent;
 }
@@ -241,10 +343,10 @@
   font-weight:500;
 }
 
-.comment-meta {
-  text-align: right;
-  color: #777;
-  font-size: 0.9rem;
+.comment-meta{
+  text-align:right;
+  color:#777;
+  font-size:.9rem;
 }
 
 /* =========================
@@ -254,10 +356,9 @@
 .app-card{
   border-radius:14px;
   border:1px solid #e5e7eb;
-  background:#ffffff;
-  box-shadow:0 4px 12px rgba(0,0,0,0.04);
-  margin-bottom:24px;
-  margin-top:20px;
+  background:#fff;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  margin:20px 0 24px;
 }
 
 .card-header{
@@ -267,13 +368,8 @@
 }
 
 .card-header h2{
-  font-size:16px;
-  font-weight:600;
-}
-
-.app-card .card-header h2 {
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size:1.2rem;
+  font-weight:500;
 }
 
 .card-body{
