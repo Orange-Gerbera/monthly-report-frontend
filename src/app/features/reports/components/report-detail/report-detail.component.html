@@ -153,7 +153,7 @@
      承認コメント
     ========================= -->
 
-    <div *ngIf="(isAdmin() || report.comment) && report.approvalFlg !== null" class="app-card">
+    <div *ngIf="report.approvalFlg !== null && (isAdmin() || report.comment)" class="app-card">
 
       <div class="card-header">
         <h2 class="m-0">承認コメント</h2>
@@ -162,8 +162,11 @@
       <div class="card-body">
 
         <!-- 表示 -->
-        <div *ngIf="!isCommentFormVisible" class="comment-value">
+        <div class="comment-value" style="white-space: pre-wrap">
           {{ report.comment || '-' }}
+        </div>
+         <div class="comment-meta" *ngIf="report.commentByName">
+           ({{ report.commentByName }})
         </div>
 
         <!-- 入力 -->
@@ -184,7 +187,7 @@
 
         </div>
 
-        <div *ngIf="isAdmin()" style="margin-top:8px;">
+        <div *ngIf="isAdmin() && report.approvalFlg !== null" style="margin-top:8px;">
 
           <app-button label="コメント編集" icon="edit" color="blue" (click)="toggleCommentForm(report.comment)">
           </app-button>

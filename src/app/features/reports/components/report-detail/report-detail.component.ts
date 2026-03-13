@@ -261,15 +261,14 @@ export class ReportDetailComponent implements OnInit {
 
     this.reportService.commentOnReport(id, comment).subscribe({
       next: () => {
-        alert('コメントを追加しました。');
         this.commentText = '';
         this.isCommentFormVisible = false;
-        this.loadReport(); // 再取得して最新のコメントを反映
+        this.loadReport();
       },
       error: (err) => {
         console.error('コメント送信失敗:', err);
-        alert('コメントの送信に失敗しました。');
-      },
+        this.showError(err);
+      }
     });
   }
 
@@ -292,7 +291,7 @@ export class ReportDetailComponent implements OnInit {
     if (!currentUser) return false;
 
     // 現在のユーザーが報告書の作成者かどうか
-    return report.employeeName === currentUser.name;
+    return report.employeeCode === currentUser.code;
   }
 
   isAdmin(): boolean {
