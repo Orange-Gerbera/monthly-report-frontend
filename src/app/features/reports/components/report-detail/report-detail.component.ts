@@ -155,11 +155,7 @@ export class ReportDetailComponent implements OnInit {
           this.loadReport();
         },
 
-        error: err => {
-          console.error(err);
-          alert('処理に失敗しました');
-        }
-
+        error: err => this.showError(err)
       });
 
     });
@@ -225,11 +221,7 @@ export class ReportDetailComponent implements OnInit {
         this.loadReport();
       },
 
-      error: err => {
-        console.error(err);
-        alert('処理に失敗しました');
-      }
-
+      error: err => this.showError(err)
     });
 
   }
@@ -257,11 +249,7 @@ export class ReportDetailComponent implements OnInit {
           this.loadReport();
         },
 
-        error: err => {
-          console.error(err);
-          alert('提出処理に失敗しました');
-        }
-
+        error: err => this.showError(err)
       });
 
     });
@@ -343,4 +331,30 @@ export class ReportDetailComponent implements OnInit {
     if (!name) return '-';
     return name.trim().split(/\s+/)[0];
   }
+
+  private showError(err: any) {
+
+    console.error('API Error:', err);
+
+    let message = '処理に失敗しました';
+
+    if (err?.error) {
+
+      if (typeof err.error === 'string') {
+        message = err.error;
+      }
+
+      else if (err.error.message) {
+        message = err.error.message;
+      }
+
+      else if (err.error.error) {
+        message = err.error.error;
+      }
+
+    }
+
+    alert(message);
+  }
 }
+
