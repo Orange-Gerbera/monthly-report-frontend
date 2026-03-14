@@ -1,5 +1,5 @@
 <div class="report-container">
-  <ng-container *ngIf="report">
+  <ng-container *ngIf="report$ | async as report">
     <div class="report-slide">
 
       <!-- =========================

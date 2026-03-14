@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../services/report.service';
-import { switchMap, map, tap } from 'rxjs';
+import { Observable, Subject, startWith, switchMap, map, tap, take, shareReplay  } from 'rxjs';
 import { ReportDto } from '../../models/report.dto';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -45,8 +45,9 @@ export class ReportDetailComponent implements OnInit {
   timeOverMinute: number = 0;
   reportIds: number[] = [];
   currentIndex = 0;
-  report?: ReportDto;
+  report$!: Observable<ReportDto>;
   previousUrl: string = '/reports';
+  private reload$ = new Subject<void>();
 
   private destroyRef = inject(DestroyRef);
 
@@ -71,31 +72,31 @@ export class ReportDetailComponent implements OnInit {
     }
   }
 
-  get reportMonth(): string {
-    return this.report?.reportMonth ?? '';
-  }
-
   ngOnInit(): void {
-    this.route.paramMap.pipe(
+
+    this.report$ = this.route.paramMap.pipe(
+
       map(params => params.get('id')!),
-      switchMap(id => this.reportService.getReportById(id, true)),
-      tap(res => {
 
-        const report = res.report;
-        this.report = report;
-      
-        this.timeWorkedHour = Math.floor(report.timeWorked / 60);
-        this.timeWorkedMinute = report.timeWorked % 60;
+      switchMap(id =>
+        this.reload$.pipe(
+          startWith(null),
+          switchMap(() => this.reportService.getReportById(id, true)),
+          map(res => res.report),
+          tap(report => {
+            this.timeWorkedHour = Math.floor(report.timeWorked / 60);
+            this.timeWorkedMinute = report.timeWorked % 60;
 
-        this.timeOverHour = Math.floor(report.timeOver / 60);
-        this.timeOverMinute = report.timeOver % 60;
+            this.timeOverHour = Math.floor(report.timeOver / 60);
+            this.timeOverMinute = report.timeOver % 60;
 
-        const index = this.reportIds.indexOf(report.id);
-        this.currentIndex = index >= 0 ? index : 0;
-
-      }),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe();
+            const index = this.reportIds.indexOf(report.id);
+            this.currentIndex = index >= 0 ? index : 0;
+          })
+        )
+      ),
+      shareReplay(1)
+    );
   }
 
   // 一覧に戻るボタンの実装
@@ -354,44 +355,40 @@ export class ReportDetailComponent implements OnInit {
   }
 
   openReportInNewTab(offset: number): void {
-   if (!this.report) return;
 
-    const [year, month] = this.report.reportMonth.split('-').map(Number);
-    let targetYear = year;
-    let targetMonth = month + offset;
+    this.report$.pipe(take(1)).subscribe(report => {
 
-    while (targetMonth <= 0) {
-      targetMonth += 12;
-      targetYear -= 1;
-    }
+      const [year, month] = report.reportMonth.split('-').map(Number);
 
-    while (targetMonth > 12) {
-      targetMonth -= 12;
-      targetYear += 1;
-    }
+      let targetYear = year;
+      let targetMonth = month + offset;
 
-    const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+      while (targetMonth <= 0) {
+        targetMonth += 12;
+        targetYear -= 1;
+      }
 
-    this.reportService
-      .getReportByYearMonth(this.report.id, ym)
-      .subscribe({
-        next: (res) => window.open(`/reports/${res.report.id}`, '_blank'),
-        error: () =>
-          alert(`指定された月（${ym}）の報告書は見つかりませんでした。`),
-      });
+      while (targetMonth > 12) {
+        targetMonth -= 12;
+        targetYear += 1;
+      }
+
+      const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+
+      this.reportService
+        .getReportByYearMonth(report.id, ym)
+        .subscribe({
+          next: (res) => window.open(`/reports/${res.report.id}`, '_blank'),
+          error: () =>
+            alert(`指定された月（${ym}）の報告書は見つかりませんでした。`),
+        });
+
+    });
+
   }
 
   private refresh() {
-    if (!this.report) return;
-
-    const id = this.report.id;
-
-    this.router.navigate(['/reports', id], {
-      state: {
-        reportIds: this.reportIds,
-        previousUrl: this.previousUrl
-      }
-    });
+    this.reload$.next();
   }
 
   getLastName(name: string | null | undefined): string {
