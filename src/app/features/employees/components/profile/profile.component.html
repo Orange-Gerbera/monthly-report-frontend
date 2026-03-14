@@ -5,7 +5,7 @@
     <div class="mb-3">
       <app-button
         [label]="showForm ? '編集を閉じる' : 'プロフィール編集'"
-        [icon]="showForm ? 'close':'edit'"
+        [icon]="showForm ? 'x':'user-round-pen'"
         color="gray"
         size="md"
         (click)="showForm = !showForm"
@@ -17,7 +17,7 @@
       <!-- 左：タイトル＋アンダーライン -->
       <div class="col pb-2">
         <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
-          <app-icon name="user-circle_bk" class="title-icon me-3"></app-icon>
+          <app-icon name="circle-user-round" class="title-icon me-3"></app-icon>
           {{ userName }} さん
         </h1>
       </div>
@@ -28,7 +28,7 @@
 
           <app-button
             label="報告書作成"
-            icon="document-plus"
+            icon="file-plus-corner"
             color="blue"
             size="md"
             [routerLink]="'/reports/new'"

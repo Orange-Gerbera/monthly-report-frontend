@@ -3,7 +3,7 @@
     <div class="col-12 col-md-12 offset-md-0">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="d-flex align-items-center mb-0">
-          <app-icon name="document-duplicate_bk" class="me-2"></app-icon>
+          <app-icon name="files" class="me-2"></app-icon>
           報告書一覧
         </h1>
 
@@ -101,7 +101,7 @@
           <ng-container matColumnDef="comment">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>コメント</th>
             <td mat-cell *matCellDef="let report">
-              <app-icon *ngIf="report.comment" name="check_bk"></app-icon>
+              <app-icon *ngIf="report.comment" name="check"></app-icon>
             </td>
           </ng-container>
 
@@ -112,7 +112,7 @@
                 <app-button
                   *ngIf="report.id"
                   label="報告書"
-                  icon="document-text_bk"
+                  icon="file-text"
                   color="yellow"
                   size="md"
                   [state]="{ previousUrl: previousUrl }"

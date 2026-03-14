@@ -1,61 +1,38 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { HostListener } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { NgClass, NgIf } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-button',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [NgIf, NgClass, RouterLink,
+    IconComponent],
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.scss'],
 })
 export class ButtonComponent {
-  @Input() label: string = '';
-  @Input() type: 'button' | 'submit' | 'reset' = 'button';
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() color:
-    | 'blue'
-    | 'gray'
-    | 'red'
-    | 'white'
-    | 'green'
-    | 'yellow'
-    | 'teal' = 'blue';
 
-  @Input() block: boolean = false;
-  @Input() routerLink?: string | any[];
-  @Input() queryParams?: { [key: string]: any };
-  @Input() disabled: boolean = false;
+  @Input() label?: string;
   @Input() icon?: string;
 
-  get buttonClasses(): string[] {
+  @Input() routerLink?: string | any[];
+  @Input() queryParams?: any;
+  @Input() state?: any;
+
+  @Input() disabled = false;
+  @Input() type: 'button' | 'submit' = 'button';
+  @Input() color: 'blue' | 'gray' | 'red' | 'yellow' | 'green' | 'teal' = 'blue';
+  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() block = false;
+
+  get buttonClasses() {
     return [
-      'app-btn-' + this.color,
-      this.size === 'sm'
-        ? 'app-btn-sm'
-        : this.size === 'lg'
-        ? 'app-btn-lg'
-        : '',
-      this.block ? 'app-btn-block' : '',
-      this.isIconOnly ? 'app-btn-icon-only' : '',
+      `btn-${this.color}`,
+      `btn-${this.size}`,
+      this.block ? 'btn-block' : ''
     ];
   }
 
-  @HostListener('click', ['$event'])
-  onClick(event: Event) {
-    if (this.disabled) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }
-  }
-
-  get iconPath(): string | null {
-    return this.icon ? `assets/icons/${this.icon}.svg` : null;
-  }
-
-  get isIconOnly(): boolean {
-    return !!this.icon && !this.label;
-  }
+  
 }

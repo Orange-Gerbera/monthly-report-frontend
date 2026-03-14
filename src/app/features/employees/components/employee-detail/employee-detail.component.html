@@ -5,7 +5,7 @@
       <div class="d-flex mt-4 mb-4 pb-2 align-items-end">
         <div class="flex-grow-1 border-bottom me-3 pb-2">
           <h1 class="mb-0 d-flex align-items-center">
-            <app-icon name="user_bk" class="title-icon me-2"></app-icon>
+            <app-icon name="user-round" class="title-icon me-2"></app-icon>
             従業員 詳細
           </h1>
         </div>
@@ -13,7 +13,7 @@
           <app-button 
           *ngIf="canEdit(employee)"
           label="プロフィール編集" 
-          icon="edit" 
+          icon="user-round-pen" 
           color="blue" 
           [routerLink]="'/employees/' + employee.code + '/edit'">
           </app-button>
@@ -23,14 +23,14 @@
       <div class="d-flex gap-2 mb-4">
         <app-button 
         label="一覧に戻る" 
-        icon="arrow_back" 
+        icon="rows-4" 
         color="gray" 
         [routerLink]="'/employees'">
         </app-button>
         <app-button 
         *ngIf="canEdit(employee) && employee.role !== 'SYSTEM_ADMIN'"
         label="削除" 
-        icon="delete" 
+        icon="trash-2" 
         color="red" 
         (click)="onDelete(employee)">
         </app-button>
@@ -77,8 +77,8 @@
               <app-button
                 *ngIf="canEdit(employee) && employee.role !== 'SYSTEM_ADMIN'"
                 label="トークン発行" 
-                icon="envelope" 
-                size="sm" 
+                icon="mail-plus" 
+                size="md" 
                 color="blue" 
                 (click)="issueToken(employee)">
               </app-button>

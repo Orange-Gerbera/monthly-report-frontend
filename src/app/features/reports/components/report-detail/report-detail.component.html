@@ -9,10 +9,10 @@
 
         <div class="nav-actions">
 
-          <app-button label="一覧" icon="arrow_back" color="gray" (click)="onBack()">
+          <app-button label="一覧に戻る" icon="rows-4" color="gray" (click)="onBack()">
           </app-button>
 
-          <app-button label="前月" icon="backward" color="gray" (click)="openReportInNewTab(-1)">
+          <app-button label="前月" icon="calendar-arrow-up" color="gray" (click)="openReportInNewTab(-1)">
           </app-button>
 
         </div>
@@ -21,15 +21,15 @@
 
           <ng-container *ngIf="isMine(report) && !report.completeFlg">
 
-            <app-button label="編集" icon="edit" color="blue" [routerLink]="'/reports/' + report.id + '/edit'">
+            <app-button label="編集" icon="pencil-line" color="blue" [routerLink]="'/reports/' + report.id + '/edit'">
             </app-button>
 
-            <app-button label="削除" icon="delete" color="red" (click)="onDelete(report.id)">
+            <app-button label="削除" icon="trash-2" color="red" (click)="onDelete(report.id)">
             </app-button>
 
           </ng-container>
 
-          <app-button label="Excel" icon="arrow-down-on-square" color="green" (click)="onExportExcel(report.id)">
+          <app-button label="Excel" icon="file-output" color="green" (click)="onExportExcel(report.id)">
           </app-button>
 
         </div>
@@ -172,46 +172,65 @@
      承認コメント
     ========================= -->
 
-      <div *ngIf="report.approvalFlg !== null && (isAdmin() || report.comment)" class="app-card">
+      <div *ngIf="report.approvalFlg !== null" class="app-card comment-card">
 
-        <div class="card-header">
+        <div class="card-header comment-header">
+
           <h2 class="m-0">承認コメント</h2>
+
+          <app-button
+            *ngIf="isAdmin() && !isCommentFormVisible"
+            label="編集"
+            icon="pencil"
+            class="btn-xs btn-text btn-blue"
+            (click)="toggleCommentForm(report.comment)">
+          </app-button>
+
         </div>
 
         <div class="card-body">
 
-          <!-- 表示 -->
-          <div class="comment-value" style="white-space: pre-wrap">
-            {{ report.comment || '-' }}
-          </div>
-          <div class="comment-meta" *ngIf="report.commentByName">
-            ({{ report.commentByName }})
-          </div>
+          <ng-container *ngIf="!isCommentFormVisible; else editComment">
 
-          <!-- 入力 -->
-          <div *ngIf="isCommentFormVisible">
+            <div class="comment-value">
+              {{ report.comment || 'コメントなし' }}
+            </div>
 
-            <textarea class="form-control" rows="3" [(ngModel)]="commentText" placeholder="コメントを入力してください">
-          </textarea>
+            <div class="comment-meta" *ngIf="report.commentByName">
+              記入者: {{ report.commentByName }}
+            </div>
 
-            <div style="margin-top:10px; display:flex; gap:8px;">
+          </ng-container>
 
-              <app-button label="保存" color="green" (click)="onSubmitComment(report.id)">
+          <ng-template #editComment>
+
+            <textarea
+              class="form-control mb-3"
+              rows="3"
+              [(ngModel)]="commentText">
+            </textarea>
+
+            <div class="d-flex gap-2">
+
+              <app-button
+                label="保存"
+                icon="check"
+                color="green"
+                class="btn-sm"
+                (click)="onSubmitComment(report.id)">
               </app-button>
 
-              <app-button label="取消" color="gray" (click)="toggleCommentForm(report.comment)">
+              <app-button
+                label="取消"
+                icon="x"
+                color="gray"
+                class="btn-sm"
+                (click)="toggleCommentForm(report.comment)">
               </app-button>
 
             </div>
 
-          </div>
-
-          <div *ngIf="isAdmin() && report.approvalFlg !== null" style="margin-top:8px;">
-
-            <app-button label="コメント編集" icon="edit" color="blue" (click)="toggleCommentForm(report.comment)">
-            </app-button>
-
-          </div>
+          </ng-template>
 
         </div>
 

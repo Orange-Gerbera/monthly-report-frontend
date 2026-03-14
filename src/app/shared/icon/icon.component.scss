@@ -1,19 +1,22 @@
 :host {
   display: inline-flex;
   align-items: center;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
+  justify-content: center;
+  width: 1.20em;   // 呼び出し元のフォントサイズを継承
+  height: 1.20em;
+  line-height: 1;
+  color: inherit;
 
-img {
-  width: 1.4em;
-  height: 1.4em;
-}
+  // 1px分、上に移動させる
+  transform: translateY(-1px);
 
-:host img,
-:host svg {
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  ::ng-deep {
+    lucide-icon, 
+    .app-icon, 
+    svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+  }
 }

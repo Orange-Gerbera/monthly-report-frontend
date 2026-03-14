@@ -5,7 +5,7 @@
     <div class="row mb-5 mt-4 align-items-center">
       <div class="col mb-2 mb-md-0">
         <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
-          <app-icon name="users_bk" class="title-icon me-3"></app-icon>
+          <app-icon name="users-round" class="title-icon me-3"></app-icon>
           従業員 一覧
         </h1>
       </div>
@@ -13,7 +13,7 @@
       <div *ngIf="isAdmin" class="col-auto d-flex flex-column flex-md-row align-items-md-center justify-content-md-end">
         <app-button
           label="追加"
-          icon="user-plus"
+          icon="user-round-plus"
           color="blue"
           size="md"
           [block]="true"
@@ -126,7 +126,7 @@
 
               <app-button
                 label="解除"
-                icon="lock-open"
+                icon="user-round-key"
                 color="red"
                 size="md"
                 (click)="unlock(emp.code)">
@@ -137,7 +137,7 @@
             <!-- 詳細は常に表示 -->
             <app-button
               label="詳細"
-              icon="user_bk"
+              icon="user-round"
               color="yellow"
               size="md"
               [routerLink]="['/employees', emp.code]">

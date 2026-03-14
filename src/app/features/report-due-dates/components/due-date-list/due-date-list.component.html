@@ -1,7 +1,7 @@
 <div class="container pt-5 pb-5">
   <div class="page-card">
     <h1 class="mb-4 border-bottom pb-2 mt-4 d-flex align-items-center">
-      <app-icon name="calendar-days_bk" class="title-icon me-3"></app-icon>
+      <app-icon name="calendar-days" class="title-icon me-3"></app-icon>
       提出期日一覧
     </h1>
 
@@ -20,7 +20,7 @@
       <!-- 年度管理ボタン -->
       <app-button
         [label]="isRegistering ? 'キャンセル' : '年度管理'"
-        [icon]="isRegistering ? 'close' : 'settings'"
+        [icon]="isRegistering ? 'x' : 'calendar-cog'"
         (click)="!isEditing && toggleRegistering()"
         [disabled]="isEditing"
         color="blue"
@@ -33,7 +33,7 @@
       <ng-container *ngIf="!isEditing">
         <app-button
           label="提出期日編集"
-          icon="edit"
+          icon="calendar-range"
           color="green"
           size="md"
           (click)="!isRegistering && startEdit()"
@@ -47,7 +47,7 @@
       <ng-container *ngIf="isEditing">
         <app-button
           label="保存"
-          icon="save"
+          icon="check"
           color="green"
           size="md"
           (click)="!hasEmptyDueDates && saveAllDueDates()"
@@ -58,7 +58,7 @@
 
         <app-button
           label="キャンセル"
-          icon="close"
+          icon="x"
           color="gray"
           size="md"
           (click)="cancelEdit()"
@@ -84,7 +84,7 @@
       </mat-form-field>
       <app-button
         label="登録"
-        icon="add"
+        icon="calendar-plus"
         (click)="registerYear()"
         color="blue"
         size="md"
@@ -92,7 +92,7 @@
       ></app-button>
       <app-button
         label="削除"
-        icon="delete"
+        icon="calendar-x-2"
         (click)="deleteYear()"
         color="red"
         size="md"

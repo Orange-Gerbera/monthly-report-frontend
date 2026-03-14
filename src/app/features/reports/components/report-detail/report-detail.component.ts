@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../services/report.service';
@@ -15,8 +15,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HostListener } from '@angular/core';
-import { DestroyRef, inject } from '@angular/core';
 
 @Component({
   standalone: true,
@@ -328,14 +326,29 @@ export class ReportDetailComponent implements OnInit {
     });
   }
 
+  @ViewChild('commentBox') commentBox!: ElementRef;
   toggleCommentForm(initialComment: string | null): void {
+
     this.isCommentFormVisible = !this.isCommentFormVisible;
 
     if (this.isCommentFormVisible) {
       this.commentText = initialComment || '';
+
+      setTimeout(() => {
+        this.commentBox?.nativeElement.focus();
+      });
     }
   }
 
+  @HostListener('document:keydown.escape')
+  handleEscape() {
+
+    if (this.isCommentFormVisible) {
+      this.isCommentFormVisible = false;
+    }
+
+  }
+  
   onExportExcel(reportId: number): void {
     this.reportService.downloadReportExcel(reportId).subscribe((res) => {
       this.excelDownloadService.download(res, `report-${reportId}.xlsx`);

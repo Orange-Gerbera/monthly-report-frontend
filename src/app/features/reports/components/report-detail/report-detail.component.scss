@@ -1,6 +1,10 @@
-/* =========================
-   コンテナ
-========================= */
+/* =========================================================
+   Layout
+========================================================= */
+
+:host{
+  display:block;
+}
 
 .report-container{
   max-width:1400px;
@@ -11,20 +15,18 @@
   overflow:visible;
 }
 
-:host{
-  display:block;
+.report-slide{
+  .employee-name,
+  .report-month,
+  .meta-value{
+    transition:background-color .2s ease,color .2s ease;
+  }
 }
 
-.report-slide .form-control,
-.report-slide .employee-name,
-.report-slide .report-month,
-.report-slide .meta-value{
-  transition:background-color .2s ease,color .2s ease;
-}
 
-/* =========================
-   アクションバー
-========================= */
+/* =========================================================
+   Action Bar
+========================================================= */
 
 .action-bar{
   display:flex;
@@ -45,15 +47,15 @@
   cursor:pointer;
   padding:4px 8px;
   border-radius:6px;
-}
 
-.nav-arrow:hover{
-  background:#f3f3f3;
-}
+  &:hover{
+    background:#f3f3f3;
+  }
 
-.nav-arrow:disabled{
-  opacity:.3;
-  cursor:default;
+  &:disabled{
+    opacity:.3;
+    cursor:default;
+  }
 }
 
 .nav-position{
@@ -66,109 +68,10 @@
   color:#ccc;
 }
 
-/* =========================
-   レポートナビ（↑ │ ↓）
-========================= */
 
-
-.report-nav{
-  position:absolute;
-  right:12px;
-  top:0;
-  bottom:0;
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:space-between;
-
-  pointer-events:none;
-}
-
-.arrow-up,
-.arrow-down{
-  pointer-events:auto;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  width:32px;
-  height:32px;
-
-  border-radius:8px;
-  cursor:pointer;
-
-  opacity:.6;
-  transition:opacity .15s;
-}
-
-.arrow-up:hover,
-.arrow-down:hover{
-  opacity:1;
-  background:#f3f3f3;
-}
-
-.arrow-up mat-icon,
-.arrow-down mat-icon{
-  font-size:22px;
-  color:#6b7280;
-}
-
-.arrow-up:hover mat-icon,
-.arrow-down:hover mat-icon{
-  color:#111;
-}
-
-.nav-line{
-  flex:1;
-  width:2px;
-  background:#e5e7eb;
-  margin:-6px 0;
-
-  transform:translateX(-1px);
-}
-
-.nav-dot{
-  width:6px;
-  height:6px;
-  z-index:2;
-
-  border-radius:50%;
-  background:#9ca3af;
-
-  transform:translateX(-1px);
-}
-
-.nav-disabled{
-  opacity:.3;
-  pointer-events:none;
-}
-/* =========================
-   ヘッダー
-========================= */
-
-.report-header{
-  background:#fff;
-  border-radius:14px;
-  border:1px solid #e5e7eb;
-  padding:22px 28px;
-  margin-bottom:32px;
-}
-
-.header-inner{
-  display:block;
-}
-
-.header-left{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* =========================
-   メインヘッダー
-========================= */
+/* =========================================================
+   Header
+========================================================= */
 
 .header-main{
   position:sticky;
@@ -186,17 +89,13 @@
   align-items:start;
 
   backdrop-filter:blur(6px);
+
+  &.scrolled{
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
 }
 
-.header-main.scrolled{
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* =========================
-   タイトル
-========================= */
-
-.title-block{
+.header-left{
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -228,24 +127,60 @@
   color:#6b7280;
 }
 
-/* =========================
-   ステータス
-========================= */
+
+/* =========================================================
+   Meta
+========================================================= */
+
+.meta-info{
+  font-size:13px;
+  color:#6b7280;
+  margin-top:10px;
+}
+
+.meta-item{
+  display:flex;
+  gap:6px;
+}
+
+.meta-value{
+  font-weight:500;
+}
+
+
+/* =========================================================
+   Status Flow
+========================================================= */
 
 .status-mini{
   display:grid;
   grid-template-rows:auto auto auto;
   justify-items:center;
   gap:10px;
-  margin-right:0px; 
 }
 
-.mini-labels{
+.mini-labels,
+.mini-dates,
+.mini-users{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   width:398px;
   text-align:center;
+}
+
+.mini-labels{
   font-size:13px;
+  color:#6b7280;
+}
+
+.mini-dates{
+  font-size:13px;
+  color:#6b7280;
+  margin-bottom:-12px;
+}
+
+.mini-users{
+  font-size:11px;
   color:#6b7280;
 }
 
@@ -264,59 +199,40 @@
   border:none;
   flex-shrink:0;
   transition:.15s;
-}
 
-.mini-dot:hover{
-  transform:scale(1.1);
-}
+  &:hover{
+    transform:scale(1.05);
+  }
 
-.mini-dot.active,
-.mini-dot.accept{
-  background:#22c55e;
-}
+  &.active,
+  &.accept{
+    background:#22c55e;
+  }
 
-.mini-dot.reject{
-  background:#ef4444;
-}
+  &.reject{
+    background:#ef4444;
+  }
 
-.mini-dot.cancel{
-  background:#9ca3af;
+  &.cancel{
+    background:#9ca3af;
+  }
 }
 
 .mini-line{
   width:110px;
   height:4px;
   background:#d1d5db;
-}
 
-.mini-line.done{
-  background:#22c55e;
-}
-
-.mini-dates{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  width:398px;
-  text-align:center;
-  font-size:13px;
-  color:#6b7280;
-  margin-bottom:-12px;
-}
-
-.mini-users{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  width:398px;
-  text-align:center;
-  font-size:11px;
-  color:#6b7280;
+  &.done{
+    background:#22c55e;
+  }
 }
 
 .mini-flow,
 .mini-labels,
 .mini-dates,
 .mini-users{
-  user-select: none;
+  user-select:none;
 }
 
 .mini-dates span.empty,
@@ -324,34 +240,83 @@
   color:transparent;
 }
 
-/* =========================
-   メタ情報
-========================= */
 
-.meta-info{
-  font-size:13px;
-  color:#6b7280;
-  margin-top:10px;
-}
+/* =========================================================
+   Report Navigation
+========================================================= */
 
-.meta-item{
+.report-nav{
+  position:absolute;
+  right:12px;
+  top:0;
+  bottom:0;
+
   display:flex;
-  gap:6px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+
+  pointer-events:none;
 }
 
-.meta-value{
-  font-weight:500;
+.arrow-up,
+.arrow-down{
+  pointer-events:auto;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  width:32px;
+  height:32px;
+
+  border-radius:8px;
+  cursor:pointer;
+
+  opacity:.6;
+  transition:opacity .15s;
+
+  &:hover{
+    opacity:1;
+    background:#f3f3f3;
+  }
+
+  mat-icon{
+    font-size:22px;
+    color:#6b7280;
+    transform:translateX(1px);
+  }
+
+  &:hover mat-icon{
+    color:#111;
+  }
 }
 
-.comment-meta{
-  text-align:right;
-  color:#777;
-  font-size:.9rem;
+.nav-line{
+  flex:1;
+  width:2px;
+  background:#e5e7eb;
+  margin:-6px 0;
+  z-index:1;
 }
 
-/* =========================
-   カード
-========================= */
+.nav-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#9ca3af;
+  z-index:2;
+}
+
+.nav-disabled{
+  opacity:.3;
+  pointer-events:none;
+}
+
+
+/* =========================================================
+   Cards
+========================================================= */
 
 .app-card{
   border-radius:14px;
@@ -365,20 +330,21 @@
   background:#fafafa;
   border-bottom:1px solid #e5e7eb;
   padding:16px 22px;
-}
 
-.card-header h2{
-  font-size:1.2rem;
-  font-weight:500;
+  h2{
+    font-size:1.2rem;
+    font-weight:500;
+  }
 }
 
 .card-body{
   padding:24px;
 }
 
-/* =========================
-   表示フォーム
-========================= */
+
+/* =========================================================
+   Display Form
+========================================================= */
 
 .form-control.bg-light{
   background:#f8fafc!important;
@@ -387,11 +353,39 @@
   padding:14px 16px;
   line-height:1.6;
   font-size:14px;
+
+  &:focus{
+    box-shadow:none;
+    outline:none;
+  }
 }
 
-/* =========================
-   モバイル
-========================= */
+
+/* =========================================================
+   Comment Card
+========================================================= */
+
+.comment-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.comment-value{
+  white-space:pre-wrap;
+}
+
+.comment-meta{
+  margin-top:8px;
+  text-align:right;
+  font-size:12px;
+  color:#6b7280;
+}
+
+
+/* =========================================================
+   Responsive
+========================================================= */
 
 @media (max-width:768px){
 

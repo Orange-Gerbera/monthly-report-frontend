@@ -4,14 +4,14 @@
     <div class="row mb-5 mt-4 align-items-center">
       <div class="col">
         <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
-          <app-icon name="shield-check_bk" class="title-icon me-3"></app-icon>
+          <app-icon name="shield-check" class="title-icon me-3"></app-icon>
           セキュリティ管理
         </h1>
       </div>
       <div class="col-auto">
         <app-button
           label="再読み込み"
-          icon="arrow-path"
+          icon="refresh-ccw"
           color="blue" 
           size="md"
           (click)="fetchLocks()"
@@ -24,7 +24,7 @@
       
       <div class="mb-5">
         <h3 class="h5 mb-3 d-flex align-items-center text-danger">
-          <app-icon name="globe-alt_bk" class="me-2" style="width: 24px;"></app-icon>
+          <app-icon name="globe-lock" class="me-2" style="width: 24px;"></app-icon>
           IPアクセス制限
         </h3>
         
@@ -69,7 +69,7 @@
 
       <div>
         <h3 class="h5 mb-3 d-flex align-items-center text-danger">
-          <app-icon name="user-circle_bk" class="me-2" style="width: 24px;"></app-icon>
+          <app-icon name="user-lock" class="me-2" style="width: 24px;"></app-icon>
           アカウントロック制限
         </h3>
 
@@ -99,7 +99,7 @@
             <td mat-cell *matCellDef="let lock" class="text-end">
               <app-button
                 label="ロック解除"
-                icon="lock-open"
+                icon="user-round-key"
                 color="red"
                 size="md"
                 (click)="onUnlockUser(lock.key)">

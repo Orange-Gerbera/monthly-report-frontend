@@ -1,36 +1,47 @@
-<!-- 通常ボタン -->
-<button
-  *ngIf="!routerLink"
-  [type]="type"
-  class="app-btn"
-  [ngClass]="buttonClasses"
-  [disabled]="disabled"
->
-  <img
-    *ngIf="iconPath"
-    [src]="iconPath"
-    class="btn-icon"
-    alt=""
-  />
+<ng-container *ngIf="routerLink; else normalButton">
 
-  <span *ngIf="label">{{ label }}</span>
-</button>
+  <a
+    class="app-btn"
+    [ngClass]="buttonClasses"
+    [routerLink]="disabled ? null : routerLink"
+    [queryParams]="queryParams"
+    [state]="state"
+    [class.disabled]="disabled"
+  >
 
-<!-- routerLink ボタン -->
-<a
-  *ngIf="routerLink"
-  class="app-btn"
-  [ngClass]="buttonClasses"
-  [routerLink]="routerLink"
-  [queryParams]="queryParams"
-  [class.disabled]="disabled"
->
-  <img
-    *ngIf="iconPath"
-    [src]="iconPath"
-    class="btn-icon"
-    alt=""
-  />
+    <app-icon
+      *ngIf="icon"
+      [name]="icon"
+      class="btn-icon">
+    </app-icon>
 
-  <span *ngIf="label">{{ label }}</span>
-</a>
+    <span *ngIf="label">
+      {{ label }}
+    </span>
+
+  </a>
+
+</ng-container>
+
+<ng-template #normalButton>
+
+  <button
+    [type]="type"
+    class="app-btn"
+    [ngClass]="buttonClasses"
+    [disabled]="disabled"
+  >
+
+    <app-icon
+      *ngIf="icon"
+      [name]="icon"
+      class="btn-icon">
+    </app-icon>
+
+    <span *ngIf="label">
+      {{ label }}
+    </span>
+
+  </button>
+
+</ng-template>
