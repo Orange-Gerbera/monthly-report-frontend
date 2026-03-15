@@ -8,10 +8,9 @@
         </h1>
       </div>
 
-      <div class="col-auto pb-2">
-        <app-button label="選択した報告書を出力" icon="file-output" color="green" size="md"
-          (click)="exportSelectedReports()" />
-      </div>
+      <app-button label="選択した報告書を出力 ({{selectedReports.size}})" icon="file-output" color="green" size="md"
+        (click)="exportSelectedReports()" [disabled]="selectedReports.size === 0">
+      </app-button>
     </div>
 
     <div [hidden]="!loading" class="d-flex justify-content-center my-5">
@@ -33,8 +32,23 @@
               [indeterminate]="isSomeSelected()"></mat-checkbox>
           </th>
           <td mat-cell *matCellDef="let report">
-            <mat-checkbox (change)="toggleSelection(report)" [checked]="isSelected(report)"></mat-checkbox>
-          </td>
+
+            <span
+              [matTooltip]="
+                report.receivedFlg !== true
+                  ? '受理されていない報告書は出力できません'
+                  : ''
+              ">
+
+              <mat-checkbox
+                (change)="toggleSelection(report)"
+                [checked]="isSelected(report)"
+                [disabled]="report.receivedFlg !== true">
+              </mat-checkbox>
+
+            </span>
+
+        </td>
         </ng-container>
 
         <ng-container matColumnDef="employeeName">
@@ -65,7 +79,7 @@
               {{ report.submittedAt | date : "yyyy/MM/dd HH:mm" }}
             </ng-container>
             <ng-template #unsubmittedText>
-              <span>未提出</span>
+              <span class="text-muted">未提出</span>
             </ng-template>
           </td>
         </ng-container>
@@ -137,8 +151,8 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="text-center"></th>
           <td mat-cell *matCellDef="let report" class="text-center">
-            <app-button label="報告書" icon="file-text" color="yellow" size="md"
-              [routerLink]="['/reports', report.id]" [state]="{
+            <app-button label="報告書" icon="file-text" color="yellow" size="md" [routerLink]="['/reports', report.id]"
+              [state]="{
                 previousUrl: '/reports',
                 reportIds: reportIds
               }">

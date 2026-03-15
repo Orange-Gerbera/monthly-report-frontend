@@ -350,9 +350,23 @@ export class ReportDetailComponent implements OnInit {
   }
   
   onExportExcel(reportId: number): void {
-    this.reportService.downloadReportExcel(reportId).subscribe((res) => {
-      this.excelDownloadService.download(res, `report-${reportId}.xlsx`);
+
+    this.report$.pipe(take(1)).subscribe(report => {
+
+      const isMine = this.isMine(report);
+
+      // 自分の報告書でない かつ 未受理
+      if (!isMine && report.receivedFlg !== true) {
+        alert('受理されていない報告書はExcel出力できません。');
+        return;
+      }
+
+      this.reportService.downloadReportExcel(reportId).subscribe((res) => {
+        this.excelDownloadService.download(res, `report-${reportId}.xlsx`);
+      });
+
     });
+
   }
 
   isMine(report: ReportDto): boolean {

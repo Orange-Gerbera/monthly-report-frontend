@@ -198,24 +198,30 @@ export class ReportListComponent implements OnInit {
 
   toggleAllSelection(checked: boolean): void {
     if (checked) {
-      this.filteredReports.forEach((r) => this.selectedReports.add(r.id));
+      this.filteredReports
+        .filter(r => r.receivedFlg === true)
+        .forEach(r => this.selectedReports.add(r.id));
     } else {
       this.selectedReports.clear();
     }
   }
 
   isAllSelected(): boolean {
+    const selectable = this.filteredReports
+      .filter(r => r.receivedFlg === true);
     return (
-      this.filteredReports.length > 0 &&
-      this.filteredReports.every((r) => this.selectedReports.has(r.id))
+      selectable.length > 0 &&
+      selectable.every(r => this.selectedReports.has(r.id))
     );
   }
 
   isSomeSelected(): boolean {
-    const selectedCount = this.filteredReports.filter((r) =>
-      this.selectedReports.has(r.id)
-    ).length;
-    return selectedCount > 0 && selectedCount < this.filteredReports.length;
+    const selectable = this.filteredReports
+      .filter(r => r.receivedFlg === true);
+    const selectedCount = selectable
+      .filter(r => this.selectedReports.has(r.id))
+      .length;
+    return selectedCount > 0 && selectedCount < selectable.length;
   }
 
   exportSelectedReports(): void {

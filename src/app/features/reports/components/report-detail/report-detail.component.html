@@ -29,7 +29,14 @@
 
           </ng-container>
 
-          <app-button label="Excel" icon="file-output" color="green" (click)="onExportExcel(report.id)">
+          <app-button
+            label="Excel"
+            icon="file-output"
+            color="green"
+            (click)="onExportExcel(report.id)"
+            [disabled]="!isMine(report) && report.receivedFlg !== true"
+            matTooltip="受理されていない報告書はExcel出力できません"
+            [matTooltipDisabled]="isMine(report) || report.receivedFlg === true">
           </app-button>
 
         </div>
