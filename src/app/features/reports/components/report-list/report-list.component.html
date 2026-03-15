@@ -153,7 +153,7 @@
           <td mat-cell *matCellDef="let report" class="text-center">
             <app-button label="報告書" icon="file-text" color="yellow" size="md" [routerLink]="['/reports', report.id]"
               [state]="{
-                previousUrl: '/reports',
+                previousUrl: routerUrl,
                 reportIds: reportIds
               }">
             </app-button>

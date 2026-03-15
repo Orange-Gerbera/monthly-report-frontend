@@ -146,6 +146,13 @@ export class ReportListComponent implements OnInit {
   }
 
   updateTableData(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selectedMonth: this.selectedMonth },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+
     this.dataSource.data = this.filteredReports;
     this.dataSource.sort = this.sort;
 
@@ -241,5 +248,9 @@ export class ReportListComponent implements OnInit {
         )
       )
       .subscribe();
+  }
+
+  get routerUrl(): string {
+    return this.router.url;
   }
 }
