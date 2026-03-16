@@ -126,7 +126,7 @@
               <div
                 *ngIf="
                   employee.password &&
-                  !isPasswordInvalid() &&
+                  isPasswordInvalid() &&
                   passwordInput.dirty
                 "
                 class="form-text text-danger"
