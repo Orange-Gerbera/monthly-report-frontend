@@ -19,8 +19,20 @@ export class ReportService {
 
   constructor(private http: HttpClient) {}
 
-  getReports(): Observable<ReportListResponse> {
+  getReports(params?: { scopeDeptId?: number; mine?: boolean }): Observable<ReportListResponse> {
+
+    let queryParams: any = {};
+
+    if (params?.scopeDeptId !== undefined) {
+      queryParams.scopeDeptId = params.scopeDeptId;
+    }
+
+    if (params?.mine !== undefined) {
+      queryParams.mine = params.mine;
+    }
+
     return this.http.get<ReportListResponse>(this.API_URL, {
+      params: queryParams,
       withCredentials: true,
     });
   }
@@ -134,6 +146,18 @@ export class ReportService {
   ): Observable<ReportResponse> {
     return this.http.get<ReportResponse>(
       `${this.API_URL}/${baseReportId}/month/${yearMonth}`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  getReportByEmployeeAndMonth(
+    code: string,
+    yearMonth: string
+  ): Observable<ReportResponse> {
+    return this.http.get<ReportResponse>(
+      `${this.API_URL}/employee/${code}/month/${yearMonth}`,
       {
         withCredentials: true,
       }

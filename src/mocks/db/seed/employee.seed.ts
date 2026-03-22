@@ -1,32 +1,65 @@
 import type { EmployeeDto } from '../../../app/features/employees/models/employee.dto';
+import { departmentStore } from '../department.store';
 
 // UI用の従業員データ（EmployeeDto完全準拠）
 export function seedEmployees(): EmployeeDto[] {
+
   const build = (
     code: string,
     lastName: string,
     firstName: string,
     email: string,
     role: string,
-    departmentName: string
-  ): EmployeeDto => ({
-    code,
-    lastName,
-    firstName,
-    fullName: `${lastName} ${firstName}`,
-    email,
-    role, // 'ADMIN' | '管理者' | '一般' など、実装側の期待に合わせる
-    departmentName,
-    employmentStatus: 'EMPLOYED',
-    active: true,
-    enabled: true,
-  });
+    departmentId: number
+  ): EmployeeDto => {
+
+    const dept = departmentStore.findById(departmentId);
+    const parent = dept?.parentId
+      ? departmentStore.findById(dept.parentId)
+      : null;
+
+    return {
+      code,
+      lastName,
+      firstName,
+      fullName: `${lastName} ${firstName}`,
+      email,
+      role,
+
+      primaryDepartmentId: departmentId,
+
+      departments: dept
+        ? [
+            ...(parent ? [{
+              id: parent.id,
+              name: parent.name,
+              parentId: parent.parentId,
+              primary: false,
+              manager: true,
+              level: 1
+            }] : []),
+            {
+              id: dept.id,
+              name: dept.name,
+              parentId: dept.parentId,
+              primary: true,
+              manager: false,
+              level: 2
+            }
+          ]
+        : [],
+
+      employmentStatus: 'EMPLOYED',
+      active: true,
+      enabled: true,
+    };
+  };
 
   return [
-    build('1234', '田中', '太郎', 'taro@example.com', 'ADMIN', '営業部'),
-    build('9999', '管理', '次郎', 'kanri@example.com', '管理者', '総務部'),
+    build('1234', '田中', '太郎', 'taro@example.com', 'ADMIN', 1),
+    build('9999', '管理', '次郎', 'kanri@example.com', 'ADMIN', 2),
     {
-      ...build('5678', '山田', '花子', 'hanako@example.com', '一般', '開発部'),
+      ...build('5678', '山田', '花子', 'hanako@example.com', 'GENERAL', 3),
       enabled: false,
     },
   ];

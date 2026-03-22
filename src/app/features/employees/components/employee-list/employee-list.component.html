@@ -24,7 +24,6 @@
     </div>
 
     <!-- データ取得後のみ表示（チラつき防止） -->
-    <div *ngIf="dataLoaded">
 
       <table mat-table
              [dataSource]="dataSource"
@@ -57,7 +56,7 @@
             所属
           </th>
           <td mat-cell *matCellDef="let emp">
-            {{ emp.departmentName }}
+            {{ getPrimaryDepartmentName(emp) }}
           </td>
         </ng-container>
 
@@ -156,7 +155,6 @@
 
       </table>
 
-    </div>
-
+  
   </div>
 </div>

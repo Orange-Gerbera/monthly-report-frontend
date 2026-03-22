@@ -54,7 +54,9 @@
           </div>
           <div class="detail-item">
             <div class="detail-label">所属</div>
-            <div class="detail-value">{{ employee.departmentName }}</div>
+            <div class="detail-value">
+             {{ getDepartmentPath(employee) }}
+            </div>
           </div>
           <div class="detail-item">
             <div class="detail-label">権限</div>

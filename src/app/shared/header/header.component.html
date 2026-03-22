@@ -2,6 +2,30 @@
   <div class="container-fluid">
     <a class="navbar-brand ms-1">報告書管理システム</a>
 
+    <!-- セレクト（管理者 & 複数） -->
+    <div class="d-flex align-items-center ms-3" *ngIf="isAdmin && managerDepartments.length > 1">
+      <select
+        class="form-select form-select-sm"
+        style="min-width: 220px; width: auto;"
+        [(ngModel)]="selectedDepartmentId"
+        (ngModelChange)="onDepartmentChange()"
+      >
+        <option
+          *ngFor="let dept of managerDepartments"
+          [value]="dept.id"
+        >
+          {{ dept.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- ラベル（管理者1件 or 一般ユーザー） -->
+    <div class="ms-2 d-flex align-items-center">
+      <span class="department-badge">
+        {{ displayDepartmentName || '---' }}
+      </span>
+    </div>
+
     <button
       class="navbar-toggler"
       type="button"

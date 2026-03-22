@@ -221,16 +221,19 @@
         <div *ngIf="!selfMode || isAdmin" class="col-12 col-md-6">
           <label for="departmentName" class="form-label">所属</label>
           <select
-            id="departmentName"
+            id="departmentId"
             class="form-select"
-            [(ngModel)]="employee.departmentName"
-            name="departmentName"
+            [(ngModel)]="employee.departmentId"
+            name="departmentId"
             required
             [disabled]="employee.role === 'SYSTEM_ADMIN'"
             #departmentInput="ngModel"
           >
-            <option value="" disabled>-- 所属を選択 --</option>
-            <option *ngFor="let dept of departments" [value]="dept.name">
+            <option [ngValue]="undefined" disabled>-- 所属を選択 --</option>
+            <option *ngIf="selectableDepartments.length === 0" disabled>
+              該当する所属がありません
+            </option>
+            <option *ngFor="let dept of selectableDepartments" [value]="dept.id">
               {{ dept.name }}
             </option>
           </select>

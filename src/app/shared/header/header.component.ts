@@ -2,18 +2,90 @@ import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { CommonModule } from '@angular/common';
+import { ContextService } from '../../shared/services/context.service';
+import { FormsModule } from '@angular/forms';
+import { DepartmentResponse } from '../../features/employees/models/employee.dto';
+import { filter, take } from 'rxjs/operators';
 
 declare var bootstrap: any;
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, FormsModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  constructor(private authService: AuthService, private router: Router) {}
+  managerDepartments: DepartmentResponse[] = [];
+  allDepartments: DepartmentResponse[] = [];
+  selectedDepartmentId?: number;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private contextService: ContextService
+  ) { }
+
+  initialized = false;
+
+  ngOnInit(): void {
+    this.authService.getCurrentUser$()
+      .pipe(
+        filter(user => !!user),
+        take(1)
+      )
+      .subscribe(user => {
+        if (!user) return;
+
+        const isAdmin =
+          user.role === 'ADMIN' ||
+          user.role === 'SYSTEM_ADMIN';
+
+        const rawDepartments = user.departments ?? [];
+        if (isAdmin) {
+          this.managerDepartments =
+            rawDepartments.filter(d => d.manager);
+          if (this.managerDepartments.length === 0) {
+            this.managerDepartments = rawDepartments;
+          }
+        } else {
+          this.managerDepartments = rawDepartments;
+        }
+
+        this.allDepartments = rawDepartments;
+
+        let current = this.contextService.getDeptId();
+
+        if (
+          current == null ||
+          !this.managerDepartments.some(d => d.id === current)
+        ) {
+          current = this.managerDepartments[0]?.id;
+        }
+
+        this.selectedDepartmentId = current;
+
+        if (current != null) {
+
+         const selected = this.managerDepartments.find(d => d.id === current);
+
+          // 👇 manager（=親）はそのまま
+          if (selected?.manager === true) {
+            // 何もしない
+          }
+          // 👇 一般（子）のみ1階層上へ
+          else if (selected?.parentId != null) {
+            current = selected.parentId;
+          }
+
+          this.contextService.setDeptId(current);
+        }
+
+        this.initialized = true; // ⭐追加
+      });
+  }
 
   onLogout(): void {
     this.authService.logout().subscribe({
@@ -24,6 +96,23 @@ export class HeaderComponent {
         console.error('ログアウトに失敗しました', err);
       },
     });
+  }
+
+  onDepartmentChange(): void {
+    if (this.selectedDepartmentId != null) {
+
+      let current = this.selectedDepartmentId;
+
+      const selected = this.managerDepartments.find(d => d.id === current);
+
+      if (selected?.manager === true) {
+        // 何もしない
+      } else if (selected?.parentId != null) {
+        current = selected.parentId;
+      }
+
+      this.contextService.setDeptId(current);
+    }
   }
 
   get isAdmin(): boolean {
@@ -46,5 +135,22 @@ export class HeaderComponent {
         collapseInstance.hide(); // メニューを閉じる
       }
     }
+  }
+
+  get displayDepartmentName(): string {
+
+    const selected = this.managerDepartments.find(
+      d => d.id === this.selectedDepartmentId
+    );
+
+    if (!selected) return '';
+
+    // 管理者 → 自分
+    if (selected.manager === true) {
+      return selected.name;
+    }
+
+    // 一般 → 親
+    return selected.parentName ?? '---';
   }
 }

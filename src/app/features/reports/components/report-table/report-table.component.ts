@@ -2,6 +2,7 @@ import {
   Component,
   Input,
   OnInit,
+  OnDestroy,
   ViewChild,
   AfterViewInit,
 } from '@angular/core';
@@ -19,6 +20,8 @@ import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { Location } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ContextService } from '../../../../shared/services/context.service';
+import { Subject, takeUntil, distinctUntilChanged, switchMap, of } from 'rxjs';
 
 @Component({
   selector: 'app-report-table',
@@ -37,7 +40,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   templateUrl: './report-table.component.html',
   styleUrls: ['./report-table.component.scss'],
 })
-export class ReportTableComponent implements OnInit, AfterViewInit {
+export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() filterByUser = false;
 
   dataSource = new MatTableDataSource<ReportDto>();
@@ -56,11 +59,15 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+  private destroy$ = new Subject<void>();
+  private currentDeptId?: number;
+
   constructor(
     private reportService: ReportService,
     private authService: AuthService,
     private reportDueDateService: ReportDueDateService,
-    private location: Location
+    private location: Location,
+    private context: ContextService
   ) {}
 
   ngOnInit(): void {
@@ -80,85 +87,111 @@ export class ReportTableComponent implements OnInit, AfterViewInit {
 
     // レポート一覧を取得
     const currentUser = this.authService.getCurrentUser();
-    this.reportService.getReports().subscribe((response) => {
-      let reports = response.reportList;
+    this.context.selectedDeptId$
+      .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged(),
+        switchMap(deptId => {
+            console.log("🔥 deptId =", deptId);  // ← ここ追加
+          this.currentDeptId = deptId ?? undefined;
 
-      if (this.filterByUser && currentUser) {
-        reports = reports.filter(
-          (r) => String(r.employeeCode) === currentUser.code
-        );
+          if (this.currentDeptId == null) {
+            return of({ reportList: [] });
+          }
 
-        // --- 未提出のダミー報告書追加---
-        const now = new Date();
-        const targetDate = this.getCurrentTargetMonth(now); // 判定された年・月を取得
+          return this.reportService.getReports({
+            scopeDeptId: this.currentDeptId,
+            mine: this.filterByUser
+          });
+        })
+      )
+      .subscribe((response: { reportList: ReportDto[] }) => {
 
-        const year = targetDate.getFullYear();
-        const month = ('0' + (targetDate.getMonth() + 1)).slice(-2);
-        const currentMonthStr = `${year}-${month}`; // 例: "2024-02"
+       let reports = response.reportList;
 
-        // 今月分（判定された月）のデータがあるか確認
-        const hasCurrentMonthReport =
-          reports.some(r => r.reportMonth === currentMonthStr);
-        if (!hasCurrentMonthReport) {
-          const [y, m] = currentMonthStr.split('-');
+        if (this.filterByUser && currentUser) {
+          reports = reports.filter(
+            (r: ReportDto) => String(r.employeeCode) === currentUser.code
+          );
 
-          this.reportDueDateService
-            .getDueDate(Number(y), Number(m))
-            .subscribe(dueDate => {
+          // --- 未提出ダミー処理（そのまま維持） ---
+          const now = new Date();
+          const targetDate = this.getCurrentTargetMonth(now);
+
+          const year = targetDate.getFullYear();
+          const month = ('0' + (targetDate.getMonth() + 1)).slice(-2);
+          const currentMonthStr = `${year}-${month}`;
+
+          const hasCurrentMonthReport =
+            reports.some((r: ReportDto) => r.reportMonth === currentMonthStr);
+
+          if (!hasCurrentMonthReport) {
+            const [y, m] = currentMonthStr.split('-');
+
+            this.reportDueDateService
+              .getDueDate(Number(y), Number(m))
+              .subscribe(dueDate => {
                 const placeholder: ReportDto = {
-                    id: 0,
-                    reportMonth: currentMonthStr,
-                    submittedAt: null,
-                    updatedAt: null,
-                    contentBusiness: '',
-                    timeWorked: 0,
-                    timeOver: 0,
-                    rateBusiness: 0,
-                    rateStudy: 0,
-                    trendBusiness: 0,
-                    contentMember: '',
-                    contentCustomer: '',
-                    contentProblem: '',
-                    evaluationBusiness: '',
-                    evaluationStudy: '',
-                    goalBusiness: '',
-                    goalStudy: '',
-                    contentCompany: '',
-                    contentOthers: '',
-                    completeFlg: false,
-                    comment: null,
-                    reportDeadline: '',
-                    approvalFlg: null,
-                    approvedAt: null,
-                    approvedBy: null,
-                    approvedByName: null,
-                    receivedFlg: null,
-                    receivedAt: null,
-                    receivedBy: null,
-                    receivedByName: null,
-                    employeeCode: currentUser.code,
-                    employeeName: '',
-                    departmentName: '',
-                    dueDate: dueDate ? dueDate.toISOString() : null
-                  };
+                  id: 0,
+                  reportMonth: currentMonthStr,
+                  submittedAt: null,
+                  updatedAt: null,
+                  contentBusiness: '',
+                  timeWorked: 0,
+                  timeOver: 0,
+                  rateBusiness: 0,
+                  rateStudy: 0,
+                  trendBusiness: 0,
+                  contentMember: '',
+                  contentCustomer: '',
+                  contentProblem: '',
+                  evaluationBusiness: '',
+                  evaluationStudy: '',
+                  goalBusiness: '',
+                  goalStudy: '',
+                  contentCompany: '',
+                  contentOthers: '',
+                  completeFlg: false,
+                  comment: null,
+                  reportDeadline: '',
+                  approvalFlg: null,
+                  approvedAt: null,
+                  approvedBy: null,
+                  approvedByName: null,
+                  receivedFlg: null,
+                  receivedAt: null,
+                  receivedBy: null,
+                  receivedByName: null,
+                  employeeCode: currentUser.code,
+                  employeeName: '',
+                  departmentName: '',
+                  dueDate: dueDate ? dueDate.toISOString() : null
+                };
+
                 reports.push(placeholder);
 
-                reports.sort((a, b) => b.reportMonth.localeCompare(a.reportMonth));
+                reports.sort((a: ReportDto, b: ReportDto) =>
+                  b.reportMonth.localeCompare(a.reportMonth)
+                );
                 this.dataSource.data = reports;
-            });
+              });
 
             return;
+          }
         }
-         // --- 10日基準の月判定ロジック ---
-      }
 
-      reports.sort((a, b) => b.reportMonth.localeCompare(a.reportMonth));
+        reports.sort((a: ReportDto, b: ReportDto) =>
+          b.reportMonth.localeCompare(a.reportMonth)
+        );
+        this.dataSource.data = reports;
 
-      this.dataSource.data = reports;
+        this.previousUrl = this.location.path();
+      });
+  }
 
-      // 自分が今いる場所（/employees/profile など）を保存
-      this.previousUrl = this.location.path();
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {

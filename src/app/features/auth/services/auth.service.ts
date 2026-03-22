@@ -5,6 +5,7 @@ import { tap, map, catchError } from 'rxjs/operators';
 import { LoginRequest } from '../models/login-request.dto';
 import { LoginResponse } from '../models/login-response.dto';
 import { environment } from '../../../../environments/environment';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ import { environment } from '../../../../environments/environment';
 export class AuthService {
   private readonly API_BASE = `${environment.apiBaseUrl}/auth`;
 
+  private currentUser$ = new BehaviorSubject<LoginResponse | null>(null);
   private currentUser: LoginResponse | null = null;
 
   constructor(private http: HttpClient) {}
@@ -21,14 +23,21 @@ export class AuthService {
       .post<LoginResponse>(`${this.API_BASE}/login`, credentials, {
         withCredentials: true,
       })
-      .pipe(tap((res) => (this.currentUser = res)));
+      .pipe(tap((res) => {
+        this.currentUser = res;
+        this.currentUser$.next(res);
+      }
+    ));
   }
 
   fetchMe(): Observable<LoginResponse> {
     return this.http
       .get<LoginResponse>(`${this.API_BASE}/me`, { withCredentials: true })
       .pipe(
-        tap((user) => (this.currentUser = user)),
+        tap((user) => {
+          this.currentUser = user;
+          this.currentUser$.next(user);
+        }),
         catchError(() => {
           this.currentUser = null;
           return of(null as any);
@@ -56,8 +65,16 @@ export class AuthService {
     );
   }
 
+  getCurrentUser$() {
+    return this.currentUser$.asObservable();
+}
+
   getCurrentUser(): LoginResponse | null {
-    return this.currentUser;
+    return this.currentUser$.value;
+  }
+
+  refreshCurrentUser(): void {
+    this.fetchMe().subscribe();
   }
 
   isLoggedIn(): Observable<boolean> {

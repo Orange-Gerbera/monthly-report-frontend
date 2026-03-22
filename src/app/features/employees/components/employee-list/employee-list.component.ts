@@ -15,6 +15,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { AuthService } from '../../../auth/services/auth.service';
 import { RoleLabelPipe } from '../../../../shared/pipes/role-label.pipe';
 import { EmploymentStatusLabelPipe } from '../../../../shared/pipes/employment-status-label.pipe';
+import { ContextService } from '../../../../shared/services/context.service';
+import { Subject, takeUntil, distinctUntilChanged  } from 'rxjs';
 
 @Component({
   selector: 'app-employee-list',
@@ -50,13 +52,17 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
   dataLoaded = false;
   private timer?: any;
   isAdmin = false;
+  private currentDeptId?: number;
+  private destroy$ = new Subject<void>();
 
   @ViewChild(MatSort) sort?: MatSort;
 
-  constructor(private employeeService: EmployeeService,
+  constructor(
+    private employeeService: EmployeeService,
     private securityService: SecurityLockService,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
+    private context: ContextService
   ) {
 
     // ソート用マッピング
@@ -65,7 +71,8 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
         case 'name':
           return item.lastName + ' ' + item.firstName;
         case 'department':
-          return item.departmentName;
+          const primaryDept = item.departments?.find(d => d.primary);
+          return primaryDept?.name ?? '';
         case 'status':
           return item.employmentStatus;
         case 'role':
@@ -79,7 +86,15 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.loadEmployees();
+    this.context.selectedDeptId$
+       .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged()
+      )
+      .subscribe(parentId => {
+        this.currentDeptId = parentId ?? undefined;
+        this.loadEmployees(this.currentDeptId);
+      });
 
     // ログインユーザーの権限を確認
     this.authService.fetchMe().subscribe({
@@ -108,14 +123,19 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.timer) {
       clearInterval(this.timer);
     }
+
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  loadEmployees(): void {
+  loadEmployees(parentId?: number): void {
     this.dataLoaded = false;
 
-    this.employeeService.getAll().subscribe({
-      next: (data) => {
-        this.dataSource.data = data ?? [];
+    this.employeeService.getEmployees({
+      parentDeptId: parentId
+    }).subscribe({
+      next: (res) => {
+        this.dataSource.data = res.data;
         this.dataLoaded = true;
       },
       error: () => {
@@ -141,7 +161,7 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
         this.securityService.unlockUser(code).subscribe({
           next: () => {
             // 成功したら再読み込み
-            this.loadEmployees();
+            this.loadEmployees(this.currentDeptId);
           },
           error: () => alert('解除に失敗しました')
         });
@@ -162,5 +182,9 @@ export class EmployeeListComponent implements OnInit, OnDestroy, AfterViewInit {
     const m = Math.floor((diff % 3600000) / 60000);
 
     return `残り ${h}時間 ${m}分`;
+  }
+
+  getPrimaryDepartmentName(emp: EmployeeDto): string {
+    return emp.departments?.find(d => d.primary)?.name ?? '';
   }
 }

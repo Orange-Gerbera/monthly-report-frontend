@@ -74,12 +74,13 @@ export class ReportNewComponent {
       this.employeeService.getByCode(user.code).subscribe({
         next: (employee) => {
           // 参照を変える
+          const primaryDept = employee.departments?.find(d => d.primary);
+
           this.report = {
             ...this.report,
             employeeName: employee.fullName ?? '',
-            departmentName: employee.departmentName ?? '',
+            departmentName: primaryDept?.name ?? '',
           };
-
           if (this.useLatest) {
             this.loadLatestReport(); // こちらは既に参照を変えていてOK
           }

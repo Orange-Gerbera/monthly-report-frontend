@@ -3,6 +3,8 @@ import type {
   EmployeeRequest,
 } from '../../app/features/employees/models/employee.dto';
 import { seedEmployees, seedEmployeeCredentials } from './seed/employee.seed';
+import { departmentStore } from './department.store';
+import type { DepartmentDto } from '../../app/features/departments/models/department.dto';
 
 export type Session = { code: string };
 
@@ -41,10 +43,15 @@ export class EmployeeStore {
   upsert(req: EmployeeRequest): EmployeeDto {
     const idx = this.employees.findIndex((e) => e.code === req.code);
     const buildFullName = (last: string, first: string) => `${last} ${first}`;
-
+  
     if (idx >= 0) {
       // update
-      const cur = this.employees[idx];
+      const cur = this.employees[idx]!;
+      const dept = departmentStore.findById(req.departmentId!);
+      const parentDept = dept?.parentId
+        ? departmentStore.findById(dept.parentId)
+        : null;
+
       const updated: EmployeeDto = {
         ...cur,
         code: req.code,
@@ -53,17 +60,46 @@ export class EmployeeStore {
         fullName: buildFullName(req.lastName, req.firstName),
         email: req.email,
         role: req.role,
-        departmentName: req.departmentName,
+
+        primaryDepartmentId: req.departmentId ?? undefined,
+
+        departments: dept
+          ? [
+              ...(parentDept ? [{
+                id: parentDept.id,
+                name: parentDept.name,
+                parentId: parentDept.parentId,
+                primary: false,
+                manager: true,
+                level: 1
+              }] : []),
+              {
+                id: dept.id,
+                name: dept.name,
+                parentId: dept.parentId,
+                primary: true,
+                manager: false,
+                level: 2
+              }
+            ]
+          : [],
+
         employmentStatus: req.employmentStatus ?? cur.employmentStatus,
         active: req.active ?? cur.active,
         enabled: req.password ? true : cur.enabled,
       };
+
       this.employees[idx] = updated;
 
       if (req.password) this.credentials.set(req.code, req.password);
       return updated;
     } else {
       // create
+      const dept = departmentStore.findById(req.departmentId!);
+      const parentDept = dept?.parentId
+        ? departmentStore.findById(dept.parentId)
+        : null;
+
       const created: EmployeeDto = {
         code: req.code,
         lastName: req.lastName,
@@ -71,11 +107,35 @@ export class EmployeeStore {
         fullName: buildFullName(req.lastName, req.firstName),
         email: req.email,
         role: req.role,
-        departmentName: req.departmentName,
+
+        primaryDepartmentId: req.departmentId ?? undefined,
+
+        departments: dept
+          ? [
+              ...(parentDept ? [{
+                id: parentDept.id,
+                name: parentDept.name,
+                parentId: parentDept.parentId,
+                primary: false,
+                manager: true,
+                level: 1
+              }] : []),
+              {
+                id: dept.id,
+                name: dept.name,
+                parentId: dept.parentId,
+                primary: true,
+                manager: false,
+                level: 2
+              }
+            ]
+          : [],
+
         employmentStatus: req.employmentStatus ?? 'EMPLOYED',
         active: req.active ?? true,
         enabled: req.password ? true : false,
-      };
+};
+
       this.employees.push(created);
 
       if (req.password) this.credentials.set(req.code, req.password);

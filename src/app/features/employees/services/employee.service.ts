@@ -3,33 +3,41 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map, of, tap } from 'rxjs';
 import { EmployeeDto } from '../models/employee.dto';
 import { environment } from '../../../../environments/environment'; // 相対パスに修正
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EmployeeService {
   private readonly API_URL = `${environment.apiBaseUrl}/employees`;
-  private employeeCache: EmployeeDto[] = [];
+  private employeeCache = new Map<string, EmployeeDto>();
 
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<EmployeeDto[]> {
     return this.http
-      .get<{ listSize: number; employeeList: EmployeeDto[] }>(this.API_URL, {
+      .get<{
+        total: number;
+        page: number;
+        size: number;
+        data: EmployeeDto[];
+      }>(this.API_URL, {
         withCredentials: true,
       })
       .pipe(
-        map((response) => response.employeeList),
+        map((response) => response.data), // ★ここ修正
         tap((employees) => this.setCache(employees))
       );
   }
 
   setCache(employees: EmployeeDto[]): void {
-    this.employeeCache = employees;
+    employees.forEach(e => {
+      this.employeeCache.set(String(e.code), e);
+    });
   }
 
   getCachedEmployeeByCode(code: string): EmployeeDto | undefined {
-    return this.employeeCache.find((e) => String(e.code) === code);
+    return this.employeeCache.get(code);
   }
 
   getEmployeeByIdWithFallback(code: string): Observable<EmployeeDto> {
@@ -76,6 +84,39 @@ export class EmployeeService {
         withCredentials: true
       }
     );
+  }
+
+  getEmployees(params: {
+    parentDeptId?: number;
+    keyword?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+    direction?: string;
+  }) {
+    let httpParams = new HttpParams()
+      .set('page', String(params.page ?? 0))
+      .set('size', String(params.size ?? 20))
+      .set('sort', params.sort ?? 'code')
+      .set('direction', params.direction ?? 'asc');
+
+    if (params.parentDeptId != null) {
+      httpParams = httpParams.set('parentDeptId', String(params.parentDeptId));
+    }
+
+    if (params.keyword) {
+      httpParams = httpParams.set('keyword', params.keyword);
+    }
+
+    return this.http.get<{
+      total: number;
+      page: number;
+      size: number;
+      data: EmployeeDto[];
+    }>(this.API_URL, {
+      params: httpParams,
+      withCredentials: true,
+    });
   }
 
 }

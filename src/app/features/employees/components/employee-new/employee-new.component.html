@@ -229,15 +229,15 @@
             <div class="col-12 col-md-6">
               <label for="departmentName" class="form-label">所属</label>
               <select
-                id="departmentName"
+                id="departmentId"
                 class="form-select"
-                [(ngModel)]="employee.departmentName"
-                name="departmentName"
+                [(ngModel)]="employee.departmentId"
+                name="departmentId"
                 required
                 #departmentInput="ngModel"
               >
-                <option value="" disabled>-- 所属を選択 --</option>
-                <option *ngFor="let dept of departments" [value]="dept.name">
+                <option [ngValue]="null" disabled>-- 所属を選択 --</option>
+                <option *ngFor="let dept of departments" [value]="dept.id">
                   {{ dept.name }}
                 </option>
               </select>

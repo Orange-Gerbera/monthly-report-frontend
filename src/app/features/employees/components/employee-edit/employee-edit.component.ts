@@ -9,6 +9,8 @@ import { EmployeeDto, EmployeeRequest } from '../../models/employee.dto';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { PasswordUtil } from '../../../../shared/utils/password.util';
+import { ContextService } from '../../../../shared/services/context.service';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-employee-edit',
@@ -19,7 +21,6 @@ import { PasswordUtil } from '../../../../shared/utils/password.util';
 export class EmployeeEditComponent implements OnInit {
   @Input() selfMode = false;
   @Input() noCard = false;
-  isAdmin = false;
   isSystemAdmin = false;
 
   private originalRole?: string;
@@ -31,7 +32,7 @@ export class EmployeeEditComponent implements OnInit {
     firstName: '',
     email: '',
     role: 'GENERAL',
-    departmentName: '',
+    departmentId: undefined as any,
     employmentStatus: 'EMPLOYED',
     active: true,
     password: '',
@@ -55,57 +56,66 @@ export class EmployeeEditComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private employeeService: EmployeeService,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private context: ContextService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.fetchDepartments();
+    this.employeeService.getCurrentUser().subscribe(user => {
+      this.isSystemAdmin = user.role === 'SYSTEM_ADMIN';
 
-    if (this.selfMode) {
-      this.employeeService.getCurrentUser().subscribe({
-        next: (user) => {
-          this.isSystemAdmin =
-            user.role === 'SYSTEM_ADMIN';
-          this.employee = {
-            ...user,
-            role: this.convertRoleToEnum(user.role),
-            password: '',
-          };
-          this.originalRole = user.role;  // 役職を保存
-          this.originalEmploymentStatus = user.employmentStatus;
-          this.isAdmin =
-              this.employee.role === 'ADMIN' ||
-              this.employee.role === 'SYSTEM_ADMIN';
-          console.log(
-            '取得したrole:',
-            user.role,
-            '変換後:',
-            this.employee.role
-          );
-        },
+      // 👇 ユーザー確定後に部署取得
+      this.fetchDepartments();
 
-        error: (err) =>
-          console.error('ログインユーザー情報の取得に失敗しました', err),
+      this.context.selectedDeptId$.subscribe(() => {
+        this.setDefaultDepartment();
       });
-    } else {
-      const code = this.route.snapshot.paramMap.get('code');
-      if (code) {
-        this.employeeService.getEmployeeByIdWithFallback(code).subscribe({
-          next: (employee) => {
-            this.employee = {
-              ...employee,
-              role: this.convertRoleToEnum(employee.role),
-              password: '',
-            };
-            this.originalRole = employee.role;
-            this.originalEmploymentStatus = employee.employmentStatus;
-          },
 
-          error: (err) =>
-            console.error('従業員データの取得に失敗しました', err),
-        });
+      if (this.selfMode) {
+        this.employee = {
+          code: user.code,
+          lastName: user.lastName,
+          firstName: user.firstName,
+          email: user.email,
+          role: this.convertRoleToEnum(user.role),
+          departmentId: user.primaryDepartmentId,
+          employmentStatus: user.employmentStatus,
+          active: user.active,
+          password: '',
+        };
+
+        this.originalRole = user.role;
+        this.originalEmploymentStatus = user.employmentStatus;
+        this.setDefaultDepartment();
+      } else {
+        const code = this.route.snapshot.paramMap.get('code');
+        if (code) {
+          this.employeeService.getEmployeeByIdWithFallback(code).subscribe({
+            next: (employee) => {
+              this.employee = {
+                code: employee.code,
+                lastName: employee.lastName,
+                firstName: employee.firstName,
+                email: employee.email,
+                role: this.convertRoleToEnum(employee.role),
+                departmentId: employee.primaryDepartmentId,
+                employmentStatus: employee.employmentStatus,
+                active: employee.active,
+                password: '',
+              };
+
+              this.originalRole = employee.role;
+              this.originalEmploymentStatus = employee.employmentStatus;
+
+              this.setDefaultDepartment();
+            },
+            error: (err) =>
+              console.error('従業員データの取得に失敗しました', err),
+          });
+        }
       }
-    }
+    });
   }
 
   onRoleChange(): void {
@@ -122,7 +132,10 @@ export class EmployeeEditComponent implements OnInit {
 
   fetchDepartments(): void {
     this.departmentService.getAll().subscribe({
-      next: (data) => (this.departments = data),
+      next: (data) => {
+        this.departments = data;
+        this.setDefaultDepartment();
+      },
       error: (err) => console.error('所属一覧の取得に失敗しました', err),
     });
   }
@@ -148,12 +161,17 @@ export class EmployeeEditComponent implements OnInit {
       return;
     }
 
+     if (!this.employee.departmentId) {
+        alert('所属を選択してください');
+        return;
+      }
+
     // 役職変更時にパスワード強度を再確認
     if (this.employee.role !== this.originalRole && this.employee.password) {
       const requiredScore = this.getRequiredScore();
       if (!PasswordUtil.isStrong(this.employee.password, this.employee.email, requiredScore)) {
         alert(
-          this.employee.role === 'ADMIN'
+          this.isAdmin
             ? '管理者用のパスワードとしては強度が足りません'
             : 'パスワードが弱すぎます'
         );
@@ -176,7 +194,7 @@ export class EmployeeEditComponent implements OnInit {
             requiredScore
       )) {
         alert(
-          this.employee.role === 'ADMIN'
+          this.isAdmin
             ? '管理者用のパスワードとしては強度が足りません'
             : 'パスワードが弱すぎます'
         );
@@ -211,6 +229,7 @@ export class EmployeeEditComponent implements OnInit {
         alert('従業員情報を更新しました');
         const redirectUrl = this.selfMode ? '/profile' : '/employees';
         this.router.navigate([redirectUrl]);
+        this.authService.refreshCurrentUser();
       },
       error: (err) => 
         alert('保存に失敗しました: ' + (err.error?.message || err.statusText)),
@@ -218,8 +237,7 @@ export class EmployeeEditComponent implements OnInit {
   }
 
   private getRequiredScore(): number {
-    if (this.employee.role === 'SYSTEM_ADMIN') return 4;
-    if (this.employee.role === 'ADMIN') return 4;
+    if (this.isAdmin) return 4;
     return 3;
   }
 
@@ -259,13 +277,13 @@ export class EmployeeEditComponent implements OnInit {
     const requiredScore = this.getRequiredScore();
     if (result.score >= requiredScore) {
       this.passwordStrength =
-        this.employee.role === 'ADMIN'
+        this.isAdmin
           ? '管理者用として使用可能なパスワードです'
           : '使用可能なパスワードです';
       this.passwordStrengthClass = 'text-success';
     } else {
       this.passwordStrength =
-        this.employee.role === 'ADMIN'
+        this.isAdmin
           ? '管理者用のパスワードとしては強度が足りません'
           : 'パスワードが弱すぎます';
       this.passwordStrengthClass = 'text-danger';
@@ -308,4 +326,36 @@ export class EmployeeEditComponent implements OnInit {
     { label: '休職', value: 'SUSPENDED' },
     { label: '退職', value: 'RETIRED' },
   ];
+
+  get selectableDepartments(): DepartmentDto[] {
+    const parentId = this.context.getDeptId();
+
+    if (!parentId) return [];
+
+     let list = this.departments.filter(d => d.parentId === parentId);
+
+    // 🔥 SYSTEM_ADMINだけ「なし」を含める
+    if (this.isSystemAdmin) {
+      const none = this.departments.find(d => d.id === 1);
+      if (none) {
+        list = [none, ...list];
+      }
+    }
+
+    return list;
+  }
+
+  private setDefaultDepartment(): void {
+    const selectable = this.selectableDepartments;
+
+    if (!this.employee) return;
+
+    if (!this.employee.departmentId && selectable.length) {
+      this.employee.departmentId = selectable[0].id;
+    }
+  }
+  
+  get isAdmin(): boolean {
+    return this.employee.role === 'ADMIN' || this.employee.role === 'SYSTEM_ADMIN';
+  }
 }

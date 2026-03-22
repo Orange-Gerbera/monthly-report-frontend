@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../../shared/button/button.component';
 import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { IconComponent } from '../../../../shared/icon/icon.component';
+import { ContextService } from '../../../../shared/services/context.service';
 
 @Component({
   selector: 'app-profile',
@@ -29,7 +30,11 @@ export class ProfileComponent {
   useLatest = false;
   previousUrl: string = '';
 
-  constructor(private authService: AuthService, private location: Location) {}
+  constructor(
+    private authService: AuthService,
+    private location: Location,
+    private contextService: ContextService
+  ) {}
 
   ngOnInit(): void {
     // 自分が今いる場所（/employees/profile など）を保存
@@ -38,5 +43,17 @@ export class ProfileComponent {
 
   get userName(): string | null {
     return this.authService.getCurrentUser()?.name || null;
+  }
+
+  get displayDepartmentName(): string {
+    const user = this.authService.getCurrentUser();
+
+    const primary = user?.departments?.find(d => d.primary);
+
+    if (!primary) {
+      console.warn('primary部署が存在しません', user);
+    }
+
+    return primary?.name ?? '未所属';
   }
 }

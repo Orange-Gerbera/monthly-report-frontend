@@ -11,7 +11,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { RoleLabelPipe } from '../../../../shared/pipes/role-label.pipe';
 import { EmploymentStatusLabelPipe } from '../../../../shared/pipes/employment-status-label.pipe';
-import { take } from 'rxjs';
+import { ContextService } from '../../../../shared/services/context.service';
+import { map, catchError } from 'rxjs/operators';
+import { take, throwError  } from 'rxjs';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-employee-detail',
@@ -39,18 +42,31 @@ export class EmployeeDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private employeeService: EmployeeService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private context: ContextService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+
     this.employeeService.getCurrentUser().subscribe(user => {
       this.currentUserCode = user.code;
       this.currentUserRole = user.role;
     });
 
     const code = this.route.snapshot.paramMap.get('code');
+
     if (code) {
-      this.employee$ = this.employeeService.getByCode(code);
+      this.context.selectedDeptId$.subscribe((deptId) => {
+        this.employee$ = this.employeeService.getByCode(code).pipe(
+          catchError(err => {
+            if (err.status === 403) {
+              this.router.navigate(['/employees']);
+            }
+            return throwError(() => err);
+          })
+        );
+      });
     }
   }
 
@@ -90,13 +106,16 @@ export class EmployeeDetailComponent implements OnInit {
         firstName: employee.firstName,
         email: employee.email,
         role: employee.role,
-        departmentName: employee.departmentName,
+        departmentId: employee.primaryDepartmentId, 
         employmentStatus: employee.employmentStatus,
         active: employee.active
       };
 
     this.employeeService.update(employee.code, req).subscribe({
-      next: () => console.log('利用状況更新成功'),
+      next: () => {
+        console.log('利用状況更新成功');
+        this.authService.refreshCurrentUser();
+      },
       error: (err) => {
         const message = err?.error?.message;
         alert(message || '更新に失敗しました');
@@ -154,5 +173,11 @@ export class EmployeeDetailComponent implements OnInit {
         next: () => alert('リセットメールを送信しました'),
         error: () => alert('送信に失敗しました')
       });
+  }
+
+  getDepartmentPath(employee: EmployeeDto): string {
+    return employee.departments
+      ?.find(d => d.primary)
+      ?.name ?? '';
   }
 }

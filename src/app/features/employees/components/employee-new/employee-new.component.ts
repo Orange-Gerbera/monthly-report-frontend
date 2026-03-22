@@ -8,6 +8,7 @@ import { DepartmentService } from '../../../departments/services/department.serv
 import { DepartmentDto } from '../../../departments/models/department.dto';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { PasswordUtil } from '../../../../shared/utils/password.util';
+import { ContextService } from '../../../../shared/services/context.service';
 
 @Component({
   selector: 'app-employee-new',
@@ -23,7 +24,7 @@ export class EmployeeNewComponent {
     firstName: '',
     email: '',
     role: 'GENERAL',
-    departmentName: '',
+    departmentId: null,
     employmentStatus: 'EMPLOYED',
     active: true,
     password: '',
@@ -45,7 +46,8 @@ export class EmployeeNewComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private context: ContextService
   ) {
     this.fetchDepartments();
   }
@@ -55,11 +57,27 @@ export class EmployeeNewComponent {
   // =========================
   ngOnInit(): void {
     this.fetchDepartments();
+
+    this.context.selectedDeptId$.subscribe(() => {
+      this.fetchDepartments();
+    });
   }
 
   fetchDepartments(): void {
     this.departmentService.getAll().subscribe({
-      next: (data) => (this.departments = data),
+      next: (data) => {
+
+        const parentId = this.context.getDeptId();
+
+        this.departments = (data ?? []).filter(d =>
+          d.parentId === parentId
+        );
+
+        // 👇 デフォルト選択（重要）
+        if (!this.employee.departmentId && this.departments.length) {
+          this.employee.departmentId = this.departments[0].id;
+        }
+      },
       error: (err) => console.error('所属一覧の取得に失敗しました', err),
     });
   }
@@ -74,6 +92,11 @@ export class EmployeeNewComponent {
       return;
     }
 
+     if (!this.employee.departmentId) {
+        alert('所属を選択してください');
+        return;
+      }
+
     const password = this.employee.password ?? '';
 
     // 🔹 パスワードが入力されている場合のみチェック
@@ -83,7 +106,7 @@ export class EmployeeNewComponent {
         alert('パスワード形式が正しくありません');
         return;
       }
-
+      
       const requiredScore = this.getRequiredScore();
 
       if (!PasswordUtil.isStrong(password, this.employee.email, requiredScore)) {

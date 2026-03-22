@@ -90,6 +90,9 @@ export class ReportEditComponent implements OnInit {
       ...this.original,
       ...formValue,
       id: this.original.id,
+
+      submittedAt: formValue.completeFlg ? new Date().toISOString() : null,
+
       // 変更不可にしたい項目は original を優先（必要に応じて）
       employeeCode: this.original.employeeCode,
       employeeName: this.original.employeeName,

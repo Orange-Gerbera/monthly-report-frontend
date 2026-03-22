@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { EmployeeDto } from '../../app/features/employees/models/employee.dto';
 import { employeeStore } from '../db/employee.store';
+import { departmentStore } from '../db/department.store';
 
 // 環境側の baseUrl が `/api` 前提でルーティング
 const BASE = '/api/employees';
@@ -94,7 +95,7 @@ export const employeeHandlers = [
       'firstName',
       'email',
       'role',
-      'departmentName',
+      'departmentId',
     ];
     const missing = required.filter((k) => !body?.[k]);
     if (missing.length) {
@@ -106,6 +107,12 @@ export const employeeHandlers = [
       return badRequest('Employee code already exists');
     }
 
+    const dept = departmentStore.findById(body.departmentId);
+
+    const parentDept = dept?.parentId
+      ? departmentStore.findById(dept.parentId)
+      : null;
+
     const created: EmployeeDto = {
       code: body.code,
       lastName: body.lastName,
@@ -113,7 +120,30 @@ export const employeeHandlers = [
       fullName: buildFullName(body.lastName, body.firstName),
       email: body.email,
       role: body.role,
-      departmentName: body.departmentName,
+
+      primaryDepartmentId: body.departmentId,
+
+      departments: dept
+        ? [
+            ...(parentDept ? [{
+              id: parentDept.id,
+              name: parentDept.name,
+              parentId: parentDept.parentId,
+              primary: false,
+              manager: true,
+              level: 1
+            }] : []),
+            {
+              id: dept.id,
+              name: dept.name,
+              parentId: dept.parentId,
+              primary: true,
+              manager: false,
+              level: 2
+            }
+          ]
+        : [],
+
       employmentStatus: body.employmentStatus ?? 'EMPLOYED',
       active: body.active ?? true,
       enabled: body.password ? true : false,
@@ -149,8 +179,17 @@ export const employeeHandlers = [
     }
 
     const current = employeeStore.employees[idx];
+    const dept = departmentStore.findById(
+      body.departmentId ?? current.primaryDepartmentId
+    );
+
+    const parentDept = dept?.parentId
+      ? departmentStore.findById(dept.parentId)
+      : null;
+
     const updated: EmployeeDto = {
-      code: current.code,
+      ...current,
+
       lastName: body.lastName ?? current.lastName,
       firstName: body.firstName ?? current.firstName,
       fullName: buildFullName(
@@ -159,9 +198,31 @@ export const employeeHandlers = [
       ),
       email: body.email ?? current.email,
       role: body.role ?? current.role,
-      departmentName: body.departmentName ?? current.departmentName,
-      employmentStatus:
-        body.employmentStatus ?? current.employmentStatus,
+
+      primaryDepartmentId: body.departmentId ?? current.primaryDepartmentId,
+
+      departments: dept
+        ? [
+            ...(parentDept ? [{
+              id: parentDept.id,
+              name: parentDept.name,
+              parentId: parentDept.parentId,
+              primary: false,
+              manager: true,
+              level: 1
+            }] : []),
+            {
+              id: dept.id,
+              name: dept.name,
+              parentId: dept.parentId,
+              primary: true,
+              manager: false,
+              level: 2
+            }
+          ]
+        : current.departments,
+
+      employmentStatus: body.employmentStatus ?? current.employmentStatus,
       active: body.active ?? current.active,
       enabled: body.password ? true : current.enabled,
     };

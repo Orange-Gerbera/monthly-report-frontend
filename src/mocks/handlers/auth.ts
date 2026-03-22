@@ -41,15 +41,19 @@ export const authHandlers = [
     const token = makeToken(user.code);
     employeeStore.setSession(token, user.code);
 
+    const primaryDept = user.departments?.find(
+      d => d.id === user.primaryDepartmentId
+    );
+
     const res: LoginResponse = {
       token,
       code: user.code,
-      name: user.fullName, // ← fullName を使う場合。nameを別管理なら user.firstName/lastName で合成
+      name: user.fullName,
       role: user.role,
       email: user.email,
-      department: user.departmentName,
+      departments: user.departments ?? [],
       loginAt: new Date().toISOString(),
-      passwordChangeRequired: false, 
+      passwordChangeRequired: false,
     };
 
     return new HttpResponse(JSON.stringify(res), {
@@ -72,15 +76,19 @@ export const authHandlers = [
     }
     const user = employeeStore.findByCode(sess.code)!;
 
+    const primaryDept = user.departments?.find(
+      d => d.id === user.primaryDepartmentId
+    );
+
     const res: LoginResponse = {
       token,
       code: user.code,
       name: user.fullName,
       role: user.role,
       email: user.email,
-      department: user.departmentName,
+      departments: user.departments ?? [],
       loginAt: new Date().toISOString(),
-      passwordChangeRequired: false, 
+      passwordChangeRequired: false,
     };
     return HttpResponse.json(res, { status: 200 });
   }),

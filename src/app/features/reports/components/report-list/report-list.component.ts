@@ -1,26 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { ReportDto } from '../../models/report.dto';
-import { ReportService } from '../../services/report.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { SelectComponent } from '../../../../shared/select/select.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
-import { ViewChild, AfterViewInit } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
-import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ActivatedRoute, Router } from '@angular/router';
-import { from } from 'rxjs';
-import { concatMap, tap } from 'rxjs/operators';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ActivatedRoute, Router } from '@angular/router';
+import { from, startWith } from 'rxjs';
+import { concatMap, tap } from 'rxjs/operators';
+import { ExcelDownloadService } from '../../services/excel-download.service';
+import { ReportFacade } from '../../facades/report.facade';
+import { ContextService } from '../../../../shared/services/context.service';
+import { Subject, takeUntil, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-report-list',
@@ -43,13 +42,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   templateUrl: './report-list.component.html',
   styleUrls: ['./report-list.component.scss'],
 })
-export class ReportListComponent implements OnInit {
+export class ReportListComponent implements OnInit, OnDestroy, AfterViewInit {
+
   reports: ReportDto[] = [];
   reportMonthList: string[] = [];
-  loading: boolean = true;
   selectedMonth: string = '';
-  useLatest = false;
+  loading: boolean = true;
+
   reportIds: number[] = [];
+  selectedReports: Set<number> = new Set();
 
   displayedColumns: string[] = [
     'select',
@@ -62,16 +63,20 @@ export class ReportListComponent implements OnInit {
     'comment',
     'actions',
   ];
-  @ViewChild(MatSort) sort!: MatSort;
-  selectedReports: Set<number> = new Set();
 
   dataSource = new MatTableDataSource<ReportDto>([]);
+  @ViewChild(MatSort) sort!: MatSort;
+
+  private destroy$ = new Subject<void>();
+  private currentDeptId?: number;
+  private initializedFromUrl = false;
 
   constructor(
-    private reportService: ReportService,
+    private facade: ReportFacade,
     private excelDownloadService: ExcelDownloadService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private context: ContextService 
   ) {
     this.dataSource.sortingDataAccessor = (item, property) => {
       const value = (item as any)[property];
@@ -80,65 +85,78 @@ export class ReportListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe((params) => {
-      const monthParam = params.get('selectedMonth');
 
-      this.reportService.getReports().subscribe({
-        next: (res) => {
-          this.reports = res.reportList;
+    // ⭐ Context → Facade
+    this.context.selectedDeptId$
+      .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged()
+      )
+      .subscribe(deptId => {
+        this.currentDeptId = deptId ?? undefined;
 
-          // 🔽 ここでキャッシュに保存
-          this.reportService.setCache(res.reportList);
-
-          // ユニークなreportMonthを抽出して降順にソート
-          this.reportMonthList = [
-            ...new Set(this.reports.map((r) => r.reportMonth)),
-          ]
-            .sort()
-            .reverse();
-
-          // クエリパラメータが reportMonthList に含まれていれば初期値に使用
-          if (monthParam && this.reportMonthList.includes(monthParam)) {
-            this.selectedMonth = monthParam;
-          } else {
-            this.selectedMonth = this.reportMonthList[0]; // 通常通り最新の月を選択
-          }
-
-          this.updateTableData();
-          this.loading = false; // ローディング完了
-        },
-        error: (err) => {
-          console.error('取得失敗', err);
-          this.loading = false; // エラー時もローディング完了
-        },
+        if (this.currentDeptId != null) {
+          this.facade.loadReports(this.currentDeptId);
+        }
       });
-    });
+
+    // URL
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const monthParam = params.get('selectedMonth');
+        if (monthParam) {
+          this.selectedMonth = monthParam;
+          this.initializedFromUrl = true;
+        }
+      });
+
+    // Facade
+    this.facade.reports$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(reports => {
+        this.reports = reports;
+
+        this.reportMonthList = this.facade.getReportMonths(reports);
+
+        if (!this.initializedFromUrl) {
+          if (
+            !this.selectedMonth ||
+            !this.reportMonthList.includes(this.selectedMonth)
+          ) {
+            this.selectedMonth = this.reportMonthList[0];
+          }
+        }
+
+        this.updateTableData();
+        this.loading = false;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sortData = (data: ReportDto[], sort: MatSort) => {
       const active = sort.active;
       const direction = sort.direction;
-      if (!active || direction === '') {
-        return data;
-      }
+      if (!active || direction === '') return data;
 
       const sorted = data.slice().sort((a, b) => {
         let valueA = (a as any)[active];
         let valueB = (b as any)[active];
 
-        // 日本語文字列の比較
         if (typeof valueA === 'string' && typeof valueB === 'string') {
           return valueA.localeCompare(valueB, 'ja');
         }
 
-        // 数値やnullの比較
         valueA = valueA ?? 0;
         valueB = valueB ?? 0;
         return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
       });
 
-      // 🔽 ここで昇順・降順を制御
       return direction === 'asc' ? sorted : sorted.reverse();
     };
 
@@ -154,21 +172,22 @@ export class ReportListComponent implements OnInit {
     });
 
     this.dataSource.data = this.filteredReports;
-    this.dataSource.sort = this.sort;
 
     this.reportIds = this.filteredReports
       .map(r => r.id)
       .filter((id): id is number => id != null);
+
     this.selectedReports = new Set<number>();
   }
 
   get filteredReports(): ReportDto[] {
-    return this.reports.filter((r) => r.reportMonth === this.selectedMonth);
+    return this.reports.filter(r => r.reportMonth === this.selectedMonth);
   }
 
   formatDate(input: string, mode: 'month' | 'date' | 'datetime'): string {
     if (!input) return '';
     const date = new Date(input);
+
     const y = date.getFullYear();
     const m = ('0' + (date.getMonth() + 1)).slice(-2);
     const d = ('0' + date.getDate()).slice(-2);
@@ -176,19 +195,11 @@ export class ReportListComponent implements OnInit {
     const mm = ('0' + date.getMinutes()).slice(-2);
 
     switch (mode) {
-      case 'month':
-        return `${y}/${m}`;
-      case 'date':
-        return `${m}/${d}`;
-      case 'datetime':
-        return `${y}/${m}/${d} ${hh}:${mm}`;
-      default:
-        return '';
+      case 'month': return `${y}/${m}`;
+      case 'date': return `${m}/${d}`;
+      case 'datetime': return `${y}/${m}/${d} ${hh}:${mm}`;
+      default: return '';
     }
-  }
-
-  hasValue(str?: string | null): boolean {
-    return !!str && str.trim().length > 0;
   }
 
   isSelected(report: ReportDto): boolean {
@@ -214,20 +225,14 @@ export class ReportListComponent implements OnInit {
   }
 
   isAllSelected(): boolean {
-    const selectable = this.filteredReports
-      .filter(r => r.receivedFlg === true);
-    return (
-      selectable.length > 0 &&
-      selectable.every(r => this.selectedReports.has(r.id))
-    );
+    const selectable = this.filteredReports.filter(r => r.receivedFlg === true);
+    return selectable.length > 0 &&
+      selectable.every(r => this.selectedReports.has(r.id));
   }
 
   isSomeSelected(): boolean {
-    const selectable = this.filteredReports
-      .filter(r => r.receivedFlg === true);
-    const selectedCount = selectable
-      .filter(r => this.selectedReports.has(r.id))
-      .length;
+    const selectable = this.filteredReports.filter(r => r.receivedFlg === true);
+    const selectedCount = selectable.filter(r => this.selectedReports.has(r.id)).length;
     return selectedCount > 0 && selectedCount < selectable.length;
   }
 
@@ -239,9 +244,9 @@ export class ReportListComponent implements OnInit {
 
     from([...this.selectedReports])
       .pipe(
-        concatMap((id) =>
-          this.reportService.downloadReportExcel(id).pipe(
-            tap((res) =>
+        concatMap(id =>
+          this.facade.downloadReportExcel(id).pipe(
+            tap(res =>
               this.excelDownloadService.download(res, `report-${id}.xlsx`)
             )
           )

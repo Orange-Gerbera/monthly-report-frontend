@@ -14,6 +14,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
+import { catchError, EMPTY } from 'rxjs'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -79,8 +80,18 @@ export class ReportDetailComponent implements OnInit {
       switchMap(id =>
         this.reload$.pipe(
           startWith(null),
-          switchMap(() => this.reportService.getReportById(id, true)),
+
+          switchMap(() =>
+            this.reportService.getReportById(id, true).pipe(
+              catchError(err => {
+                console.error('report取得エラー', err);
+                throw err; 
+              })
+            )
+          ),
+
           map(res => res.report),
+
           tap(report => {
             this.timeWorkedHour = Math.floor(report.timeWorked / 60);
             this.timeWorkedMinute = report.timeWorked % 60;
@@ -93,7 +104,8 @@ export class ReportDetailComponent implements OnInit {
           })
         )
       ),
-      shareReplay(1)
+
+      shareReplay({ bufferSize: 1, refCount: true }) // ← ここも変更
     );
   }
 
@@ -284,7 +296,7 @@ export class ReportDetailComponent implements OnInit {
       data: {
         title: submit ? '提出確認' : '提出取り下げ確認',
         message: submit ? 'この報告書を提出しますか？' : '報告書の提出を取り下げますか？',
-        okLabel: submit ? '提出する' : '取り下げする',
+        okLabel: submit ? '提出する' : '取り下げる',
         okColor: submit ? 'blue' : 'gray'
       }
     });
@@ -383,7 +395,14 @@ export class ReportDetailComponent implements OnInit {
 
   openReportInNewTab(offset: number): void {
 
-    this.report$.pipe(take(1)).subscribe(report => {
+  const id = this.route.snapshot.paramMap.get('id');
+  if (!id) return;
+
+  this.reportService.getReportById(id, true).subscribe({
+
+    next: (res) => {
+
+      const report = res.report;
 
       const [year, month] = report.reportMonth.split('-').map(Number);
 
@@ -401,18 +420,34 @@ export class ReportDetailComponent implements OnInit {
       }
 
       const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+      const code = report.employeeCode;
 
       this.reportService
-        .getReportByYearMonth(report.id, ym)
+        .getReportByEmployeeAndMonth(code, ym)
         .subscribe({
-          next: (res) => window.open(`/reports/${res.report.id}`, '_blank'),
-          error: () =>
-            alert(`指定された月（${ym}）の報告書は見つかりませんでした。`),
+
+          next: (res) => {
+            window.open(`/reports/${res.report.id}`, '_blank');
+          },
+
+          error: (err) => {
+            if (err.status === 403) {
+              alert('権限がありません');
+            } else if (err.status === 404) {
+              alert(`指定された月（${ym}）の報告書は見つかりませんでした。`);
+            } else {
+              this.showError(err);
+            }
+          }
         });
+    },
 
-    });
+    error: (err) => {
+      this.showError(err);
+    }
 
-  }
+  });
+}
 
   private refresh() {
     this.reload$.next();

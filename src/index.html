@@ -6,6 +6,22 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    
+    <script>
+      const MAINTENANCE = false;
+      const ADMIN_IP = "121.85.151.172";
+
+      fetch("https://api.ipify.org?format=json")
+        .then(res => res.json())
+        .then(data => {
+          const userIp = data.ip;
+
+          if (MAINTENANCE && userIp !== ADMIN_IP && !location.pathname.includes("maintenance.html")) {
+            window.location.href = "/assets/maintenance.html";
+          }
+        });
+    </script>
+
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
       rel="stylesheet"

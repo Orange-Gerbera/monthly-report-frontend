@@ -7,6 +7,7 @@ import { DepartmentService } from '../../services/department.service';
 import { DepartmentDto } from '../../models/department.dto';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/button/button.component';
+import { ContextService } from '../../../../shared/services/context.service';
 
 @Component({
   selector: 'app-department-settings',
@@ -22,16 +23,25 @@ export class DepartmentSettingsComponent implements OnInit {
   errorMessage = ''; // エラーメッセージ用のプロパティ
   deleteErrorMessage = ''; // 削除時のエラー
 
-  constructor(private departmentService: DepartmentService) {}
+  constructor(
+    private departmentService: DepartmentService,
+    private context: ContextService
+  ) {}
 
   ngOnInit(): void {
-    this.loadDepartments();
+    this.context.selectedDeptId$.subscribe((deptId) => {
+      if (deptId !== undefined) {
+        this.loadDepartmentsWithParent(deptId);
+      }
+    });
   }
 
   // 所属一覧取得
-  loadDepartments(): void {
+  loadDepartmentsWithParent(parentId: number): void {
     this.departmentService.getAll().subscribe((data) => {
-      this.dataSource.data = data ?? [];
+      this.dataSource.data = (data ?? []).filter(d =>
+        d.parentId === parentId
+      );
     });
   }
 
@@ -40,7 +50,10 @@ export class DepartmentSettingsComponent implements OnInit {
     const trimmedName = this.newDepartmentName.trim();
     if (!trimmedName) return;
 
-    this.departmentService.create({ name: trimmedName }).subscribe({
+    this.departmentService.create({
+      name: trimmedName,
+      parentId: this.context.getDeptId()
+    }).subscribe({
       next: (created) => {
         this.dataSource.data = [...this.dataSource.data, created];
         this.newDepartmentName = '';
