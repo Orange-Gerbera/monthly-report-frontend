@@ -75,6 +75,11 @@
               {{ report.updatedAt | date:'yyyy/MM/dd HH:mm' }}
             </span>
 
+            <div class="diff-toggle-chip" [class.is-active]="showDiff" (click)="showDiff = !showDiff">
+              <mat-icon>{{ showDiff ? 'auto_awesome' : 'history' }}</mat-icon>
+              <span>{{ showDiff ? '差分表示中' : '通常表示' }}</span>
+            </div>
+
           </div>
 
         </div>
@@ -258,28 +263,38 @@
           <div class="mb-4">
             <label class="form-label">業務環境 / 開発環境</label>
             <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.contentBusiness }}
+             <app-diff-text 
+              [current]="report.contentBusiness" 
+              [previous]="previousReport?.contentBusiness ?? null" 
+              [showDiff]="showDiff">
+            </app-diff-text>
             </div>
           </div>
 
           <div class="mb-4">
             <label class="form-label">メンバー関連</label>
             <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.contentMember }}
-            </div>
+            <app-diff-text
+             [current]="report.contentMember" [previous]="previousReport?.contentMember ?? null" [showDiff]="showDiff">
+            </app-diff-text>
+          </div>
           </div>
 
           <div class="mb-4">
             <label class="form-label">お客様情報</label>
             <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.contentCustomer }}
+              <app-diff-text
+               [current]="report.contentCustomer" [previous]="previousReport?.contentCustomer ?? null" [showDiff]="showDiff">
+              </app-diff-text>
             </div>
           </div>
 
           <div class="mb-3">
             <label class="form-label">作業における問題点と解決策</label>
             <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.contentProblem }}
+              <app-diff-text
+               [current]="report.contentProblem" [previous]="previousReport?.contentProblem ?? null" [showDiff]="showDiff">
+              </app-diff-text>
             </div>
           </div>
 
@@ -297,27 +312,47 @@
             <div class="col-md-3 mb-3">
               <label class="form-label">勤務時間</label>
               <div class="form-control bg-light">
-                {{ timeWorkedHour }} 時間 {{ timeWorkedMinute }} 分
+                <app-diff-text 
+                  [current]="timeWorkedHour + ' 時間 ' + timeWorkedMinute + ' 分'" 
+                  [previous]="previousReport ? (Math.floor(previousReport.timeWorked / 60) + ' 時間 ' + (previousReport.timeWorked % 60) + ' 分') : null" 
+                  [showDiff]="showDiff">
+                </app-diff-text>
               </div>
             </div>
             <div class="col-md-3 mb-3">
               <label class="form-label">残業時間</label>
               <div class="form-control bg-light">
-                {{ timeOverHour }} 時間 {{ timeOverMinute }} 分
+                <app-diff-text 
+                  [current]="timeOverHour + ' 時間 ' + timeOverMinute + ' 分'" 
+                  [previous]="previousReport ? (Math.floor(previousReport.timeOver / 60) + ' 時間 ' + (previousReport.timeOver % 60) + ' 分') : null" 
+                  [showDiff]="showDiff">
+                </app-diff-text>
               </div>
             </div>
             <div class="col-md-3 mb-3">
               <label class="form-label">業務目標達成率</label>
-              <div class="form-control bg-light">{{ report.rateBusiness }} %</div>
+              <div class="form-control bg-light">
+                <app-diff-text 
+                  [current]="report.rateBusiness + ' %'" 
+                  [previous]="previousReport ? previousReport.rateBusiness + ' %' : null" 
+                  [showDiff]="showDiff">
+                </app-diff-text>
+              </div>
             </div>
             <div class="col-md-3 mb-3">
               <label class="form-label">学習目標達成率</label>
-              <div class="form-control bg-light">{{ report.rateStudy }} %</div>
+              <div class="form-control bg-light">
+                <app-diff-text
+                 [current]="report.rateStudy + ' %'" [previous]="previousReport ? previousReport.rateStudy + ' %' : null" [showDiff]="showDiff">
+                </app-diff-text>
+              </div>
             </div>
             <div class="col-md-3 mb-3">
               <label class="form-label">業務量推移</label>
               <div class="form-control bg-light">
-                {{ report.trendBusiness }} %
+                <app-diff-text
+                 [current]="report.trendBusiness + ' %'" [previous]="previousReport ? report.trendBusiness + ' %' : null" [showDiff]="showDiff">
+                </app-diff-text>
               </div>
             </div>
           </div>
@@ -334,25 +369,33 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">業務目標（自己評価）</label>
               <div class="form-control bg-light" style="white-space: pre-wrap">
-                {{ report.evaluationBusiness }}
+                <app-diff-text
+                 [current]="report.evaluationBusiness" [previous]="previousReport?.evaluationBusiness ?? null" [showDiff]="showDiff">
+                </app-diff-text>
               </div>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">学習目標（自己評価）</label>
               <div class="form-control bg-light" style="white-space: pre-wrap">
-                {{ report.evaluationStudy }}
+                <app-diff-text
+                 [current]="report.evaluationStudy" [previous]="previousReport?.evaluationStudy ?? null" [showDiff]="showDiff">
+                </app-diff-text>
               </div>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">業務目標（来月）</label>
               <div class="form-control bg-light" style="white-space: pre-wrap">
-                {{ report.goalBusiness }}
-              </div>
+              <app-diff-text
+               [current]="report.goalBusiness" [previous]="previousReport?.goalBusiness ?? null" [showDiff]="showDiff">
+              </app-diff-text>
+            </div>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">学習目標（来月）</label>
               <div class="form-control bg-light" style="white-space: pre-wrap">
-                {{ report.goalStudy }}
+                <app-diff-text
+                 [current]="report.goalStudy" [previous]="previousReport?.goalStudy ?? null" [showDiff]="showDiff">
+                </app-diff-text>
               </div>
             </div>
           </div>
@@ -368,14 +411,18 @@
           <div class="mb-4">
             <label class="form-label">会社関係</label>
             <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.contentCompany }}
+              <app-diff-text
+               [current]="report.contentCompany" [previous]="previousReport?.contentCompany ?? null" [showDiff]="showDiff">
+              </app-diff-text>
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label">その他</label>
-            <div class="form-control bg-light" style="white-space: pre-wrap">
-              {{ report.contentOthers }}
-            </div>
+           <div class="form-control bg-light" style="white-space: pre-wrap">
+            <app-diff-text
+             [current]="report.contentOthers" [previous]="previousReport?.contentOthers ?? null" [showDiff]="showDiff">
+            </app-diff-text>
+          </div>
           </div>
         </div>
       </div>

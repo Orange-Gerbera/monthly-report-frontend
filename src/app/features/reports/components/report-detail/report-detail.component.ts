@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CharCountComponent } from '../../../../shared/char-count/char-count.component';
 import { ButtonComponent } from '../../../../shared/button/button.component';
+import { DiffTextComponent } from '../../../../shared/components/diff-text/diff-text.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -26,6 +27,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     FormsModule,
     CharCountComponent,
     ButtonComponent,
+    DiffTextComponent,
     MatDialogModule,
     MatTooltipModule,
     ConfirmDialogComponent,
@@ -35,7 +37,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrls: ['./report-detail.component.scss'],
 })
 export class ReportDetailComponent implements OnInit {
-
+  protected Math = Math;
   isCommentFormVisible = false;
   commentText = '';
   timeWorkedHour: number = 0;
@@ -49,6 +51,9 @@ export class ReportDetailComponent implements OnInit {
   private reload$ = new Subject<void>();
 
   private destroyRef = inject(DestroyRef);
+
+  showDiff = false;
+  previousReport: ReportDto | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -101,12 +106,28 @@ export class ReportDetailComponent implements OnInit {
 
             const index = this.reportIds.indexOf(report.id);
             this.currentIndex = index >= 0 ? index : 0;
+
+            // 前月のデータを自動ロード
+            this.loadPreviousMonthData(report);
           })
         )
       ),
 
       shareReplay({ bufferSize: 1, refCount: true }) // ← ここも変更
     );
+  }
+
+  private loadPreviousMonthData(current: ReportDto) {
+    const [year, month] = current.reportMonth.split('-').map(Number);
+    let targetYear = year;
+    let targetMonth = month - 1;
+    if (targetMonth <= 0) { targetMonth = 12; targetYear -= 1; }
+    const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+
+    this.reportService.getReportByEmployeeAndMonth(current.employeeCode, ym).subscribe({
+      next: (res) => this.previousReport = res.report,
+      error: () => this.previousReport = null
+    });
   }
 
   // 一覧に戻るボタンの実装
