@@ -31,12 +31,15 @@
             icon="file-plus-corner"
             color="blue"
             size="md"
-            [routerLink]="'/reports/new'"
+            [routerLink]="isSystemAdmin ? [] : ['/reports/new']"
             [state]="{ previousUrl: previousUrl }"
             [queryParams]="{ useLatest: useLatest }"
+            [disabled]="isSystemAdmin"
+            [matTooltip]="isSystemAdmin ? 'システム管理者は報告書の新規作成はできません' : '新規報告書を作成します'"
+            matTooltipPosition="above"
           ></app-button>
 
-          <div class="form-check mb-0">
+          <div class="form-check mb-0" *ngIf="!isSystemAdmin">
             <input
               type="checkbox"
               class="form-check-input"

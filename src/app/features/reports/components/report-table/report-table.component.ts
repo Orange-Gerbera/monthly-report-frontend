@@ -71,20 +71,6 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    // 現在の月の提出期日を取得
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-
-    this.reportDueDateService.getDueDate(year, month).subscribe({
-      next: (dueDate) => {
-        this.dueDateOfCurrentMonth = dueDate;
-      },
-      error: (err) => {
-        console.error('提出期日取得エラー:', err);
-      },
-    });
-
     // レポート一覧を取得
     const currentUser = this.authService.getCurrentUser();
     this.context.selectedDeptId$
@@ -92,12 +78,26 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
         takeUntil(this.destroy$),
         distinctUntilChanged(),
         switchMap(deptId => {
-            console.log("🔥 deptId =", deptId);  // ← ここ追加
+          console.log("🔥 deptId =", deptId);
           this.currentDeptId = deptId ?? undefined;
 
           if (this.currentDeptId == null) {
             return of({ reportList: [] });
           }
+
+          // ⭐修正1：初期表示用の今月の提出期日取得（引数に currentDeptId を追加）
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth() + 1;
+          
+          this.reportDueDateService.getDueDate(year, month, this.currentDeptId).subscribe({
+            next: (dueDate) => {
+              this.dueDateOfCurrentMonth = dueDate;
+            },
+            error: (err) => {
+              console.error('提出期日取得エラー:', err);
+            },
+          });
 
           return this.reportService.getReports({
             scopeDeptId: this.currentDeptId,
@@ -128,8 +128,9 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
           if (!hasCurrentMonthReport) {
             const [y, m] = currentMonthStr.split('-');
 
+            // ⭐修正2：ダミー行作成用の期日取得（引数に currentDeptId を追加）
             this.reportDueDateService
-              .getDueDate(Number(y), Number(m))
+              .getDueDate(Number(y), Number(m), this.currentDeptId!)
               .subscribe(dueDate => {
                 const placeholder: ReportDto = {
                   id: 0,
@@ -237,7 +238,7 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
     const day = d.getDate();
     
     if (day < 10) {
-      // 9日以前なら、1ヶ月前の日付を返す
+ 		// 9日以前なら、1ヶ月前の日付を返す
       d.setMonth(d.getMonth() - 1);
     }
     return d;

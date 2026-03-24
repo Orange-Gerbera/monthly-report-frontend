@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core'; // OnDestroy追加
 import { ReportDueDateService } from '../../services/report-due-date.service';
 import { ReportDueDateDto } from '../../models/report-due-date.dto';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatInputModule } from '@angular/material/input';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
+import { ContextService } from '../../../../shared/services/context.service'; // 追加
+import { Subject, takeUntil, distinctUntilChanged } from 'rxjs'; // 追加
 
 @Component({
   selector: 'app-due-date-list',
@@ -28,7 +30,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
   templateUrl: './due-date-list.component.html',
   styleUrls: ['./due-date-list.component.scss'],
 })
-export class DueDateListComponent implements OnInit {
+export class DueDateListComponent implements OnInit, OnDestroy { // OnDestroy追加
   displayedColumns: string[] = ['firstHalf', 'secondHalf'];
   dueDates: ReportDueDateDto[] = [];
   filteredDueDates: ReportDueDateDto[] = [];
@@ -42,13 +44,34 @@ export class DueDateListComponent implements OnInit {
 
   hasValidationError = false;
 
+  // 部署連動用のプロパティ追加
+  private destroy$ = new Subject<void>();
+  private currentDeptId?: number;
+
   constructor(
     private dueDateService: ReportDueDateService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private context: ContextService // 追加
   ) {}
 
   ngOnInit(): void {
-    this.loadDueDates();
+    // ⭐ Contextから部署IDを取得し、変更を監視する処理を追加
+    this.context.selectedDeptId$
+      .pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged()
+      )
+      .subscribe(deptId => {
+        this.currentDeptId = deptId ?? undefined;
+        if (this.currentDeptId != null) {
+          this.loadDueDates(); // 部署確定後にデータをロード
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get hasEmptyDueDates(): boolean {
@@ -56,7 +79,10 @@ export class DueDateListComponent implements OnInit {
   }
 
   private loadDueDates(): void {
-    this.dueDateService.getAll().subscribe({
+    if (this.currentDeptId == null) return;
+
+    // Serviceの呼び出しに currentDeptId を追加
+    this.dueDateService.getAll(this.currentDeptId).subscribe({
       next: (data) => {
         this.dueDates = data.sort((a, b) => {
           if (a.year !== b.year) {
@@ -89,14 +115,15 @@ export class DueDateListComponent implements OnInit {
   }
 
   registerYear(): void {
-    if (!this.newYear || isNaN(this.newYear)) {
+    if (!this.newYear || isNaN(this.newYear) || this.currentDeptId == null) {
       this.snackBar.open('有効な年を入力してください', 'OK', {
         duration: 3000,
       });
       return;
     }
 
-    this.dueDateService.registerYear(this.newYear).subscribe({
+    // Serviceの呼び出しに currentDeptId を追加
+    this.dueDateService.registerYear(this.newYear, this.currentDeptId).subscribe({
       next: () => {
         this.snackBar.open(`${this.newYear}年の期日を登録しました`, 'OK', {
           duration: 3000,
@@ -121,13 +148,15 @@ export class DueDateListComponent implements OnInit {
 
   // 削除
   deleteYear(): void {
-    if (!confirm(`${this.newYear}年の提出期日を削除しますか？`)) {
+    // 選択中の年を削除対象とする
+    if (this.currentDeptId == null || !confirm(`${this.selectedYear}年の提出期日を削除しますか？`)) {
       return;
     }
 
-    this.dueDateService.deleteYear(this.newYear).subscribe({
+    // Serviceの呼び出しに currentDeptId を追加
+    this.dueDateService.deleteYear(this.selectedYear, this.currentDeptId).subscribe({
       next: () => {
-        this.snackBar.open(`${this.newYear}年の期日を削除しました`, 'OK', {
+        this.snackBar.open(`${this.selectedYear}年の期日を削除しました`, 'OK', {
           duration: 3000,
         });
         this.loadDueDates();
@@ -163,15 +192,15 @@ export class DueDateListComponent implements OnInit {
     const hasEmpty = this.filteredDueDates.some((d) => !d.dueDateTime);
     this.hasValidationError = hasEmpty;
 
-    if (hasEmpty) {
+    if (hasEmpty || this.currentDeptId == null) {
       this.snackBar.open('未入力の提出期日があります', 'OK', {
         duration: 3000,
       });
       return;
     }
 
-    // 2. 保存処理（API呼び出し）
-    this.dueDateService.updateAll(this.filteredDueDates).subscribe({
+    // 2. 保存処理（API呼び出し） - 引数に currentDeptId を追加
+    this.dueDateService.updateAll(this.filteredDueDates, this.currentDeptId).subscribe({
       next: (updated) => {
         this.snackBar.open('提出期日を保存しました', 'OK', {
           duration: 3000,

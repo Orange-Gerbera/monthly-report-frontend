@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { ContextService } from '../../../../shared/services/context.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-profile',
@@ -21,6 +22,7 @@ import { ContextService } from '../../../../shared/services/context.service';
     ButtonComponent,
     FormsModule,
     IconComponent,
+    MatTooltipModule,
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
@@ -39,6 +41,13 @@ export class ProfileComponent {
   ngOnInit(): void {
     // 自分が今いる場所（/employees/profile など）を保存
     this.previousUrl = this.location.path();
+  }
+
+  // ⭐ ロール判定を追加
+  get isSystemAdmin(): boolean {
+    const user = this.authService.getCurrentUser();
+    // RoleがSYSTEM_ADMIN、またはID:1（固定）の場合に真を返す
+    return user?.role === 'SYSTEM_ADMIN';
   }
 
   get userName(): string | null {

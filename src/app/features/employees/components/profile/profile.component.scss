@@ -1,0 +1,27 @@
+/* styles.scss に追記 */
+
+.mat-mdc-tooltip-panel {
+  /* 背景色を .department-badge の文字色 (#3730a3) に合わせる */
+  --mdc-plain-tooltip-container-color: #3730a3;
+  --mdc-plain-tooltip-supporting-text-color: #ffffff;
+}
+
+.mat-mdc-tooltip-panel .mdc-tooltip__surface {
+  /* .diff-toggle-chip (6px) や .form-control (10px) の中間の 8px */
+  border-radius: 8px !important;
+  
+  /* .meta-info や .department-badge と同じ 13px */
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  
+  /* .app-card の box-shadow (0 4px 12px) を少し強調して浮遊感を出す */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  
+  /* .header-main の質感を継承 */
+  backdrop-filter: blur(4px);
+  opacity: 0.98 !important; /* ほぼ不透明で視認性を確保 */
+  
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
