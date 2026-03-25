@@ -5,7 +5,7 @@ import { tap, map, catchError } from 'rxjs/operators';
 import { LoginRequest } from '../models/login-request.dto';
 import { LoginResponse } from '../models/login-response.dto';
 import { environment } from '../../../../environments/environment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -23,11 +23,60 @@ export class AuthService {
       .post<LoginResponse>(`${this.API_BASE}/login`, credentials, {
         withCredentials: true,
       })
-      .pipe(tap((res) => {
+     .pipe(
+      tap((res) => {
         this.currentUser = res;
         this.currentUser$.next(res);
-      }
-    ));
+
+        // awaitしない
+        this.registerPush();
+      })
+    );
+  }
+
+  private async registerPush() {
+    console.log("🔥 Push開始");
+
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log("SW OK");
+
+      const readyRegistration = await navigator.serviceWorker.ready;
+
+
+      const permission = await Notification.requestPermission();
+      console.log("permission:", permission);
+
+      if (permission !== 'granted') return;
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: this.urlBase64ToUint8Array('BMwoKvAGRLn8MM3vaJq6t0Znt51pKk5cXlvkAoM_eiED8oojhl3YEURkbLT-BVIqB8K1MNN5LeczNOtDTH55bRg')
+      });
+
+      console.log("subscription:", subscription);
+
+      await firstValueFrom(
+        this.http.post('/api/push/register', subscription, {
+          withCredentials: true,
+        })
+      );
+
+      console.log("登録完了");
+
+    } catch (e) {
+      console.error("Push登録失敗", e);
+    }
+  }
+
+  private urlBase64ToUint8Array(base64String: string) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
   }
 
   fetchMe(): Observable<LoginResponse> {

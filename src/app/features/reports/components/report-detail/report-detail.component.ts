@@ -15,7 +15,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
-import { catchError, EMPTY } from 'rxjs'; 
+import { catchError, of, EMPTY } from 'rxjs'; 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -124,10 +124,16 @@ export class ReportDetailComponent implements OnInit {
     if (targetMonth <= 0) { targetMonth = 12; targetYear -= 1; }
     const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
 
-    this.reportService.getReportByEmployeeAndMonth(current.employeeCode, ym).subscribe({
-      next: (res) => this.previousReport = res.report,
-      error: () => this.previousReport = null
-    });
+    this.reportService
+      .getReportByEmployeeAndMonth(current.employeeCode, ym)
+      .pipe(
+        catchError(() => {
+          return of(null); // ★ここ重要
+        })
+      )
+      .subscribe(res => {
+        this.previousReport = res?.report ?? null;
+      });
   }
 
   // 一覧に戻るボタンの実装
