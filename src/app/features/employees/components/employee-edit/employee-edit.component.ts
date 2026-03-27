@@ -332,10 +332,12 @@ export class EmployeeEditComponent implements OnInit {
 
     if (!parentId) return [];
 
-     let list = this.departments.filter(d => d.parentId === parentId);
+    let list = this.departments.filter(d =>
+      d.parentId === parentId && d.id !== 1
+    );
 
-    // 🔥 SYSTEM_ADMINだけ「なし」を含める
-    if (this.isSystemAdmin) {
+    // 🔥 ここが本質
+    if (this.isSystemAdmin && this.employee.role === 'SYSTEM_ADMIN') {
       const none = this.departments.find(d => d.id === 1);
       if (none) {
         list = [none, ...list];
