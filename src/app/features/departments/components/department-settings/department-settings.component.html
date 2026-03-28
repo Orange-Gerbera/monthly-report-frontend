@@ -1,15 +1,16 @@
 <div class="container pt-5 pt-3">
   <div class="page-card">
+
     <!-- タイトル -->
     <div class="row mb-4 mt-4 align-items-center">
-      <div class="col-12 col-md-12 offset-md-0">
+      <div class="col-12">
         <h1 class="border-bottom pb-2 d-flex align-items-center">
           <app-icon name="building" class="title-icon me-2"></app-icon>
-          所属 設定
+          所属設定
         </h1>
 
-        <!-- 所属追加フォーム -->
-        <div class="row mb-0 mt-5 align-items-center col-12 col-md-12 offset-md-0">
+        <!-- 追加フォーム -->
+        <div class="row mt-4">
           <div class="input-group">
             <input
               type="text"
@@ -17,67 +18,68 @@
               placeholder="新しい所属名"
               [(ngModel)]="newDepartmentName"
             />
-            <button class="btn btn-primary" (click)="addDepartment()">追加</button>
+            <button class="btn btn-primary" (click)="addDepartment()">
+              追加
+            </button>
           </div>
 
-          <!-- エラーメッセージ表示 -->
-          <div *ngIf="errorMessage" class="text-danger small mb-3">
+          <div *ngIf="errorMessage" class="text-danger small mt-2">
             {{ errorMessage }}
           </div>
-        </div>       
+        </div>
       </div>
     </div>
 
-    <!-- 所属一覧テーブル -->
-    <!-- 削除エラー表示 -->
-    <div *ngIf="deleteErrorMessage" class="text-danger small mb-2">
-      {{ deleteErrorMessage }}
-    </div>
+    <!-- 一覧 -->
+    <div class="table-like">
 
-    <table mat-table
-          [dataSource]="dataSource"
-          class="app-table w-100">
+      <div *ngFor="let dept of departments"
+           class="row-item d-flex align-items-center justify-content-between"
+           [class.inactive-row]="!dept.active">
 
-      <!-- ID -->
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef>
-          ID
-        </th>
-        <td mat-cell *matCellDef="let dept">
-          {{ dept.id }}
-        </td>
-      </ng-container>
+        <!-- 左：状態＋名前 -->
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
 
-      <!-- 所属名 -->
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>
-          所属名
-        </th>
-        <td mat-cell *matCellDef="let dept">
-          {{ dept.name }}
-        </td>
-      </ng-container>
+          <!-- ★ ID追加 -->
+          <span class="col-id">
+            {{ dept.id }}
+          </span>
+          <!-- 状態ドット（クリックで切替） -->
+          <span
+            class="status-dot"
+            [ngClass]="{
+              'status-ok': dept.active,
+              'status-off': !dept.active,
+              'disabled-dot': isDisabled(dept)
+            }"
+            [matTooltip]="getDisableReason(dept) || (dept.active ? '無効にする' : '有効にする')"
+            (click)="toggleByDot(dept)">
+          </span>
 
-      <!-- 操作 -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let dept" class="text-end">
+          <!-- 所属名 -->
+          <span class="col-name">
+            {{ dept.name }}
+          </span>
 
+        </div>
+
+        <!-- 右：削除 -->
+        <span [matTooltip]="getDeleteTooltip(dept)">
           <app-button
             *ngIf="dept.name !== '-'"
             label="削除"
             icon="trash-2"
             color="red"
             size="md"
+            [disabled]="isDeleteDisabled(dept)"
+            [class.disabled-btn]="isDeleteDisabled(dept)"
             (click)="deleteDepartment(dept.id)">
           </app-button>
+        </span>
 
-        </td>
-      </ng-container>
+      </div>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </div>
 
-    </table>
   </div>
 </div>

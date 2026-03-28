@@ -45,6 +45,9 @@ export class DepartmentStore {
     const created: DepartmentDto = {
       id: this.nextId++,
       name,
+      active: true,
+      hasEmployee: false,
+       hasReport: false
     };
     this.departments.push(created);
     return created;

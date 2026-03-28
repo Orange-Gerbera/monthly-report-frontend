@@ -1,0 +1,98 @@
+/* テーブル風 */
+.table-like {
+  border-top: 1px solid #e5e7eb;
+}
+
+/* 行（gridに戻す） */
+.row-item {
+  display: grid;
+  grid-template-columns: 40px 1fr 120px; /* ドット / 名前 / 削除 */
+
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e5e7eb;
+
+  min-height: 48px;
+}
+
+/* 左：ドット */
+.col-status {
+  display: flex;
+  justify-content: center;
+}
+
+/* 名前 */
+.col-name {
+  font-weight: 500;
+  padding-left: 8px;
+}
+
+/* 右：削除 */
+.col-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ホバー */
+.row-item:hover {
+  background: #f8f9fa;
+}
+
+/* 無効行 */
+.inactive-row {
+  background-color: #fafafa;
+}
+
+.inactive-row .col-name {
+  color: #9ca3af;
+}
+
+/* 削除ボタン無効 */
+.disabled-btn {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ステータスドット */
+.status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* 有効 */
+.status-dot.status-ok {
+  background-color: #28a745;
+}
+
+/* 無効 */
+.status-dot.status-off {
+  background-color: #dc3545;
+}
+
+/* 押下 */
+.status-dot:active {
+  transform: scale(0.8);
+}
+
+/* 操作不可 */
+.status-dot.disabled {
+  cursor: not-allowed;
+}
+
+/* エラー */
+.text-danger {
+  font-weight: 500;
+}
+
+.col-id {
+  width: 48px;          // ←固定幅
+  text-align: right;    // 右寄せ（重要）
+  font-size: 12px;
+  color: #6c757d;
+  font-family: monospace; // ←さらに安定
+}

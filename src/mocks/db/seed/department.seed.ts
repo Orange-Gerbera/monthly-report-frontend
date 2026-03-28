@@ -3,17 +3,17 @@ import type { DepartmentDto } from '../../../app/features/departments/models/dep
 export function seedDepartments(): DepartmentDto[] {
   return [
     // 親
-    { id: 19, name: '支社' },
+    { id: 19, name: '支社', active: true, hasEmployee: false, hasReport: false },
 
-    // 子（孫）
-    { id: 20, name: '開発サービス課.', parentId: 19 },
+    // 子
+    { id: 20, name: '開発サービス課.', parentId: 19, active: true, hasEmployee: true, hasReport: true },
 
-    // 孫（ひ孫）
-    { id: 21, name: '第１グループ', parentId: 20 },
+    // 孫
+    { id: 21, name: '第１グループ', parentId: 20, active: true, hasEmployee: true, hasReport: false },
 
-    // 既存組織（全部ひ孫にぶら下げる）
-    { id: 22, name: '開発チーム', parentId: 21 },
-    { id: 23, name: '総合評価チーム', parentId: 21 },
-    { id: 24, name: '保守運用チーム', parentId: 21 },
+    // 既存組織
+    { id: 22, name: '開発チーム', parentId: 21, active: true, hasEmployee: false, hasReport: false },
+    { id: 23, name: '総合評価チーム', parentId: 21, active: true, hasEmployee: false, hasReport: false },
+    { id: 24, name: '保守運用チーム', parentId: 21, active: true, hasEmployee: true, hasReport: true },
   ];
 }

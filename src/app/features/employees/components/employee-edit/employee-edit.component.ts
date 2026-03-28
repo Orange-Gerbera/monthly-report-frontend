@@ -17,6 +17,7 @@ import { AuthService } from '../../../auth/services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, ButtonComponent, IconComponent],
   templateUrl: './employee-edit.component.html',
+  styleUrls: ['./employee-edit.component.scss']
 })
 export class EmployeeEditComponent implements OnInit {
   @Input() selfMode = false;
@@ -333,7 +334,9 @@ export class EmployeeEditComponent implements OnInit {
     if (!parentId) return [];
 
     let list = this.departments.filter(d =>
-      d.parentId === parentId && d.id !== 1
+      d.parentId === parentId &&
+      d.id !== 1 &&
+      d.active
     );
 
     // 🔥 ここが本質

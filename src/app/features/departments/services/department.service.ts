@@ -32,4 +32,12 @@ export class DepartmentService {
       withCredentials: true,
     });
   }
+
+  updateActive(id: number, active: boolean): Observable<void> {
+    return this.http.put<void>(
+      `${this.baseUrl}/${id}/active`,
+      { active },
+      { withCredentials: true }
+    );
+  }
 }

@@ -70,7 +70,9 @@ export class EmployeeNewComponent {
         const parentId = this.context.getDeptId();
 
         this.departments = (data ?? []).filter(d =>
-          d.parentId === parentId && d.id !== 1
+          d.parentId === parentId &&
+          d.id !== 1 &&
+          d.active
         );
 
         // 👇 デフォルト選択（重要）

@@ -123,4 +123,14 @@
   .btn-icon {
     margin-right: 2px;
   }
+
+  :host([disabled]) {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 }
