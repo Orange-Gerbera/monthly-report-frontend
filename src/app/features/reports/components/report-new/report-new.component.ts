@@ -19,10 +19,13 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
     ReportFormComponent, // 共通フォームを利用
   ],
   templateUrl: './report-new.component.html',
+  styleUrls: ['./report-new.component.scss'],
 })
 export class ReportNewComponent {
   useLatest = false;
   previousUrl: string = '/profile'; 
+  isDisabled = false;
+  errorMessage = '';
 
   report: ReportUpsertRequest = {
     reportMonth: '',
@@ -64,6 +67,8 @@ export class ReportNewComponent {
   }
 
   ngOnInit(): void {
+    this.checkDueDate();
+
     const useLatestParam = this.route.snapshot.queryParamMap.get('useLatest');
     this.useLatest = useLatestParam === 'true';
 
@@ -101,6 +106,21 @@ export class ReportNewComponent {
         },
       });
     }
+  }
+
+  checkDueDate(): void {
+    this.reportService.getDueDates().subscribe({
+      next: (data) => {
+        if (!data || data.length === 0) {
+          this.isDisabled = true;
+          this.errorMessage = '提出日が設定されていません。管理者に連絡してください。';
+        }
+      },
+      error: () => {
+        this.isDisabled = true;
+        this.errorMessage = '提出日の取得に失敗しました';
+      }
+    });
   }
 
   /** 共通フォームから呼ばれる新規作成処理 */

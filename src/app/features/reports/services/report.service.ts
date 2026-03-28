@@ -163,4 +163,11 @@ export class ReportService {
       }
     );
   }
+
+  getDueDates(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiBaseUrl}/report-due-dates`,
+      { withCredentials: true }
+    );
+  }
 }

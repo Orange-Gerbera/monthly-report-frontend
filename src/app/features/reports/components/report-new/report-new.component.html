@@ -1,6 +1,11 @@
 <div class="container py-5">
   <div class="page-card">
+     <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    
     <app-report-form
+      *ngIf="!isDisabled"
       [model]="report"
       mode="create"
       submitLabel="登録"
