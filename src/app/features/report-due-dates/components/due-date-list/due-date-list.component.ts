@@ -163,7 +163,13 @@ export class DueDateListComponent implements OnInit, OnDestroy { // OnDestroy追
       },
       error: (err) => {
         console.error('削除に失敗しました', err);
-        this.snackBar.open('削除に失敗しました', 'OK', { duration: 3000 });
+
+        const message =
+          err.error?.message || '削除に失敗しました';
+
+        this.snackBar.open(message, 'OK', {
+          duration: 3000,
+        });
       },
     });
   }
