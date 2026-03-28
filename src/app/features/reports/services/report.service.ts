@@ -164,9 +164,9 @@ export class ReportService {
     );
   }
 
-  getDueDates(): Observable<any[]> {
-    return this.http.get<any[]>(
-      `${environment.apiBaseUrl}/report-due-dates`,
+  getDueDate(yearMonth: string, departmentId: number): Observable<string> {
+    return this.http.get<string>(
+      `${environment.apiBaseUrl}/report-due-dates/due-date?yearMonth=${yearMonth}&departmentId=${departmentId}`,
       { withCredentials: true }
     );
   }

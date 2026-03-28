@@ -32,6 +32,9 @@ export class DepartmentSettingsComponent implements OnInit {
   errorMessage = '';
   deleteErrorMessage = '';
 
+  // ⭐ 追加
+  private currentDeptId?: number;
+
   constructor(
     private departmentService: DepartmentService,
     private context: ContextService,
@@ -40,8 +43,10 @@ export class DepartmentSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.context.selectedDeptId$.subscribe((deptId) => {
-      if (deptId !== undefined) {
-        this.loadDepartmentsWithParent(deptId);
+      this.currentDeptId = deptId ?? undefined;
+
+      if (this.currentDeptId !== undefined) {
+        this.loadDepartmentsWithParent(this.currentDeptId);
       }
     });
   }
@@ -58,11 +63,11 @@ export class DepartmentSettingsComponent implements OnInit {
 
   addDepartment(): void {
     const trimmedName = this.newDepartmentName.trim();
-    if (!trimmedName) return;
+    if (!trimmedName || this.currentDeptId == null) return;
 
     this.departmentService.create({
       name: trimmedName,
-      parentId: this.context.getDeptId(),
+      parentId: this.currentDeptId, // ⭐ 修正
       active: true
     }).subscribe({
       next: (created) => {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ReportService } from '../../services/report.service';
@@ -10,22 +10,23 @@ import { ReportFormComponent } from '../report-form/report-form.component';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ContextService } from '../../../../shared/services/context.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   standalone: true,
   selector: 'app-report-new',
   imports: [
     CommonModule,
-    ReportFormComponent, // 共通フォームを利用
+    ReportFormComponent,
   ],
   templateUrl: './report-new.component.html',
   styleUrls: ['./report-new.component.scss'],
 })
-export class ReportNewComponent {
+export class ReportNewComponent implements OnInit, OnDestroy {
+
   useLatest = false;
-  previousUrl: string = '/profile'; 
-  isDisabled = false;
-  errorMessage = '';
+  previousUrl: string = '/profile';
 
   report: ReportUpsertRequest = {
     reportMonth: '',
@@ -50,6 +51,12 @@ export class ReportNewComponent {
     departmentName: '',
   };
 
+  isDisabled = false;
+  errorMessage: string | null = null;
+
+  private currentDeptId?: number;
+  private destroy$ = new Subject<void>();
+
   constructor(
     private reportService: ReportService,
     private router: Router,
@@ -57,17 +64,28 @@ export class ReportNewComponent {
     private employeeService: EmployeeService,
     private route: ActivatedRoute,
     private location: Location,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private context: ContextService
   ) {
     const navigation = this.router.getCurrentNavigation();
-    // state自体が存在するか、'previousUrl' が含まれているかをチェック
     if (navigation?.extras?.state?.['previousUrl']) {
       this.previousUrl = navigation.extras.state['previousUrl'];
     }
   }
 
   ngOnInit(): void {
-    this.checkDueDate();
+
+    // ⭐ Contextから部署ID取得
+    this.context.selectedDeptId$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(deptId => {
+
+        this.currentDeptId = deptId ?? undefined;
+
+        if (this.currentDeptId != null) {
+          this.checkDueDate(); // ← ここが重要
+        }
+      });
 
     const useLatestParam = this.route.snapshot.queryParamMap.get('useLatest');
     this.useLatest = useLatestParam === 'true';
@@ -78,7 +96,7 @@ export class ReportNewComponent {
 
       this.employeeService.getByCode(user.code).subscribe({
         next: (employee) => {
-          // 参照を変える
+
           const primaryDept = employee.departments?.find(d => d.primary);
 
           this.report = {
@@ -86,8 +104,9 @@ export class ReportNewComponent {
             employeeName: employee.fullName ?? '',
             departmentName: primaryDept?.name ?? '',
           };
+
           if (this.useLatest) {
-            this.loadLatestReport(); // こちらは既に参照を変えていてOK
+            this.loadLatestReport();
           }
 
           const now = new Date();
@@ -100,7 +119,6 @@ export class ReportNewComponent {
             ).padStart(2, '0')}`,
           };
         },
-
         error: (err) => {
           console.error('社員情報の取得に失敗しました', err);
         },
@@ -108,42 +126,70 @@ export class ReportNewComponent {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // =========================
+  // 提出日チェック
+  // =========================
   checkDueDate(): void {
-    this.reportService.getDueDates().subscribe({
-      next: (data) => {
-        if (!data || data.length === 0) {
+
+    if (!this.currentDeptId) {
+      this.isDisabled = true;
+      this.errorMessage = '部署が選択されていません';
+      return;
+    }
+
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, '0')}`;
+
+    this.reportService.getDueDate(yearMonth, this.currentDeptId).subscribe({
+      next: (dueDate) => {
+
+        if (!dueDate) {
           this.isDisabled = true;
-          this.errorMessage = '提出日が設定されていません。管理者に連絡してください。';
+          this.errorMessage = '提出日が設定されていません。';
         }
+
       },
-      error: () => {
+      error: (err) => {
         this.isDisabled = true;
-        this.errorMessage = '提出日の取得に失敗しました';
+        this.errorMessage =
+          err.error?.message || '提出日の取得に失敗しました';
       }
     });
   }
 
-  /** 共通フォームから呼ばれる新規作成処理 */
+  // =========================
+  // 作成
+  // =========================
   onCreate(report: ReportUpsertRequest): void {
-    console.log('onCreate called!', report);
+
+    if (this.isDisabled) {
+      alert('提出日が設定されていないため、報告書を作成できません。');
+      return;
+    }
+
     this.reportService.createReport(report).subscribe({
-      next: (res) => {
-        console.log('登録成功:', res);
+      next: () => {
         alert('報告書を登録しました');
-        
-        // 固定の ['/reports'] ではなく、保持している previousUrl へ戻る
         this.router.navigateByUrl(this.previousUrl);
       },
       error: (err) => {
-        console.error('登録失敗:', err);
         const message =
-          err?.error?.message ?? '登録に失敗しました。もう一度お試しください。';
+          err?.error?.message ?? '登録に失敗しました。';
         alert(message);
       },
     });
   }
 
-  // 一覧に戻るボタンの実装
+  // =========================
+  // 戻る
+  // =========================
   onBack() {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
@@ -151,25 +197,26 @@ export class ReportNewComponent {
         title: '内容の破棄',
         message: '編集中の内容は保存されませんが、よろしいですか？',
         okLabel: '破棄して戻る',
-        okColor: 'red' // 注意を促すため赤
+        okColor: 'red'
       }
     });
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        // ユーザーが「破棄して戻る」を選んだ場合のみ遷移
         this.router.navigateByUrl(this.previousUrl);
       }
     });
   }
 
-  /** 最新レポートの読み込み */
+  // =========================
+  // 最新コピー
+  // =========================
   private loadLatestReport(): void {
     this.reportService.getLatestReport().subscribe({
       next: (latest: ReportDto) => {
         if (latest) {
           this.report = {
-            ...this.report, // 既存の値を保持（employeeCode, reportMonthなど）
+            ...this.report,
             contentBusiness: latest.contentBusiness,
             timeWorked: latest.timeWorked,
             timeOver: latest.timeOver,
@@ -194,6 +241,9 @@ export class ReportNewComponent {
     });
   }
 
+  // =========================
+  // 月計算
+  // =========================
   private getCurrentTargetMonth(date: Date): Date {
     const d = new Date(date);
 
