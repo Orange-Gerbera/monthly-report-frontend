@@ -161,6 +161,48 @@
                   ></i>
                 </button>
               </div>
+
+              <!-- ★★★ ここだけ追加（他は一切変更なし）★★★ -->
+              <div *ngIf="passwordStrength" class="mt-2">
+
+                <div
+                  class="progress"
+                  style="height: 8px; max-width: 260px; width: 100%"
+                >
+                  <div
+                    class="progress-bar"
+                    role="progressbar"
+                    [ngClass]="{
+                      'bg-danger': passwordStrengthClass === 'text-danger',
+                      'bg-warning': passwordStrengthClass === 'text-warning',
+                      'bg-success': passwordStrengthClass === 'text-success'
+                    }"
+                    style="width: 100%"
+                  ></div>
+                </div>
+
+                <div class="d-flex mt-1">
+                  <i
+                    class="bi"
+                    [ngClass]="{
+                      'bi-x-circle-fill text-danger':
+                        passwordStrengthClass === 'text-danger',
+                      'bi-exclamation-circle-fill text-warning':
+                        passwordStrengthClass === 'text-warning',
+                      'bi-check-circle-fill text-success':
+                        passwordStrengthClass === 'text-success'
+                    }"
+                    style="margin-right: 6px"
+                  ></i>
+
+                  <small [ngClass]="passwordStrengthClass" class="fw-bold m-0">
+                    {{ passwordStrength }}
+                  </small>
+                </div>
+
+              </div>
+              <!-- ★★★ ここまで ★★★ -->
+
             </div>
           </div>
 
