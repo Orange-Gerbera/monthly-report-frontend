@@ -76,7 +76,7 @@
           <label for="password" class="form-label">
             パスワード
             <small class="text-muted d-block">
-              9～16文字で、英大文字・英小文字・数字・記号を含めてください。
+              9～64文字で、英大文字・英小文字・数字・記号を含めてください。
             </small>
             <small class="text-muted d-block">
               ※パスワードは変更する場合のみ入力してください。
@@ -91,7 +91,7 @@
                 [(ngModel)]="employee.password"
                 name="password"
                 minlength="9"
-                maxlength="16"
+                maxlength="64"
                 #passwordInput="ngModel"
                 inputmode="latin"
                 autocomplete="new-password"
@@ -119,7 +119,7 @@
             "
             class="form-text text-danger"
           >
-            9～16文字で、英大文字・英小文字・数字・記号を含めてください。
+            9～64文字で、英大文字・英小文字・数字・記号を含めてください。
           </div>
 
           <div *ngIf="passwordStrength" class="mt-2">

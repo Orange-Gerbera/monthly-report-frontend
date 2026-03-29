@@ -26,7 +26,7 @@ export class PasswordUtil {
   static isFormatValid(password: string): boolean {
     if (!password) return false;
 
-    const lengthOk = password.length >= 9 && password.length <= 16;
+    const lengthOk = password.length >= 9 && password.length <= 64;
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);

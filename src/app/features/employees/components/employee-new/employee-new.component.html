@@ -126,7 +126,7 @@
               <label for="password" class="form-label">
                 仮パスワード
                 <small class="text-muted d-block">
-                  9～16文字で英大小・数字・記号
+                  9～64文字で英大小・数字・記号
                 </small>
                 <small class="text-success d-block">
                   ※空欄で招待メール送信
@@ -142,7 +142,7 @@
                   [(ngModel)]="employee.password"
                   name="password"
                   minlength="9"
-                  maxlength="16"
+                  maxlength="64"
                   #passwordInput="ngModel"
                   (input)="sanitizePassword($event)"
                   (ngModelChange)="checkPasswordStrength($event)"
