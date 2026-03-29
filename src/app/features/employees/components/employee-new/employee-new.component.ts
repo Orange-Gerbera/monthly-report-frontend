@@ -15,6 +15,7 @@ import { ContextService } from '../../../../shared/services/context.service';
   standalone: true,
   imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './employee-new.component.html',
+  styleUrls: ['./employee-new.component.scss']
 })
 export class EmployeeNewComponent {
 
@@ -42,6 +43,13 @@ export class EmployeeNewComponent {
   passwordScore = 0;
 
   showPassword = false;
+  targetDeptName: string = '';
+
+  // =========================
+  // ★追加：状態管理
+  // =========================
+  mode: 'new' | 'same' | 'transfer' = 'new';
+  existingEmployee: any = null;
 
   constructor(
     private http: HttpClient,
@@ -49,38 +57,72 @@ export class EmployeeNewComponent {
     private departmentService: DepartmentService,
     private context: ContextService
   ) {
-    this.fetchDepartments();
   }
 
   // =========================
   // 初期化
   // =========================
   ngOnInit(): void {
-    this.fetchDepartments();
 
-    this.context.selectedDeptId$.subscribe(() => {
-      this.fetchDepartments();
-    });
+    this.context.selectedDeptId$
+      .subscribe((parentId) => {
+
+        if (!parentId) return;
+
+        // ★ ① 親は別APIで取得
+        this.departmentService.getById(parentId).subscribe({
+          next: (parent) => {
+            this.targetDeptName = parent.name;
+          }
+        });
+
+        // ★ ② 子は今まで通り
+        this.departmentService.getAll().subscribe({
+          next: (data) => {
+
+            this.departments = (data ?? []).filter(d =>
+              d.parentId === parentId &&
+              d.id !== 1 &&
+              d.active
+            );
+
+            if (!this.employee.departmentId && this.departments.length) {
+              this.employee.departmentId = this.departments[0].id;
+            }
+          }
+        });
+
+      });
   }
 
-  fetchDepartments(): void {
-    this.departmentService.getAll().subscribe({
-      next: (data) => {
+  // =========================
+  // ★追加：従業員存在チェック
+  // =========================
+  checkEmployeeExists(): void {
 
-        const parentId = this.context.getDeptId();
+    if (!this.employee.code) return;
 
-        this.departments = (data ?? []).filter(d =>
-          d.parentId === parentId &&
-          d.id !== 1 &&
-          d.active
-        );
+    this.http.get(`/api/employees/exists/${this.employee.code}`)
+    .subscribe({
+      next: (res: any) => {
 
-        // 👇 デフォルト選択（重要）
-        if (!this.employee.departmentId && this.departments.length) {
-          this.employee.departmentId = this.departments[0].id;
+        this.existingEmployee = res;
+
+        if (!res.exists) {
+          this.mode = 'new';
+          return;
+        }
+
+        if (res.sameDepartment) {
+          this.mode = 'same';
+        } else {
+          this.mode = 'transfer';
         }
       },
-      error: (err) => console.error('所属一覧の取得に失敗しました', err),
+      error: () => {
+        this.mode = 'new';
+        this.existingEmployee = null;
+      }
     });
   }
 
@@ -89,15 +131,28 @@ export class EmployeeNewComponent {
   // =========================
   onSubmit(form: NgForm): void {
 
+    // ★追加：状態ガード（最重要）
+    if (this.mode === 'same') {
+      alert('この従業員は既にこの部署に所属しています。');
+      return;
+    }
+
+    if (this.mode === 'transfer') {
+      alert('この従業員は既に他部署に所属しています。異動を行ってください。');
+      return;
+    }
+
+    // ===== ここから既存処理（変更なし） =====
+
     if (form.invalid) {
       form.control.markAllAsTouched();
       return;
     }
 
-     if (!this.employee.departmentId) {
-        alert('所属を選択してください');
-        return;
-      }
+    if (!this.employee.departmentId) {
+      alert('所属を選択してください');
+      return;
+    }
 
     const password = this.employee.password ?? '';
 
@@ -114,8 +169,8 @@ export class EmployeeNewComponent {
       if (!PasswordUtil.isStrong(password, this.employee.email, requiredScore)) {
         alert(
           this.employee.role === 'ADMIN'
-            ? '管理者用のパスワードとしては強度が足りません'
-            : 'パスワードが弱すぎます'
+            ? '管理者用のパスワードとしては強度が足りません。'
+            : 'パスワードが弱すぎます。'
         );
         return;
       }
@@ -135,6 +190,27 @@ export class EmployeeNewComponent {
       error: (err) =>
         alert('登録に失敗しました: ' + (err.error?.message || err.statusText)),
     });
+  }
+
+  // =========================
+  // ★追加：異動処理
+  // =========================
+  transferEmployee(): void {
+    if (!this.employee.code) return;
+
+    this.http.post(`/api/employees/${this.employee.code}/transfer`, {})
+      .subscribe({
+        next: () => {
+          alert('異動しました');
+
+          // 再チェック（UI更新）
+          this.checkEmployeeExists();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('異動に失敗しました');
+        }
+      });
   }
 
   // =========================
@@ -167,7 +243,7 @@ export class EmployeeNewComponent {
     }
 
     if (!PasswordUtil.isFormatValid(password)) {
-      this.passwordStrength = 'パスワード形式が正しくありません';
+      this.passwordStrength = 'パスワード形式が正しくありません。';
       this.passwordStrengthClass = 'text-danger';
       this.passwordScore = 0;
       return;
@@ -181,14 +257,14 @@ export class EmployeeNewComponent {
     if (result.score >= requiredScore) {
       this.passwordStrength =
         this.employee.role === 'ADMIN'
-          ? '管理者用として使用可能なパスワードです'
-          : '使用可能なパスワードです';
+          ? '管理者用として使用可能なパスワードです。'
+          : '使用可能なパスワードです。';
       this.passwordStrengthClass = 'text-success';
     } else {
       this.passwordStrength =
         this.employee.role === 'ADMIN'
-          ? '管理者用のパスワードとしては強度が足りません'
-          : 'パスワードが弱すぎます';
+          ? '管理者用のパスワードとしては強度が足りません。'
+          : 'パスワードが弱すぎます。';
       this.passwordStrengthClass = 'text-danger';
     }
   }
@@ -224,4 +300,5 @@ export class EmployeeNewComponent {
     input.value = sanitized;
     this.employee.password = sanitized;
   }
+
 }

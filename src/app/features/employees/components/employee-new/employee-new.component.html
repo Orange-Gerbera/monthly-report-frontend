@@ -19,6 +19,8 @@
           <div class="row mb-4">
             <div class="col-12 col-md-6">
               <label for="code" class="form-label">従業員番号</label>
+
+              <!-- ★追加：blur -->
               <input
                 type="number"
                 id="code"
@@ -28,13 +30,42 @@
                 name="code"
                 required
                 #codeInput="ngModel"
+                (blur)="checkEmployeeExists()"
               />
+
               <div
                 *ngIf="codeInput.invalid && codeInput.touched"
                 class="form-text text-danger"
               >
                 従業員番号を数字で入力してください。
               </div>
+
+              <!-- 自部署 -->
+              <div *ngIf="mode === 'same'" class="alert alert-danger mt-2">
+                この従業員は既にこの部署に所属しています。<br>
+                この画面では操作できません。
+              </div>
+
+              <!-- 他部署 -->
+              <div *ngIf="mode === 'transfer'" class="alert alert-warning mt-2">
+                この従業員は
+                <strong>
+                  {{ existingEmployee?.employeeName }}
+                </strong>
+                （{{ existingEmployee?.departmentName }}）
+                に所属しています。
+
+                <div class="mt-2">
+                  <button
+                    type="button"
+                    class="btn btn-warning btn-sm"
+                    (click)="transferEmployee()"
+                  >
+                   「 {{ targetDeptName }} 」へ異動
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -42,6 +73,8 @@
           <div class="row g-3 mb-4">
             <div class="col-12 col-md-6">
               <label for="lastName" class="form-label">姓</label>
+
+              <!-- ★readonly追加 -->
               <input
                 type="text"
                 id="lastName"
@@ -51,7 +84,9 @@
                 name="lastName"
                 required
                 #lastNameInput="ngModel"
+                [readonly]="mode !== 'new'"
               />
+
               <div
                 *ngIf="lastNameInput.invalid && lastNameInput.touched"
                 class="form-text text-danger"
@@ -59,8 +94,11 @@
                 姓を入力してください。
               </div>
             </div>
+
             <div class="col-12 col-md-6">
               <label for="firstName" class="form-label">名</label>
+
+              <!-- ★readonly追加 -->
               <input
                 type="text"
                 id="firstName"
@@ -70,7 +108,9 @@
                 name="firstName"
                 required
                 #firstNameInput="ngModel"
+                [readonly]="mode !== 'new'"
               />
+
               <div
                 *ngIf="firstNameInput.invalid && firstNameInput.touched"
                 class="form-text text-danger"
@@ -84,16 +124,17 @@
           <div class="row mb-4">
             <div class="col-12 col-md-6">
               <label for="password" class="form-label">
-                仮パスワード（ログイン後にパスワード再設定画面が開きます。）
+                仮パスワード
                 <small class="text-muted d-block">
-                  9～16文字で、英大文字・英小文字・数字・記号を含めてください。
+                  9～16文字で英大小・数字・記号
                 </small>
                 <small class="text-success d-block">
-                  ※空欄の場合、本人にメールでパスワード設定用リンクを送信します。
+                  ※空欄で招待メール送信
                 </small>
               </label>
 
               <div class="input-group">
+                <!-- ★readonly追加 -->
                 <input
                   [type]="showPassword ? 'text' : 'password'"
                   id="password"
@@ -103,12 +144,11 @@
                   minlength="9"
                   maxlength="16"
                   #passwordInput="ngModel"
-                  inputmode="latin"
-                  autocomplete="new-password"
-                  style="ime-mode: disabled"
                   (input)="sanitizePassword($event)"
                   (ngModelChange)="checkPasswordStrength($event)"
+                  [readonly]="mode !== 'new'"
                 />
+
                 <button
                   type="button"
                   class="btn btn-outline-secondary"
@@ -121,75 +161,27 @@
                   ></i>
                 </button>
               </div>
-
-              <!-- 入力がある場合のみ形式エラー表示 -->
-              <div
-                *ngIf="
-                  employee.password &&
-                  isPasswordInvalid() &&
-                  passwordInput.dirty
-                "
-                class="form-text text-danger"
-              >
-                9～16文字で、英大文字・英小文字・数字・記号を含めてください。
-              </div>
-
-              <div *ngIf="passwordStrength" class="mt-2">
-                <!-- 色付きバー（レスポンシブ対応） -->
-                <div
-                  class="progress"
-                  style="height: 8px; max-width: 150px; width: 100%"
-                >
-                  <div
-                    class="progress-bar"
-                    role="progressbar"
-                    [ngClass]="{
-                      'bg-danger': passwordStrengthClass === 'text-danger',
-                      'bg-warning': passwordStrengthClass === 'text-warning',
-                      'bg-success': passwordStrengthClass === 'text-success'
-                    }"
-                    style="width: 100%"
-                  ></div>
-                </div>
-
-                <!-- アイコン＋テキスト -->
-                <div class="d-flex mt-1">
-                  <i
-                    class="bi"
-                    [ngClass]="{
-                      'bi-x-circle-fill text-danger':
-                        passwordStrengthClass === 'text-danger',
-                      'bi-exclamation-circle-fill text-warning':
-                        passwordStrengthClass === 'text-warning',
-                      'bi-check-circle-fill text-success':
-                        passwordStrengthClass === 'text-success'
-                    }"
-                    style="margin-right: 6px"
-                  ></i>
-                  <small [ngClass]="passwordStrengthClass" class="fw-bold m-0">
-                    {{ passwordStrength }}
-                  </small>
-                </div>
-              </div>
             </div>
           </div>
 
-          <!-- メールアドレス -->
+          <!-- メール -->
           <div class="row mb-4">
             <div class="col-12 col-md-6">
               <label for="email" class="form-label">メールアドレス</label>
+
+              <!-- ★readonly追加 -->
               <input
                 type="email"
                 id="email"
                 class="form-control"
-                placeholder="example@example.com"
                 [(ngModel)]="employee.email"
                 name="email"
                 required
-                email
                 #emailInput="ngModel"
                 (ngModelChange)="onEmailChange()"
+                [readonly]="mode !== 'new'"
               />
+
               <div
                 *ngIf="emailInput.invalid && emailInput.touched"
                 class="form-text text-danger"
@@ -201,65 +193,57 @@
 
           <!-- 権限 & 所属 -->
           <div class="row g-3 mb-4">
-            <!-- 権限 -->
             <div class="col-12 col-md-6">
-              <label for="role" class="form-label">権限</label>
+              <label class="form-label">権限</label>
+
+              <!-- ★disabled追加 -->
               <select
-                id="role"
                 class="form-select"
                 [(ngModel)]="employee.role"
                 name="role"
                 required
                 #roleInput="ngModel"
                 (ngModelChange)="onRoleChange()"
+                [disabled]="mode !== 'new'"
               >
                 <option *ngFor="let option of roleOptions" [value]="option.value">
                   {{ option.label }}
                 </option>
               </select>
-              <div
-                *ngIf="roleInput.invalid && roleInput.touched"
-                class="form-text text-danger"
-              >
-                権限を選択してください。
-              </div>
             </div>
 
-            <!-- 所属 -->
             <div class="col-12 col-md-6">
-              <label for="departmentName" class="form-label">所属</label>
+              <label class="form-label">所属</label>
+
+              <!-- ★disabled追加 -->
               <select
-                id="departmentId"
                 class="form-select"
                 [(ngModel)]="employee.departmentId"
                 name="departmentId"
                 required
                 #departmentInput="ngModel"
+                [disabled]="mode !== 'new'"
               >
                 <option [ngValue]="null" disabled>-- 所属を選択 --</option>
                 <option *ngFor="let dept of departments" [value]="dept.id">
                   {{ dept.name }}
                 </option>
               </select>
-              <div
-                *ngIf="departmentInput.invalid && departmentInput.touched"
-                class="form-text text-danger"
-              >
-                所属を選択してください。
-              </div>
             </div>
           </div>
 
-          <!-- 送信ボタン -->
+          <!-- 送信 -->
           <div class="text-end">
+            <!-- ★重要：mode制御 -->
             <button
               type="submit"
               class="btn btn-primary px-4"
-              [disabled]="form.invalid || isPasswordInvalid()"
+              [disabled]="form.invalid || isPasswordInvalid() || mode !== 'new'"
             >
               登録
             </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -205,7 +205,7 @@ export class DueDateListComponent implements OnInit, OnDestroy { // OnDestroy追
       return;
     }
 
-    // 2. 保存処理（API呼び出し） - 引数に currentDeptId を追加
+    // 2. 保存処理（API呼び出し） - 引数に currentDeptId を追加teis
     this.dueDateService.updateAll(this.filteredDueDates, this.currentDeptId).subscribe({
       next: (updated) => {
         this.snackBar.open('提出期日を保存しました', 'OK', {

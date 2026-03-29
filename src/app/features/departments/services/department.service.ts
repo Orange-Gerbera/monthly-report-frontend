@@ -40,4 +40,10 @@ export class DepartmentService {
       { withCredentials: true }
     );
   }
+
+  getById(id: number): Observable<DepartmentDto> {
+    return this.http.get<DepartmentDto>(`${this.baseUrl}/${id}`, {
+      withCredentials: true,
+    });
+  }
 }
