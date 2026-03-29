@@ -37,6 +37,7 @@ import {
   PencilLine,
   UserLock,
   BookDown,
+  ArrowLeftRight,
 } from 'lucide-angular';
 
 // 使うアイコンをオブジェクトにまとめる
@@ -79,4 +80,5 @@ export const customIcons = {
   PencilLine,
   UserLock,
   BookDown,
+  ArrowLeftRight,
 };

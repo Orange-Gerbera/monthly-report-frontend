@@ -9,11 +9,12 @@ import { DepartmentDto } from '../../../departments/models/department.dto';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { PasswordUtil } from '../../../../shared/utils/password.util';
 import { ContextService } from '../../../../shared/services/context.service';
+import { ButtonComponent } from '../../../../shared/button/button.component';
 
 @Component({
   selector: 'app-employee-new',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, ButtonComponent],
   templateUrl: './employee-new.component.html',
   styleUrls: ['./employee-new.component.scss']
 })
@@ -141,8 +142,6 @@ export class EmployeeNewComponent {
       alert('この従業員は既に他部署に所属しています。異動を行ってください。');
       return;
     }
-
-    // ===== ここから既存処理（変更なし） =====
 
     if (form.invalid) {
       form.control.markAllAsTouched();

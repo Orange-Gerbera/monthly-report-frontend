@@ -48,21 +48,21 @@
 
               <!-- 他部署 -->
               <div *ngIf="mode === 'transfer'" class="alert alert-warning mt-2">
-                この従業員は
+                この従業員 
                 <strong>
-                  {{ existingEmployee?.employeeName }}
+                  {{ existingEmployee?.employeeName }}さん
                 </strong>
-                （{{ existingEmployee?.departmentName }}）
+                は、現在（{{ existingEmployee?.departmentName }}）
                 に所属しています。
 
                 <div class="mt-2">
-                  <button
-                    type="button"
-                    class="btn btn-warning btn-sm"
-                    (click)="transferEmployee()"
-                  >
-                   「 {{ targetDeptName }} 」へ異動
-                  </button>
+                  <app-button
+                    label="「 {{ targetDeptName }} 」へ異動"
+                    icon="arrow-left-right"
+                    color="yellow"
+                    size="md"
+                    (click)="transferEmployee()">
+                  </app-button>
                 </div>
               </div>
 
