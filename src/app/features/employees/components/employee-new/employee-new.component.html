@@ -14,6 +14,7 @@
           (ngSubmit)="onSubmit(form)"
           class="needs-validation"
           novalidate
+          autocomplete="off"
         >
           <!-- 従業員番号（数字のみ） -->
           <div class="row mb-4">
@@ -140,7 +141,8 @@
                   id="password"
                   class="form-control"
                   [(ngModel)]="employee.password"
-                  name="password"
+                  name="new-password"
+                  autocomplete="new-password"
                   minlength="9"
                   maxlength="64"
                   #passwordInput="ngModel"
@@ -217,7 +219,8 @@
                 id="email"
                 class="form-control"
                 [(ngModel)]="employee.email"
-                name="email"
+                name="new-email"
+                autocomplete="off"
                 required
                 #emailInput="ngModel"
                 (ngModelChange)="onEmailChange()"
