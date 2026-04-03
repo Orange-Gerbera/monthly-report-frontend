@@ -44,6 +44,7 @@ export class ReportFormComponent {
   /** ボタンラベル */
   @Input() submitLabel = '登録';
   @Input() backLabel = '一覧に戻る';
+  @Input() backIcon?: string;
 
   /** 出力イベント */
   @Output() formSubmit = new EventEmitter<ReportUpsertRequest>();
