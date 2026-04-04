@@ -6,7 +6,6 @@ import { Observable, Subject, startWith, switchMap, map, tap, take, shareReplay 
 import { ReportDto } from '../../models/report.dto';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CharCountComponent } from '../../../../shared/char-count/char-count.component';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { DiffTextComponent } from '../../../../shared/components/diff-text/diff-text.component';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -15,8 +14,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
-import { catchError, EMPTY } from 'rxjs'; 
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError } from 'rxjs'; 
 
 @Component({
   standalone: true,
@@ -25,12 +23,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     CommonModule,
     RouterLink,
     FormsModule,
-    CharCountComponent,
     ButtonComponent,
     DiffTextComponent,
     MatDialogModule,
     MatTooltipModule,
-    ConfirmDialogComponent,
     MatIconModule,
   ],
   templateUrl: './report-detail.component.html',
