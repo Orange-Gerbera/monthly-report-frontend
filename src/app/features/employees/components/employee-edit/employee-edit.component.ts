@@ -1,11 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { DepartmentService } from '../../../departments/services/department.service';
 import { DepartmentDto } from '../../../departments/models/department.dto';
-import { EmployeeDto, EmployeeRequest } from '../../models/employee.dto';
+import { EmployeeRequest } from '../../models/employee.dto';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { IconComponent } from '../../../../shared/icon/icon.component';
 import { PasswordUtil } from '../../../../shared/utils/password.util';
@@ -19,7 +19,7 @@ import { AuthService } from '../../../auth/services/auth.service';
   templateUrl: './employee-edit.component.html',
   styleUrls: ['./employee-edit.component.scss']
 })
-export class EmployeeEditComponent implements OnInit {
+export class EmployeeEditComponent implements OnInit, OnDestroy {
   @Input() selfMode = false;
   @Input() noCard = false;
   isSystemAdmin = false;
@@ -63,6 +63,11 @@ export class EmployeeEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // =========================
+    // ★ 追加：画面に入った時にロックをかける
+    // =========================
+    this.context.setLocked(true);
+
     this.employeeService.getCurrentUser().subscribe(user => {
       this.isSystemAdmin = user.role === 'SYSTEM_ADMIN';
 
@@ -117,6 +122,13 @@ export class EmployeeEditComponent implements OnInit {
         }
       }
     });
+  }
+
+  // =========================
+  // ★ 追加：画面を離れる時にロックを解除する
+  // =========================
+  ngOnDestroy(): void {
+    this.context.setLocked(false);
   }
 
   onRoleChange(): void {

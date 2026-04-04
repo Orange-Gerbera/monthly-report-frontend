@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DepartmentService } from '../../services/department.service';
@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SimpleDialogComponent } from '../../../../shared/components/simple-dialog/simple-dialog.component';
+import { Subject, takeUntil, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-department-settings',
@@ -34,6 +35,8 @@ export class DepartmentSettingsComponent implements OnInit {
 
   // ⭐ 追加
   private currentDeptId?: number;
+  // ★ メモリリーク防止用の Subject
+  private destroy$ = new Subject<void>();
 
   constructor(
     private departmentService: DepartmentService,
@@ -42,13 +45,36 @@ export class DepartmentSettingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.context.selectedDeptId$.subscribe((deptId) => {
-      this.currentDeptId = deptId ?? undefined;
+    // =========================
+    // ★ switchMap を使って「コンテキスト切り替え」と「データ取得」を一本化
+    // =========================
+    this.context.selectedDeptId$
+      .pipe(
+        takeUntil(this.destroy$), // 画面を離れたら自動解除
+        switchMap((deptId) => {
+          this.currentDeptId = deptId ?? undefined;
+          if (this.currentDeptId === undefined) {
+            return []; // IDがない場合は空配列を流す
+          }
+          // IDがある場合、即座に部署一覧を取得
+          return this.departmentService.getAll();
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          // 型ガードを入れてフィルタリング
+          this.departments = (data ?? []).filter(d =>
+            Number(d.parentId) === Number(this.currentDeptId)
+          );
+        },
+        error: (err) => console.error('部署取得失敗', err)
+      });
+  }
 
-      if (this.currentDeptId !== undefined) {
-        this.loadDepartmentsWithParent(this.currentDeptId);
-      }
-    });
+  // ★ 画面を離れる時に全ての購読をストップ
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadDepartmentsWithParent(parentId: number): void {

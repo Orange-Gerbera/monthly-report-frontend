@@ -6,11 +6,21 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class ContextService {
 
+  // ★ロック状態を管理するSubjectを追加
+  private isLocked$ = new BehaviorSubject<boolean>(false);
+  // 外部から購読するためのObservable
+  isLocked = this.isLocked$.asObservable();
+
   private deptId$ = new BehaviorSubject<number | undefined>(
     this.loadFromStorage()
   );
 
   selectedDeptId$ = this.deptId$.asObservable();
+
+  // ★ロック状態をセットするメソッド
+  setLocked(locked: boolean) {
+    this.isLocked$.next(locked);
+  }
 
   setDeptId(id?: number) {
     console.log("🔥 setDeptId =", id);

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -20,7 +20,7 @@ import { map } from 'rxjs';
   templateUrl: './employee-new.component.html',
   styleUrls: ['./employee-new.component.scss']
 })
-export class EmployeeNewComponent {
+export class EmployeeNewComponent implements OnInit, OnDestroy {
 
   employee: EmployeeRequest = {
     code: '',
@@ -67,6 +67,11 @@ export class EmployeeNewComponent {
   // =========================
   ngOnInit(): void {
 
+    // =========================
+    // ★ 追加：画面に入った時にロックをかける
+    // =========================
+    this.context.setLocked(true);
+
     this.context.selectedDeptId$
       .pipe(
         filter((parentId): parentId is number => parentId != null),
@@ -100,6 +105,14 @@ export class EmployeeNewComponent {
         this.targetDeptName = parent?.name ?? '';
       });
   }
+  
+  // =========================
+  // ★ 追加：画面を離れる時にロックを解除する
+  // =========================
+  ngOnDestroy(): void {
+    this.context.setLocked(false);
+  }
+
   // =========================
   // ★追加：従業員存在チェック
   // =========================

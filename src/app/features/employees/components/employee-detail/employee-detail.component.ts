@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { EmployeeDto } from '../../models/employee.dto';
@@ -31,7 +31,7 @@ import { AuthService } from '../../../auth/services/auth.service';
     EmploymentStatusLabelPipe
   ],
 })
-export class EmployeeDetailComponent implements OnInit {
+export class EmployeeDetailComponent implements OnInit, OnDestroy {
 
   employee$!: Observable<EmployeeDto>;
 
@@ -48,6 +48,10 @@ export class EmployeeDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // =========================
+    // ★ 追加：詳細画面表示時にコンテキストをロック
+    // =========================
+    this.context.setLocked(true);
 
     this.employeeService.getCurrentUser().subscribe(user => {
       this.currentUserCode = user.code;
@@ -66,6 +70,13 @@ export class EmployeeDetailComponent implements OnInit {
         })
       );
     }
+  }
+
+  // =========================
+  // ★ 追加：画面を離れる時にロックを解除
+  // =========================
+  ngOnDestroy(): void {
+    this.context.setLocked(false);
   }
 
   canEdit(employee: EmployeeDto): boolean {

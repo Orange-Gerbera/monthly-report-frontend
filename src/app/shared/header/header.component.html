@@ -9,6 +9,7 @@
         style="min-width: 320px;"
         [(ngModel)]="selectedDepartmentId"
         (ngModelChange)="onDepartmentChange()"
+        [disabled]="isContextLocked"
       >
         <option
           *ngFor="let dept of managerDepartments"

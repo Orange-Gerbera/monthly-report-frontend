@@ -9,7 +9,6 @@ import { filter, take } from 'rxjs/operators';
 
 declare var bootstrap: any;
 
-
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -29,8 +28,14 @@ export class HeaderComponent {
   ) { }
 
   initialized = false;
+  isContextLocked = false;
 
   ngOnInit(): void {
+    // ロック状態を監視し、HTML側に反映させる
+    this.contextService.isLocked.subscribe(locked => {
+      this.isContextLocked = locked;
+    });
+
     this.authService.getCurrentUser$()
       .pipe(
         filter(user => !!user),

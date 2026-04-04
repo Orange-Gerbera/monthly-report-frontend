@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReportService } from '../../services/report.service';
@@ -6,14 +6,16 @@ import { ReportDto, ReportUpsertRequest } from '../../models/report.dto';
 import { ReportFormComponent } from '../report-form/report-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ContextService } from '../../../../shared/services/context.service';
 
 @Component({
   selector: 'app-report-edit',
   standalone: true,
   imports: [CommonModule, ReportFormComponent],
   templateUrl: './report-edit.component.html',
+  styleUrls: ['./report-edit.component.scss'],
 })
-export class ReportEditComponent implements OnInit {
+export class ReportEditComponent implements OnInit, OnDestroy {
   reportId!: string;
   previousUrl: string = '/reports';
 
@@ -29,7 +31,8 @@ export class ReportEditComponent implements OnInit {
     private route: ActivatedRoute,
     private reportService: ReportService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private context: ContextService
   ) {
     // コンストラクタで詳細画面から渡された state を受け取る
     const navigation = this.router.getCurrentNavigation();
@@ -40,6 +43,11 @@ export class ReportEditComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // =========================
+    // ★ 追加：画面表示時にコンテキストをロック
+    // =========================
+    this.context.setLocked(true);
+
     this.reportId = this.route.snapshot.paramMap.get('id')!;
     this.reportService.getReportById(this.reportId, true).subscribe({
       next: (res) => {
@@ -52,6 +60,13 @@ export class ReportEditComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  // =========================
+  // ★ 追加：画面を離れる時にロックを解除
+  // =========================
+  ngOnDestroy(): void {
+    this.context.setLocked(false);
   }
 
   /** ReportDto → ReportUpsertRequest（フォーム用） */

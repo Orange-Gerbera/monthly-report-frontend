@@ -74,6 +74,10 @@ export class ReportNewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // =========================
+    // ★ 追加：画面表示時にコンテキストをロック
+    // =========================
+    this.context.setLocked(true);
 
     // ⭐ Contextから部署ID取得
     this.context.selectedDeptId$
@@ -127,6 +131,11 @@ export class ReportNewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // =========================
+    // ★ 追加：画面を離れる時にロックを解除
+    // =========================
+    this.context.setLocked(false);
+    
     this.destroy$.next();
     this.destroy$.complete();
   }

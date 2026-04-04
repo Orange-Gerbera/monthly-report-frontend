@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../services/report.service';
@@ -13,8 +13,9 @@ import { ExcelDownloadService } from '../../services/excel-download.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ContextService } from '../../../../shared/services/context.service';
 import { MatIconModule } from '@angular/material/icon';
-import { catchError } from 'rxjs'; 
+import { catchError } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -32,7 +33,7 @@ import { catchError } from 'rxjs';
   templateUrl: './report-detail.component.html',
   styleUrls: ['./report-detail.component.scss'],
 })
-export class ReportDetailComponent implements OnInit {
+export class ReportDetailComponent implements OnInit, OnDestroy {
   protected Math = Math;
   isCommentFormVisible = false;
   commentText = '';
@@ -58,6 +59,7 @@ export class ReportDetailComponent implements OnInit {
     private authService: AuthService,
     private excelDownloadService: ExcelDownloadService,
     private dialog: MatDialog,
+    private context: ContextService
   ) {
     const navigation = this.router.getCurrentNavigation();
 
@@ -73,6 +75,10 @@ export class ReportDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // =========================
+    // ★ 追加：画面表示時にコンテキストをロック
+    // =========================
+    this.context.setLocked(true);
 
     this.report$ = this.route.paramMap.pipe(
 
@@ -111,6 +117,13 @@ export class ReportDetailComponent implements OnInit {
 
       shareReplay({ bufferSize: 1, refCount: true }) // ← ここも変更
     );
+  }
+
+  // =========================
+  // ★ 追加：画面を離れる時にロックを解除
+  // =========================
+  ngOnDestroy(): void {
+    this.context.setLocked(false);
   }
 
   private loadPreviousMonthData(current: ReportDto) {
