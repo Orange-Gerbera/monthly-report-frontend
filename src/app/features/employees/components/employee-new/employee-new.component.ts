@@ -72,10 +72,13 @@ export class EmployeeNewComponent implements OnInit, OnDestroy{
     // =========================
     this.context.setLocked(true);
 
+    this.context.contextText.subscribe(name => {
+      this.targetDeptName = name; 
+    });
+
     this.context.selectedDeptId$
       .pipe(
         filter((parentId): parentId is number => parentId != null),
-
         switchMap(parentId =>
           this.departmentService.getAll().pipe(
             map(data => ({ parentId, data }))
@@ -83,17 +86,18 @@ export class EmployeeNewComponent implements OnInit, OnDestroy{
         )
       )
       .subscribe(({ parentId, data }) => {
-
+        // 2. 所属プルダウン用のリスト作成（ここだけでOK！）
         this.departments = data.filter(d =>
           Number(d.parentId) === Number(parentId) &&
           d.id !== 1 &&
           d.active
         );
 
-        console.log('[DEBUG] parentId:', parentId, 'Filtered Count:', this.departments.length);
+        // --- 修正：ここから下の「異動先名の解決」ロジックはバッサリ削除してください ---
+        // ( target の find や unassigned の処理があった場所 )
+        // ------------------------------------------------------------------
 
-        const parent = data.find(d => Number(d.id) === Number(parentId));
-        this.targetDeptName = parent?.name ?? '';
+        console.log(`[DEBUG] parentId: ${parentId}, Dropdown count: ${this.departments.length}`);
       });
   }
   
@@ -111,7 +115,16 @@ export class EmployeeNewComponent implements OnInit, OnDestroy{
 
     if (!this.employee.code) return;
 
-    this.http.get(`/api/employees/exists/${this.employee.code}`)
+    const deptId = this.context.getDeptId();
+    if (deptId == null) {
+      return;
+    }
+
+    this.http.get(`/api/employees/exists/${this.employee.code}`, {
+      params: {
+        deptId: deptId
+      }
+    })
     .subscribe({
       next: (res: any) => {
 
@@ -200,24 +213,38 @@ export class EmployeeNewComponent implements OnInit, OnDestroy{
   }
 
   // =========================
-  // ★追加：異動処理
+  // ★ 修正：異動処理
   // =========================
   transferEmployee(): void {
     if (!this.employee.code) return;
 
-    this.http.post(`/api/employees/${this.employee.code}/transfer`, {})
-      .subscribe({
-        next: () => {
-          alert('異動しました');
+    // 1. ContextService から現在の「正しい部署ID」を取得
+    const deptId = this.context.getDeptId();
+    
+    if (deptId == null) {
+      alert('異動先の部署IDが取得できません。');
+      return;
+    }
 
-          // 再チェック（UI更新）
-          this.checkEmployeeExists();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('異動に失敗しました');
-        }
-      });
+    // 2. POSTリクエストに deptId を含める
+    // 存在チェック(exists)と同じように params で送るか、bodyに含める必要があります
+    this.http.post(`/api/employees/${this.employee.code}/transfer`, {}, {
+      params: {
+        deptId: String(deptId) // 文字列としてクエリパラメータにセット
+      }
+    })
+    .subscribe({
+      next: () => {
+        alert('異動しました');
+        // UIの状態を最新にする（「既に所属しています」の状態へ）
+        this.checkEmployeeExists();
+      },
+      error: (err) => {
+        console.error('異動失敗:', err);
+        const message = err.error?.message || '異動に失敗しました';
+        alert(message);
+      }
+    });
   }
 
   // =========================

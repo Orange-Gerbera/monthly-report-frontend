@@ -4,6 +4,8 @@ export interface DepartmentDto {
   parentId?: number;
   active: boolean;
 
+  isProtected?: boolean;
+  
   hasEmployee: boolean;
   hasReport: boolean;
 }

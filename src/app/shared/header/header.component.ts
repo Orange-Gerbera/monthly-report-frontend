@@ -73,7 +73,7 @@ export class HeaderComponent {
         this.selectedDepartmentId = current;
 
         if (current != null) {
-          this.contextService.setDeptId(current);
+          this.contextService.setContext(current, this.displayDepartmentName);
         }
 
         this.initialized = true; // ⭐追加
@@ -93,7 +93,8 @@ export class HeaderComponent {
 
   onDepartmentChange(): void {
     if (this.selectedDepartmentId != null) {
-      this.contextService.setDeptId(this.selectedDepartmentId);
+      // get displayDepartmentName の結果（Adminなら自分、Generalなら親の名前）をセット
+      this.contextService.setContext(this.selectedDepartmentId, this.displayDepartmentName);
     }
   }
 
@@ -120,19 +121,21 @@ export class HeaderComponent {
   }
 
   get displayDepartmentName(): string {
-
+    // ★重要：Number() を使って、数値と文字列の不一致を解消する
     const selected = this.managerDepartments.find(
-      d => d.id === this.selectedDepartmentId
+      d => Number(d.id) === Number(this.selectedDepartmentId)
     );
 
-    if (!selected) return '';
+    if (!selected) {
+      console.warn('選択された部署が見つかりません:', this.selectedDepartmentId);
+      return '';
+    }
 
-    // 管理者 → 自分
+    // 管理者なら自分、一般なら親（＝プロジェクト名）
     if (selected.manager === true) {
       return selected.name;
     }
 
-    // 一般 → 親
     return selected.parentName ?? '---';
   }
 }

@@ -17,9 +17,24 @@ export class ContextService {
 
   selectedDeptId$ = this.deptId$.asObservable();
 
+  private contextText$ = new BehaviorSubject<string>(this.loadNameFromStorage());
+  contextText = this.contextText$.asObservable();
+
   // ★ロック状態をセットするメソッド
   setLocked(locked: boolean) {
     this.isLocked$.next(locked);
+  }
+
+  setContext(id: number, name: string) {
+    console.log(`🔥 Context Update: ID=${id}, Name=${name}`);
+    
+    // IDの保存
+    localStorage.setItem('deptId', String(id));
+    this.deptId$.next(id);
+
+    // 名前の保存（これが「オレンジガーベラプロジェクト」になる）
+    localStorage.setItem('contextText', name);
+    this.contextText$.next(name);
   }
 
   setDeptId(id?: number) {
@@ -29,6 +44,8 @@ export class ContextService {
       localStorage.setItem('deptId', String(id));
     } else {
       localStorage.removeItem('deptId');
+      this.contextText$.next('');
+      localStorage.removeItem('contextText');
     }
 
     this.deptId$.next(id);
@@ -41,5 +58,9 @@ export class ContextService {
   private loadFromStorage(): number | undefined {
     const v = localStorage.getItem('deptId');
     return v ? Number(v) : undefined;
+  }
+
+  private loadNameFromStorage(): string {
+    return localStorage.getItem('contextText') || '';
   }
 }
