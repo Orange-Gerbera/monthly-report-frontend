@@ -268,7 +268,7 @@
                 #departmentInput="ngModel"
                 [disabled]="mode !== 'new'"
               >
-                <option [ngValue]="null" disabled>-- 所属を選択 --</option>
+                <option [ngValue]="null">-- 所属を選択 --</option>
                 <option
                   *ngFor="let dept of departments; trackBy: trackByDeptId"
                   [ngValue]="dept.id">

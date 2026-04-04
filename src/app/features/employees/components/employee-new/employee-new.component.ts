@@ -20,7 +20,7 @@ import { map } from 'rxjs';
   templateUrl: './employee-new.component.html',
   styleUrls: ['./employee-new.component.scss']
 })
-export class EmployeeNewComponent implements OnInit, OnDestroy {
+export class EmployeeNewComponent implements OnInit, OnDestroy{
 
   employee: EmployeeRequest = {
     code: '',
@@ -91,15 +91,6 @@ export class EmployeeNewComponent implements OnInit, OnDestroy {
         );
 
         console.log('[DEBUG] parentId:', parentId, 'Filtered Count:', this.departments.length);
-
-        const exists = this.departments.some(
-          d => Number(d.id) === Number(this.employee.departmentId)
-        );
-
-        if (!exists) {
-          this.employee.departmentId =
-            this.departments.length > 0 ? this.departments[0].id : null;
-        }
 
         const parent = data.find(d => Number(d.id) === Number(parentId));
         this.targetDeptName = parent?.name ?? '';
