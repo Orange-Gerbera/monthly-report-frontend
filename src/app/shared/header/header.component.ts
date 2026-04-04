@@ -59,24 +59,49 @@ export class HeaderComponent {
           this.managerDepartments = rawDepartments;
         }
 
+        // ngOnInit 内の初期化ロジック
         this.allDepartments = rawDepartments;
+
+        // 1. セレクトボックスに表示する「親（Manager=1）」のリストを作成
+        this.managerDepartments = rawDepartments.filter(d => d.manager === true);
 
         let current = this.contextService.getDeptId();
 
+        // 2. 初期値（current）が妥当かチェック
+        // managerDepartmentsの中に current が存在しない場合は初期化が必要
         if (
           current == null ||
-          !this.managerDepartments.some(d => d.id === current)
+          !this.managerDepartments.some(d => Number(d.id) === Number(current))
         ) {
-          current = this.managerDepartments[0]?.id;
+          // ⭐【最重要】自分のメイン所属（primary=true）を起点に「親」を特定する
+          const primaryDept = rawDepartments.find(d => d.primary === true);
+
+          if (primaryDept) {
+            if (primaryDept.manager === true) {
+              // 自分が管理者として親部署に所属している場合
+              current = primaryDept.id;
+            } else {
+              // 一般（General）などで子(manager=0)に所属している場合
+              // ⭐自分の ID ではなく、親の ID (parentId) を current に入れる
+              current = primaryDept.parentId;
+            }
+          }
+
+          // 親リストの先頭を最終的な予備とする
+          if (current == null) {
+            current = this.managerDepartments[0]?.id;
+          }
         }
 
+        // 3. selectedDepartmentId には「親のID」がセットされる
         this.selectedDepartmentId = current;
 
         if (current != null) {
+          // ContextService に保存されるのは「親のID」と「その親の名称」
           this.contextService.setContext(current, this.displayDepartmentName);
         }
 
-        this.initialized = true; // ⭐追加
+        this.initialized = true;
       });
   }
 
@@ -121,21 +146,21 @@ export class HeaderComponent {
   }
 
   get displayDepartmentName(): string {
-    // ★重要：Number() を使って、数値と文字列の不一致を解消する
-    const selected = this.managerDepartments.find(
-      d => Number(d.id) === Number(this.selectedDepartmentId)
-    );
-
-    if (!selected) {
-      console.warn('選択された部署が見つかりません:', this.selectedDepartmentId);
-      return '';
+    // selectedDepartmentId は常に「親（Manager=true）」のID
+    // ただし一般ユーザーは managerDepartments に親を持っていない場合があるため、
+    // allDepartments（または primaryDept.parentName）から取得する必要があります。
+    
+    const primaryDept = this.allDepartments.find(d => d.primary === true);
+    
+    // 管理者の場合：セレクトボックスで選んでいる「親」の名前
+    if (this.isAdmin) {
+      const selected = this.managerDepartments.find(
+        d => Number(d.id) === Number(this.selectedDepartmentId)
+      );
+      return selected ? selected.name : '---';
     }
 
-    // 管理者なら自分、一般なら親（＝プロジェクト名）
-    if (selected.manager === true) {
-      return selected.name;
-    }
-
-    return selected.parentName ?? '---';
+    // 一般ユーザーの場合：自分が属する「親（プロジェクト）」の名前
+    return primaryDept?.parentName ?? '---';
   }
 }
