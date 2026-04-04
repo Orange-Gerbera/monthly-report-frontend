@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DepartmentDto } from '../models/department.dto';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment'; // 相対パスに修正
 
 @Injectable({
@@ -16,7 +16,9 @@ export class DepartmentService {
   getAll(): Observable<DepartmentDto[]> {
     return this.http.get<DepartmentDto[]>(this.baseUrl, {
       withCredentials: true,
-    });
+    }).pipe(
+      map(list => list.map(d => this.normalizeDepartment(d)))
+    );
   }
 
   // 所属追加
@@ -44,6 +46,16 @@ export class DepartmentService {
   getById(id: number): Observable<DepartmentDto> {
     return this.http.get<DepartmentDto>(`${this.baseUrl}/${id}`, {
       withCredentials: true,
-    });
+    }).pipe(
+      map(d => this.normalizeDepartment(d))
+    );
+  }
+
+  private normalizeDepartment(d: DepartmentDto): DepartmentDto {
+    return {
+      ...d,
+      id: Number(d.id),
+      parentId: d.parentId != null ? Number(d.parentId) : undefined
+    };
   }
 }

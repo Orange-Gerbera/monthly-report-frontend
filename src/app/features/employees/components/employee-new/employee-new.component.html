@@ -264,13 +264,14 @@
               <select
                 class="form-select"
                 [(ngModel)]="employee.departmentId"
-                name="departmentId"
-                required
+                name="departmentId" required
                 #departmentInput="ngModel"
                 [disabled]="mode !== 'new'"
               >
                 <option [ngValue]="null" disabled>-- 所属を選択 --</option>
-                <option *ngFor="let dept of departments" [value]="dept.id">
+                <option
+                  *ngFor="let dept of departments; trackBy: trackByDeptId"
+                  [ngValue]="dept.id">
                   {{ dept.name }}
                 </option>
               </select>

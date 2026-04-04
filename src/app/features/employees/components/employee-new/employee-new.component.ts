@@ -10,6 +10,8 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
 import { PasswordUtil } from '../../../../shared/utils/password.util';
 import { ContextService } from '../../../../shared/services/context.service';
 import { ButtonComponent } from '../../../../shared/button/button.component';
+import { filter, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-employee-new',
@@ -66,36 +68,38 @@ export class EmployeeNewComponent {
   ngOnInit(): void {
 
     this.context.selectedDeptId$
-      .subscribe((parentId) => {
+      .pipe(
+        filter((parentId): parentId is number => parentId != null),
 
-        if (!parentId) return;
+        switchMap(parentId =>
+          this.departmentService.getAll().pipe(
+            map(data => ({ parentId, data }))
+          )
+        )
+      )
+      .subscribe(({ parentId, data }) => {
 
-        // ★ ① 親は別APIで取得
-        this.departmentService.getById(parentId).subscribe({
-          next: (parent) => {
-            this.targetDeptName = parent.name;
-          }
-        });
+        this.departments = data.filter(d =>
+          Number(d.parentId) === Number(parentId) &&
+          d.id !== 1 &&
+          d.active
+        );
 
-        // ★ ② 子は今まで通り
-        this.departmentService.getAll().subscribe({
-          next: (data) => {
+        console.log('[DEBUG] parentId:', parentId, 'Filtered Count:', this.departments.length);
 
-            this.departments = (data ?? []).filter(d =>
-              d.parentId === parentId &&
-              d.id !== 1 &&
-              d.active
-            );
+        const exists = this.departments.some(
+          d => Number(d.id) === Number(this.employee.departmentId)
+        );
 
-            if (!this.employee.departmentId && this.departments.length) {
-              this.employee.departmentId = this.departments[0].id;
-            }
-          }
-        });
+        if (!exists) {
+          this.employee.departmentId =
+            this.departments.length > 0 ? this.departments[0].id : null;
+        }
 
+        const parent = data.find(d => Number(d.id) === Number(parentId));
+        this.targetDeptName = parent?.name ?? '';
       });
   }
-
   // =========================
   // ★追加：従業員存在チェック
   // =========================
@@ -298,6 +302,10 @@ export class EmployeeNewComponent {
 
     input.value = sanitized;
     this.employee.password = sanitized;
+  }
+
+  trackByDeptId(index: number, dept: DepartmentDto) {
+    return dept.id;
   }
 
 }

@@ -25,7 +25,9 @@ export class EmployeeService {
         withCredentials: true,
       })
       .pipe(
-        map((response) => response.data), // ★ここ修正
+        map((response) =>
+          response.data.map(e => this.normalizeEmployee(e))
+        ),
         tap((employees) => this.setCache(employees))
       );
   }
@@ -36,17 +38,30 @@ export class EmployeeService {
     });
   }
 
+  private normalizeEmployee(e: EmployeeDto): EmployeeDto {
+    return {
+      ...e,
+      code: String(e.code),
+      primaryDepartmentId: e.primaryDepartmentId != null
+        ? Number(e.primaryDepartmentId)
+        : undefined
+    };
+  }
+
   getCachedEmployeeByCode(code: string): EmployeeDto | undefined {
     return this.employeeCache.get(code);
   }
 
   getEmployeeByIdWithFallback(code: string): Observable<EmployeeDto> {
     const cached = this.getCachedEmployeeByCode(code);
+
     return cached
       ? of(cached)
       : this.http.get<EmployeeDto>(`${this.API_URL}/${code}`, {
           withCredentials: true,
-        });
+        }).pipe(
+          map(e => this.normalizeEmployee(e)) // ★追加
+        );
   }
 
   update(code: string, request: Partial<EmployeeDto>): Observable<EmployeeDto> {
@@ -116,7 +131,11 @@ export class EmployeeService {
     }>(this.API_URL, {
       params: httpParams,
       withCredentials: true,
-    });
+    }).pipe(
+      map(res => ({
+        ...res,
+        data: res.data.map(e => this.normalizeEmployee(e))
+      }))
+    );
   }
-
 }

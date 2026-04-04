@@ -334,12 +334,11 @@ export class EmployeeEditComponent implements OnInit {
     if (!parentId) return [];
 
     let list = this.departments.filter(d =>
-      d.parentId === parentId &&
+      Number(d.parentId) === Number(parentId) &&
       d.id !== 1 &&
       d.active
     );
 
-    // 🔥 ここが本質
     if (this.isSystemAdmin && this.employee.role === 'SYSTEM_ADMIN') {
       const none = this.departments.find(d => d.id === 1);
       if (none) {
@@ -355,7 +354,13 @@ export class EmployeeEditComponent implements OnInit {
 
     if (!this.employee) return;
 
-    if (!this.employee.departmentId && selectable.length) {
+    // ★修正：現在選択されている部署が、切り替え後の選択肢の中に存在するかチェック
+    const exists = selectable.some(
+      d => Number(d.id) === Number(this.employee.departmentId)
+    );
+
+    // 選択肢の中に今の部署がない場合のみ、先頭の部署をセットする
+    if (!exists && selectable.length > 0) {
       this.employee.departmentId = selectable[0].id;
     }
   }

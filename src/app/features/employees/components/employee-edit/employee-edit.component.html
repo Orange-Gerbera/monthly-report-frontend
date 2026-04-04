@@ -224,8 +224,7 @@
             id="departmentId"
             class="form-select"
             [(ngModel)]="employee.departmentId"
-            name="departmentId"
-            required
+            name="departmentId" required
             [disabled]="employee.role === 'SYSTEM_ADMIN'"
             #departmentInput="ngModel"
           >

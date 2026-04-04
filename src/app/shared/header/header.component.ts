@@ -68,18 +68,6 @@ export class HeaderComponent {
         this.selectedDepartmentId = current;
 
         if (current != null) {
-
-         const selected = this.managerDepartments.find(d => d.id === current);
-
-          // 👇 manager（=親）はそのまま
-          if (selected?.manager === true) {
-            // 何もしない
-          }
-          // 👇 一般（子）のみ1階層上へ
-          else if (selected?.parentId != null) {
-            current = selected.parentId;
-          }
-
           this.contextService.setDeptId(current);
         }
 
@@ -100,18 +88,7 @@ export class HeaderComponent {
 
   onDepartmentChange(): void {
     if (this.selectedDepartmentId != null) {
-
-      let current = this.selectedDepartmentId;
-
-      const selected = this.managerDepartments.find(d => d.id === current);
-
-      if (selected?.manager === true) {
-        // 何もしない
-      } else if (selected?.parentId != null) {
-        current = selected.parentId;
-      }
-
-      this.contextService.setDeptId(current);
+      this.contextService.setDeptId(this.selectedDepartmentId);
     }
   }
 

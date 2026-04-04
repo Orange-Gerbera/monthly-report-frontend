@@ -57,16 +57,14 @@ export class EmployeeDetailComponent implements OnInit {
     const code = this.route.snapshot.paramMap.get('code');
 
     if (code) {
-      this.context.selectedDeptId$.subscribe((deptId) => {
-        this.employee$ = this.employeeService.getByCode(code).pipe(
-          catchError(err => {
-            if (err.status === 403) {
-              this.router.navigate(['/employees']);
-            }
-            return throwError(() => err);
-          })
-        );
-      });
+      this.employee$ = this.employeeService.getByCode(code).pipe(
+        catchError(err => {
+          if (err.status === 403) {
+            this.router.navigate(['/employees']);
+          }
+          return throwError(() => err);
+        })
+      );
     }
   }
 
