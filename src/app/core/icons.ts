@@ -1,5 +1,6 @@
 import { 
   Files, 
+  FileUp,
   FileText,
   FileDown,
   FileOutput,
@@ -46,6 +47,7 @@ import {
 // 使うアイコンをオブジェクトにまとめる
 export const customIcons = {
   Files,
+  FileUp,
   FileText,
   FileDown,
   FileOutput,

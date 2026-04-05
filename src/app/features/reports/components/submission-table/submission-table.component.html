@@ -1,0 +1,89 @@
+<div class="table-responsive">
+  <table class="table app-table w-100">
+
+    <thead>
+      <tr>
+        <th>種類</th>
+        <th>提出期日</th>
+        <th>提出日</th>
+        <th>提出　→　受理　→　承認</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <tr *ngFor="let data of dataList">
+
+        <td>{{ data.name }}</td>
+
+        <td>{{ data.dueDate | date:'MM/dd HH:mm' }}</td>
+
+        <td>
+          <ng-container *ngIf="data.submittedAt; else notSubmitted">
+            {{ data.submittedAt | date:'MM/dd' }}
+          </ng-container>
+          <ng-template #notSubmitted>
+            <span class="text-muted">未提出</span>
+          </ng-template>
+        </td>
+
+        <!-- 状態 -->
+        <td>
+          <div class="status-timeline">
+
+            <!-- 提出 -->
+            <span
+              class="node"
+              [class.active]="!!data.submittedAt"
+              matTooltip="{{ data.submittedAt ? '提出済み' : '未提出' }}">
+            </span>
+
+            <span class="bar" [class.active]="!!data.submittedAt"></span>
+
+            <!-- 受理 -->
+            <span
+              class="node"
+              [class.active]="data.status?.received === true"
+              [class.reject]="data.status?.received === false"
+              matTooltip="
+                {{ data.status?.received === true 
+                  ? '受理' 
+                  : data.status?.received === false 
+                  ? '差戻し' 
+                  : '未処理' }}">
+            </span>
+
+            <span class="bar" [class.active]="data.status?.received === true"></span>
+
+            <!-- 承認 -->
+            <span
+              class="node"
+              [class.active]="data.status?.approved === true"
+              [class.reject]="data.status?.approved === false"
+              matTooltip="
+                {{ data.status?.approved === true 
+                  ? '承認' 
+                  : data.status?.approved === false 
+                  ? '否認' 
+                  : '未処理' }}">
+            </span>
+
+          </div>
+        </td>
+
+        <!-- ボタン -->
+        <td class="text-end">
+          <app-button
+            [label]="getButtonLabel(data)"
+            [icon]="getButtonIcon(data)"
+            (click)="onAction(data)">
+          </app-button>
+        </td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+</div>

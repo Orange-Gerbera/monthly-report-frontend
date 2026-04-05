@@ -1,7 +1,7 @@
 <div class="container py-5">
   <div class="page-card">
 
-    <!-- プロフィール編集ボタン -->
+    <!-- プロフィール編集 -->
     <div class="mb-3">
       <app-button
         [label]="showForm ? '編集を閉じる' : 'プロフィール編集'"
@@ -12,9 +12,8 @@
       ></app-button>
     </div>
 
-    <!-- タイトル行（右に操作） -->
+    <!-- タイトル -->
     <div class="row align-items-end pb-2 mt-3" *ngIf="!showForm">
-      <!-- 左：タイトル＋アンダーライン -->
       <div class="col pb-2">
         <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
           <app-icon name="circle-user-round" class="title-icon me-3"></app-icon>
@@ -22,43 +21,42 @@
         </h1>
       </div>
 
-      <!-- 右：チェック＋作成ボタン -->
-      <div class="col-auto pb-2">
-        <div class="d-flex align-items-center gap-3">
-
-          <app-button
-            label="報告書作成"
-            icon="file-plus-corner"
-            color="blue"
-            size="md"
-            [routerLink]="isSystemAdmin ? [] : ['/reports/new']"
-            [state]="{ previousUrl: previousUrl }"
-            [queryParams]="{ useLatest: useLatest }"
-            [disabled]="isSystemAdmin"
-            [matTooltip]="isSystemAdmin ? 'システム管理者は報告書の新規作成はできません' : '新規報告書を作成します'"
-            matTooltipPosition="above"
-          ></app-button>
-
-          <div class="form-check mb-0" *ngIf="!isSystemAdmin">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="useLatest"
-              [(ngModel)]="useLatest"
-              name="useLatest"
-            />
-            <label class="form-check-label" for="useLatest">
-              直近を引き継ぐ
-            </label>
-          </div>
+      <!-- 直近引き継ぎ -->
+      <div class="col-auto pb-2" *ngIf="!isSystemAdmin">
+        <div class="form-check mb-0">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="useLatest"
+          />
+          <label class="form-check-label">
+            直近を引き継ぐ
+          </label>
         </div>
       </div>
     </div>
 
-    <!-- プロフィール編集フォーム -->
+    <!-- 編集フォーム -->
     <app-employee-edit *ngIf="showForm" [selfMode]="true"></app-employee-edit>
 
-    <!-- 報告書テーブル -->
-    <app-report-table *ngIf="!showForm" [filterByUser]="true"></app-report-table>
+    <!-- 月切替 -->
+    <div *ngIf="!showForm" class="d-flex align-items-center gap-3 mt-3 mb-3">
+
+      <button class="btn btn-light btn-sm" (click)="prevMonth()">◀</button>
+
+      <h5 class="mb-0">{{ currentYearMonth }}</h5>
+
+      <button class="btn btn-light btn-sm" (click)="nextMonth()">▶</button>
+
+    </div>
+
+    <!-- 提出物テーブル -->
+    <app-submission-table
+      [date]="currentDate"
+      [getButtonLabel]="getButtonLabel"
+      [getButtonIcon]="getButtonIcon"
+      [onAction]="onAction">
+    </app-submission-table>
+
   </div>
 </div>
