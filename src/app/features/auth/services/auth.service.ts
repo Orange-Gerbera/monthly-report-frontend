@@ -14,7 +14,6 @@ export class AuthService {
   private readonly API_BASE = `${environment.apiBaseUrl}/auth`;
 
   private currentUser$ = new BehaviorSubject<LoginResponse | null>(null);
-  private currentUser: LoginResponse | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -24,7 +23,6 @@ export class AuthService {
         withCredentials: true,
       })
       .pipe(tap((res) => {
-        this.currentUser = res;
         this.currentUser$.next(res);
       }
     ));
@@ -35,18 +33,16 @@ export class AuthService {
       .get<LoginResponse>(`${this.API_BASE}/me`, { withCredentials: true })
       .pipe(
         tap((user) => {
-          this.currentUser = user;
           this.currentUser$.next(user);
         }),
         catchError(() => {
-          this.currentUser = null;
+          this.currentUser$.next(null);
           return of(null as any);
         })
       );
   }
 
   logout(): Observable<any> {
-    this.currentUser = null;
     return this.http.post(
       `${this.API_BASE}/logout`,
       {},
@@ -54,6 +50,8 @@ export class AuthService {
         withCredentials: true,
         responseType: 'text',
       }
+    ).pipe(
+      tap(() => this.currentUser$.next(null))
     );
   }
 
@@ -67,7 +65,7 @@ export class AuthService {
 
   getCurrentUser$() {
     return this.currentUser$.asObservable();
-}
+  }
 
   getCurrentUser(): LoginResponse | null {
     return this.currentUser$.value;
@@ -78,22 +76,22 @@ export class AuthService {
   }
 
   isLoggedIn(): Observable<boolean> {
-    return this.http.get(`${this.API_BASE}/me`, { withCredentials: true }).pipe(
-      map(() => true),
-      catchError(() => of(false))
+    return this.currentUser$.pipe(
+      map(user => !!user)
     );
   }
 
   isAdmin(): boolean {
+    const user = this.currentUser$.value;
     return (
-      this.currentUser?.role === 'ADMIN' ||
-      this.currentUser?.role === 'SYSTEM_ADMIN' ||
-      this.currentUser?.role === '管理者' ||
-      this.currentUser?.role === 'システム管理者'
+      user?.role === 'ADMIN' ||
+      user?.role === 'SYSTEM_ADMIN' ||
+      user?.role === '管理者' ||
+      user?.role === 'システム管理者'
     );
   }
 
   isSystemAdmin(): boolean {
-    return this.currentUser?.role === 'SYSTEM_ADMIN';
+    return this.currentUser$.value?.role === 'SYSTEM_ADMIN';
   }
 }
