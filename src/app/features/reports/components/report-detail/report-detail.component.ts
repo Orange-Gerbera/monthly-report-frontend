@@ -16,6 +16,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { ContextService } from '../../../../shared/services/context.service';
 import { MatIconModule } from '@angular/material/icon';
 import { catchError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Submission } from '../../../../shared/models/submission.model';
 
 @Component({
   standalone: true,
@@ -51,6 +53,7 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
 
   showDiff = false;
   previousReport: ReportDto | null = null;
+  submission$!: Observable<Submission>;
 
   constructor(
     private route: ActivatedRoute,
@@ -59,7 +62,8 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private excelDownloadService: ExcelDownloadService,
     private dialog: MatDialog,
-    private context: ContextService
+    private context: ContextService,
+    private http: HttpClient
   ) {
     const navigation = this.router.getCurrentNavigation();
 
@@ -116,6 +120,19 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
       ),
 
       shareReplay({ bufferSize: 1, refCount: true }) // ← ここも変更
+    );
+
+    this.submission$ = this.report$.pipe(
+      switchMap(report =>
+        this.http.get<Submission>('/api/submissions/by-key', {
+          params: {
+            employeeCode: report.employeeCode,
+           typeCode: report.typeCode,
+            targetMonth: report.reportMonth
+          }
+        })
+      ),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
   }
 
@@ -248,11 +265,12 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
 
       if (result === undefined) return;
 
-      this.reportService.approveReport(id, result).subscribe({
-
-        next: () => {
-          this.refresh();
-        },
+      this.http.post(`/api/submissions/${id}/approve`, {
+        result: result,
+        userCode: this.authService.getCurrentUser()?.code,
+        comment: ''
+      }).subscribe({
+        next: () => this.refresh(),
         error: err => this.showError(err)
       });
 
@@ -307,19 +325,19 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
 
   }
 
-  private executeReceive(id: number, result: boolean | null) {
+  private executeReceive(submissionId: number, result: boolean | null) {
 
-    this.reportService.receiveReport(id, result).subscribe({
-      next: () => {
-        this.refresh();
-      },
-
+    this.http.post(`/api/submissions/${submissionId}/receive`, {
+      result: result,
+      userCode: this.authService.getCurrentUser()?.code,
+      comment: ''
+    }).subscribe({
+      next: () => this.refresh(),
       error: err => this.showError(err)
     });
-
   }
 
-  onSubmitToggle(id: number, submit: boolean): void {
+  onSubmitToggle(submissionId: number, submit: boolean): void {
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
@@ -333,21 +351,19 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
 
-      if (!result) return;
+      if (!result || !submit) return;
 
-      this.reportService.submitReport(id, submit).subscribe({
-
+      this.http.post(`/api/submissions/${submissionId}/submit`, {
+        userCode: this.authService.getCurrentUser()?.code
+      }).subscribe({
         next: () => {
           this.refresh();
-          alert(submit ? '提出しました' : '提出を取り下げました');
-          // this.loadReport();
+          alert('提出しました');
         },
-
         error: err => this.showError(err)
       });
 
     });
-
   }
 
   onSubmitComment(id: number): void {
@@ -425,59 +441,59 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
 
   openReportInNewTab(offset: number): void {
 
-  const id = this.route.snapshot.paramMap.get('id');
-  if (!id) return;
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) return;
 
-  this.reportService.getReportById(id, true).subscribe({
+    this.reportService.getReportById(id, true).subscribe({
 
-    next: (res) => {
+      next: (res) => {
 
-      const report = res.report;
+        const report = res.report;
 
-      const [year, month] = report.reportMonth.split('-').map(Number);
+        const [year, month] = report.reportMonth.split('-').map(Number);
 
-      let targetYear = year;
-      let targetMonth = month + offset;
+        let targetYear = year;
+        let targetMonth = month + offset;
 
-      while (targetMonth <= 0) {
-        targetMonth += 12;
-        targetYear -= 1;
-      }
+        while (targetMonth <= 0) {
+          targetMonth += 12;
+          targetYear -= 1;
+        }
 
-      while (targetMonth > 12) {
-        targetMonth -= 12;
-        targetYear += 1;
-      }
+        while (targetMonth > 12) {
+          targetMonth -= 12;
+          targetYear += 1;
+        }
 
-      const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
-      const code = report.employeeCode;
+        const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+        const code = report.employeeCode;
 
-      this.reportService
-        .getReportByEmployeeAndMonth(code, ym)
-        .subscribe({
+        this.reportService
+          .getReportByEmployeeAndMonth(code, ym)
+          .subscribe({
 
-          next: (res) => {
-            window.open(`/reports/${res.report.id}`, '_blank');
-          },
+            next: (res) => {
+              window.open(`/reports/${res.report.id}`, '_blank');
+            },
 
-          error: (err) => {
-            if (err.status === 403) {
-              alert('権限がありません');
-            } else if (err.status === 404) {
-              alert(`指定された月（${ym}）の報告書は見つかりませんでした。`);
-            } else {
-              this.showError(err);
+            error: (err) => {
+              if (err.status === 403) {
+                alert('権限がありません');
+              } else if (err.status === 404) {
+                alert(`指定された月（${ym}）の報告書は見つかりませんでした。`);
+              } else {
+                this.showError(err);
+              }
             }
-          }
-        });
-    },
+          });
+      },
 
-    error: (err) => {
-      this.showError(err);
-    }
+      error: (err) => {
+        this.showError(err);
+      }
 
-  });
-}
+    });
+  }
 
   private refresh() {
     this.reload$.next();

@@ -1,10 +1,17 @@
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../../../shared/button/button.component';
 import { RouterModule } from '@angular/router';
 import { Submission } from '../../../../shared/models/submission.model';
-import { SimpleChanges } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../../features/auth/services/auth.service';
 
 @Component({
   selector: 'app-submission-table',
@@ -13,12 +20,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CommonModule,
     ButtonComponent,
     RouterModule,
-    MatTooltipModule,
- ],
+    MatTooltipModule
+  ],
   templateUrl: './submission-table.component.html',
   styleUrls: ['./submission-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubmissionTableComponent {
+export class SubmissionTableComponent implements OnChanges {
 
   @Input() date!: Date;
 
@@ -28,6 +36,14 @@ export class SubmissionTableComponent {
 
   dataList: Submission[] = [];
 
+  // ★ 無駄API防止
+  private lastTargetMonth?: string;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['date'] && this.date) {
       this.initData();
@@ -35,37 +51,45 @@ export class SubmissionTableComponent {
   }
 
   initData() {
+    if (!this.date) return;
 
-    // 本来は date を使って取得
-    this.dataList = [
-      {
-        type: 'MONTHLY',
-        inputMethod: 'WEB',
-        name: '月次業務報告書',
-        dueDate: '2026-04-30T18:00:00',
-        submittedAt: null,
-        status: { received: null, approved: null },
-        id: 1
-      },
-      {
-        type: 'PROJECT',
-        inputMethod: 'WEB',
-        name: '月間成果報告書（ICTS提出用）',
-        dueDate: '2026-05-01T18:00:00',
-        submittedAt: null,
-        status: { received: null, approved: null },
-        id: 2
-      },
-      {
-        type: 'EXPENSE',
-        inputMethod: 'FILE',
-        name: '交通費精算',
-        dueDate: '2026-04-17T17:00:00',
-        submittedAt: null,
-        status: { received: null, approved: null },
-        id: 3
+    const user = this.authService.getCurrentUser();
+    if (!user?.code) {
+      console.error('ユーザー情報が取得できません');
+      this.dataList = [];
+      return;
+    }
+
+    const targetMonth = this.formatMonth(this.date);
+
+    // ★ 同じ月ならAPI呼ばない
+    if (this.lastTargetMonth === targetMonth) return;
+    this.lastTargetMonth = targetMonth;
+
+    this.http.get<Submission[]>('/api/submissions', {
+      params: {
+        targetMonth,
+        userCode: user.code
       }
-    ];
+    }).subscribe({
+      next: res => {
+        this.dataList = res;
+      },
+      error: err => {
+        console.error('submission取得失敗', err);
+        this.dataList = [];
+      }
+    });
   }
 
+  formatMonth(date: Date): string {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${y}-${m}`;
+  }
+
+  // ★ パフォーマンス最適化
+  trackById(index: number, item: Submission) {
+    return item.id;
+  }
 }

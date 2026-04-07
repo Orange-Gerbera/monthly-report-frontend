@@ -1,5 +1,6 @@
 <div class="report-container">
   <ng-container *ngIf="report$ | async as report">
+  <ng-container *ngIf="submission$ | async as submission">
     <div class="report-slide">
 
       <!-- =========================
@@ -430,5 +431,6 @@
     </div>
 
   </ng-container>
+   </ng-container>
 
 </div>

@@ -1,5 +1,6 @@
 export interface ReportDto {
   id: number;
+  typeCode: number;
   reportMonth: string; // "2025-05" のようなフォーマット（YearMonth）
   submittedAt: string | null; // ISO文字列
   updatedAt: string | null;

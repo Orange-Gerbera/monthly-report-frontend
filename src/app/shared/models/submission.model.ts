@@ -1,16 +1,12 @@
 export interface Submission {
-  type: 'MONTHLY' | 'PROJECT' | 'EXPENSE' | 'BONUS';
-  inputMethod: 'WEB' | 'FILE';
-
+  id: number;
+  typeCode: number;   // ★修正
   name: string;
+  dueDate: string;
 
-  dueDate: string;          // ← 追加
   submittedAt: string | null;
+  receivedFlg: boolean | null;   // ★修正
+  approvedFlg: boolean | null;   // ★修正
 
-  status?: {                // ← 追加（optional）
-    received?: boolean | null;
-    approved?: boolean | null;
-  };
-
-  id?: number;
+  status: string;   // ★追加（超重要）
 }

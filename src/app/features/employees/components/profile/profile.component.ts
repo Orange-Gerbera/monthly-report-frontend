@@ -86,16 +86,20 @@ export class ProfileComponent {
 
   getButtonIcon(data: Submission): string {
 
-    if (data.inputMethod === 'WEB') {
+    const isWeb = data.typeCode !== 3;
+
+    if (isWeb) {
       return data.submittedAt ? 'file-text' : 'file-plus-corner';
     }
 
-    return data.submittedAt ? 'file-up' : 'file-up';
+    return 'file-up';
   }
 
   getButtonLabel(data: Submission): string {
 
-    if (data.inputMethod === 'WEB') {
+    const isWeb = data.typeCode !== 3;
+
+    if (isWeb) {
       return data.submittedAt ? '詳細' : '作成';
     }
 
@@ -104,23 +108,30 @@ export class ProfileComponent {
 
   onAction(data: Submission) {
 
-    if (data.inputMethod === 'WEB') {
+    const isWeb = data.typeCode !== 3;
 
+    if (isWeb) {
       if (data.submittedAt && data.id) {
         this.router.navigate(['/reports', data.id]);
       } else {
         this.router.navigate(['/reports/new']);
       }
-
       return;
     }
 
-    // FILE
     this.openUploadModal(data);
   }
 
   openUploadModal(data: Submission) {
     console.log('アップロード対象:', data);
     alert('アップロード画面（仮）');
+  }
+
+  get isCurrentMonth(): boolean {
+    const now = new Date();
+    return (
+      this.currentDate.getFullYear() === now.getFullYear() &&
+      this.currentDate.getMonth() === now.getMonth()
+    );
   }
 }

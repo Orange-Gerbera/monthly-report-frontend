@@ -32,44 +32,47 @@
         <td>
           <div class="status-timeline">
 
-            <!-- 提出 -->
-            <span
-              class="node"
-              [class.active]="!!data.submittedAt"
-              matTooltip="{{ data.submittedAt ? '提出済み' : '未提出' }}">
-            </span>
+          <!-- 提出 -->
+          <span
+            class="node"
+            [class.active]="data.status !== 'NOT_SUBMITTED'"
+            matTooltip="{{ data.status !== 'NOT_SUBMITTED' ? '提出済み' : '未提出' }}">
+          </span>
 
-            <span class="bar" [class.active]="!!data.submittedAt"></span>
+          <span
+            class="bar"
+            [class.active]="data.status !== 'NOT_SUBMITTED'">
+          </span>
 
-            <!-- 受理 -->
-            <span
-              class="node"
-              [class.active]="data.status?.received === true"
-              [class.reject]="data.status?.received === false"
-              matTooltip="
-                {{ data.status?.received === true 
-                  ? '受理' 
-                  : data.status?.received === false 
-                  ? '差戻し' 
+          <!-- 受理 -->
+          <span
+            class="node"
+            [class.active]="data.status === 'RECEIVED' || data.status === 'APPROVED'"
+            [class.reject]="data.status === 'NOT_SUBMITTED'"
+            matTooltip="
+              {{ data.status === 'RECEIVED' || data.status === 'APPROVED'
+                  ? '受理'
                   : '未処理' }}">
-            </span>
+          </span>
 
-            <span class="bar" [class.active]="data.status?.received === true"></span>
+          <span
+            class="bar"
+            [class.active]="data.status === 'APPROVED'">
+          </span>
 
-            <!-- 承認 -->
-            <span
-              class="node"
-              [class.active]="data.status?.approved === true"
-              [class.reject]="data.status?.approved === false"
-              matTooltip="
-                {{ data.status?.approved === true 
-                  ? '承認' 
-                  : data.status?.approved === false 
-                  ? '否認' 
+          <!-- 承認 -->
+          <span
+            class="node"
+            [class.active]="data.status === 'APPROVED'"
+            matTooltip="
+              {{ data.status === 'APPROVED'
+                  ? '承認'
                   : '未処理' }}">
-            </span>
+          </span>
 
-          </div>
+        </div>
+
+          
         </td>
 
         <!-- ボタン -->

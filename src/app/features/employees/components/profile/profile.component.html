@@ -28,6 +28,7 @@
             type="checkbox"
             class="form-check-input"
             [(ngModel)]="useLatest"
+            name="useLatest"
           />
           <label class="form-check-label">
             直近を引き継ぐ
@@ -42,20 +43,32 @@
     <!-- 月切替 -->
     <div *ngIf="!showForm" class="d-flex align-items-center gap-3 mt-3 mb-3">
 
-      <button class="btn btn-light btn-sm" (click)="prevMonth()">◀</button>
+      <button
+        class="btn btn-light btn-sm"
+        (mousedown)="$event.preventDefault()"
+        (click)="prevMonth()">
+        ◀
+      </button>
 
       <h5 class="mb-0">{{ currentYearMonth }}</h5>
 
-      <button class="btn btn-light btn-sm" (click)="nextMonth()">▶</button>
+      <button
+        class="btn btn-light btn-sm"
+        (mousedown)="$event.preventDefault()"
+        (click)="nextMonth()"
+        [disabled]="isCurrentMonth">
+      ▶
+      </button>
 
     </div>
 
     <!-- 提出物テーブル -->
     <app-submission-table
       [date]="currentDate"
-      [getButtonLabel]="getButtonLabel"
-      [getButtonIcon]="getButtonIcon"
-      [onAction]="onAction">
+      [getButtonLabel]="getButtonLabel.bind(this)"
+      [getButtonIcon]="getButtonIcon.bind(this)"
+      [onAction]="onAction.bind(this)"
+    >
     </app-submission-table>
 
   </div>
