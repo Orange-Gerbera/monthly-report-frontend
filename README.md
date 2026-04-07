@@ -25,3 +25,16 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+## Copyright
+
+This software is developed by **Orange Gerbera**.
+
+### Authors
+- Tai Naoyuki
+- Kagoshima Takuho
+
+This software is privately developed and owned by the authors.
+
+Use within the organization is allowed only with permission from the authors.
+Unauthorized use, modification, or distribution is prohibited.
