@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light app-navbar fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand ms-1">報告書管理システム</a>
+    <a class="navbar-brand ms-1">業務報告書管理システム</a>
 
     <!-- セレクト（管理者 & 複数） -->
     <div class="d-flex align-items-center ms-3" *ngIf="isAdmin && managerDepartments.length > 1">
@@ -47,7 +47,7 @@
       <ul class="navbar-nav ms-auto">
         <li class="nav-item" *ngIf="isAdmin">
           <a class="nav-link" routerLink="/reports" routerLinkActive="active" (click)="closeNavbar()"
-            >報告書一覧</a
+            >業務報告書一覧</a
           >
         </li>
 
