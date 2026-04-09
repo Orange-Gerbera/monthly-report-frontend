@@ -424,60 +424,48 @@ export class ReportDetailComponent implements OnInit, OnDestroy {
   }
 
   openReportInNewTab(offset: number): void {
+    this.report$.pipe(take(1)).subscribe({
+      next: (report) => {
+        const [year, month] = report.reportMonth.split('-').map(Number);
+        let targetYear = year;
+        let targetMonth = month + offset;
 
-  const id = this.route.snapshot.paramMap.get('id');
-  if (!id) return;
+        while (targetMonth <= 0) {
+          targetMonth += 12;
+          targetYear -= 1;
+        }
+        while (targetMonth > 12) {
+          targetMonth -= 12;
+          targetYear += 1;
+        }
 
-  this.reportService.getReportById(id, true).subscribe({
+        const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+        const code = report.employeeCode;
 
-    next: (res) => {
-
-      const report = res.report;
-
-      const [year, month] = report.reportMonth.split('-').map(Number);
-
-      let targetYear = year;
-      let targetMonth = month + offset;
-
-      while (targetMonth <= 0) {
-        targetMonth += 12;
-        targetYear -= 1;
-      }
-
-      while (targetMonth > 12) {
-        targetMonth -= 12;
-        targetYear += 1;
-      }
-
-      const ym = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
-      const code = report.employeeCode;
-
-      this.reportService
-        .getReportByEmployeeAndMonth(code, ym)
-        .subscribe({
-
+        this.reportService.getReportByEmployeeAndMonth(code, ym).subscribe({
           next: (res) => {
-            window.open(`/reports/${res.report.id}`, '_blank');
-          },
+            // ==========================================
+            // ★ 修正ポイント：Angularのルーター経由でURLを生成する
+            // ==========================================
+            const url = this.router.serializeUrl(
+              this.router.createUrlTree(['/reports', res.report.id])
+            );
 
+            // 'opener' を指定することでセッションが引き継がれやすくなります
+            window.open(url, '_blank', 'opener');
+          },
           error: (err) => {
-            if (err.status === 403) {
-              alert('権限がありません');
-            } else if (err.status === 404) {
+            if (err.status === 404) {
               alert(`指定された月（${ym}）の報告書は見つかりませんでした。`);
             } else {
               this.showError(err);
             }
           }
         });
-    },
-
-    error: (err) => {
-      this.showError(err);
-    }
-
-  });
-}
+      },
+      error: (err) => this.showError(err)
+    });
+  }
 
   private refresh() {
     this.reload$.next();

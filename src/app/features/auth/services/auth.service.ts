@@ -12,10 +12,19 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class AuthService {
   private readonly API_BASE = `${environment.apiBaseUrl}/auth`;
+  private readonly STORAGE_KEY = 'auth_user_info'; // 保存用のキー
 
   private currentUser$ = new BehaviorSubject<LoginResponse | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // ==========================================
+    // ★ 修正：起動時にストレージから同期的に読み込む
+    // ==========================================
+    const savedUser = localStorage.getItem(this.STORAGE_KEY);
+    if (savedUser) {
+      this.currentUser$.next(JSON.parse(savedUser));
+    }
+  }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http
@@ -23,6 +32,8 @@ export class AuthService {
         withCredentials: true,
       })
       .pipe(tap((res) => {
+        // ★ 保存する
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(res));
         this.currentUser$.next(res);
       }
     ));
@@ -33,9 +44,13 @@ export class AuthService {
       .get<LoginResponse>(`${this.API_BASE}/me`, { withCredentials: true })
       .pipe(
         tap((user) => {
+          // ★ 保存する
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
           this.currentUser$.next(user);
         }),
         catchError(() => {
+          // エラー時は情報を消去
+          localStorage.removeItem(this.STORAGE_KEY);
           this.currentUser$.next(null);
           return of(null as any);
         })
@@ -51,7 +66,11 @@ export class AuthService {
         responseType: 'text',
       }
     ).pipe(
-      tap(() => this.currentUser$.next(null))
+      tap(() => {
+        // ★ 削除する
+        localStorage.removeItem(this.STORAGE_KEY);
+        this.currentUser$.next(null);
+      })
     );
   }
 
