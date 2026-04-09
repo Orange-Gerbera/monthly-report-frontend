@@ -1,9 +1,11 @@
-Copyright (c) 2025-2026 Tai Naoyuki, Kagoshima Takuho
-
-Developed by Orange Gerbera
-
+Project: Orange Gerbera
+-----------------------------------------------------------------------------
+Copyright (c) 2024-${year} ${owner}.
 All rights reserved.
 
-This software is privately developed by the authors.
+This software and any associated documentation are the intellectual property
+of ${owner}.
 
-Use, modification, or distribution of this software without permission is prohibited.
+Unauthorized copying, use, or distribution of this software, 
+in whole or in part, is strictly prohibited.
+-----------------------------------------------------------------------------
