@@ -198,7 +198,7 @@ export class ReportListComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.reports.filter(r => r.reportMonth === this.selectedMonth);
   }
 
-  formatDate(input: string, mode: 'month' | 'date' | 'datetime'): string {
+  formatDate(input: string, mode: 'month' | 'date' | 'datetime' | 'datetimeWithDay'): string {
     if (!input) return '';
     const date = new Date(input);
 
@@ -207,11 +207,14 @@ export class ReportListComponent implements OnInit, OnDestroy, AfterViewInit {
     const d = ('0' + date.getDate()).slice(-2);
     const hh = ('0' + date.getHours()).slice(-2);
     const mm = ('0' + date.getMinutes()).slice(-2);
+    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
 
     switch (mode) {
-      case 'month': return `${y}/${m}`;
+      case 'month': return `${y}年${m}月`;
       case 'date': return `${m}/${d}`;
       case 'datetime': return `${y}/${m}/${d} ${hh}:${mm}`;
+      case 'datetimeWithDay':
+        return `${m}/${d}(${dayOfWeek}) ${hh}:${mm}`;
       default: return '';
     }
   }

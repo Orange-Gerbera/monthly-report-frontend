@@ -1,16 +1,15 @@
 <div class="container mt-4">
   <div class="row">
     <div class="col-12 col-md-12 offset-md-0">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
         <h1 class="d-flex align-items-center mb-0">
           <app-icon name="files" class="me-2"></app-icon>
           業務報告書一覧
         </h1>
-
-        <div *ngIf="dueDateOfCurrentMonth as due" class="text-end">
+        <div *ngIf="dueDateOfCurrentMonth as due" class="text-start text-md-end">
           <small class="text-muted">
-            {{ currentMonth }}月の提出期日:<br />
-            {{ formatDate(due.toString(), "datetimeWithDay") }}
+            {{ currentYear }}年{{ currentMonth }}月の提出期日:<br class="d-none d-md-block" />
+            <span class="d-md-none">&nbsp;</span>{{ formatDate(due.toString(), "datetimeWithDay") }}
           </small>
         </div>
       </div>
@@ -38,16 +37,16 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>提出期日</th>
             <td mat-cell *matCellDef="let report">
               <ng-container *ngIf="report.dueDate">
-                {{ formatDate(report.dueDate, "datetime") }}
+                {{ formatDate(report.dueDate, "datetimeWithDay") }}
               </ng-container>
             </td>
           </ng-container>
 
           <ng-container matColumnDef="submittedAt">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>提出日</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>提出日時</th>
             <td mat-cell *matCellDef="let report">
               <ng-container *ngIf="report.completeFlg && report.submittedAt; else unsubmittedText">
-                {{ report.submittedAt | date : "yyyy/MM/dd" }}
+                {{ formatDate(report.submittedAt, "datetimeWithDay") }}
               </ng-container>
               <ng-template #unsubmittedText>
                 <span>未提出</span>
@@ -111,6 +110,7 @@
               <div class="d-flex justify-content-center">
                 <app-button
                   *ngIf="report.id"
+                  class="create-btn"
                   label="報告書"
                   icon="file-text"
                   color="yellow"

@@ -1,20 +1,18 @@
 <div class="container py-5">
   <div class="page-card">
 
-    <!-- プロフィール編集ボタン -->
     <div class="mb-3">
       <app-button
         [label]="showForm ? '編集を閉じる' : 'プロフィール編集'"
-        [icon]="showForm ? 'x':'user-round-pen'"
+        [icon]="showForm ? 'x' : 'user-round-pen'"
         color="gray"
         size="md"
         (click)="showForm = !showForm"
       ></app-button>
     </div>
 
-    <!-- タイトル行（右に操作） -->
-    <div class="row align-items-end pb-2 mt-3" *ngIf="!showForm">
-      <!-- 左：タイトル＋アンダーライン -->
+    <div class="row pb-2 mt-3 flex-column flex-md-row align-items-md-end" *ngIf="!showForm">
+      
       <div class="col pb-2">
         <h1 class="mb-0 border-bottom pb-2 d-flex align-items-center">
           <app-icon name="circle-user-round" class="title-icon me-3"></app-icon>
@@ -22,24 +20,10 @@
         </h1>
       </div>
 
-      <!-- 右：チェック＋作成ボタン -->
-      <div class="col-auto pb-2">
-        <div class="d-flex align-items-center gap-3">
-
-          <app-button
-            label="報告書作成"
-            icon="file-plus-corner"
-            color="blue"
-            size="md"
-            [routerLink]="isSystemAdmin ? [] : ['/reports/new']"
-            [state]="{ previousUrl: previousUrl }"
-            [queryParams]="{ useLatest: useLatest }"
-            [disabled]="isSystemAdmin"
-            [matTooltip]="isSystemAdmin ? 'システム管理者は報告書の新規作成はできません' : '新規報告書を作成します'"
-            matTooltipPosition="above"
-          ></app-button>
-
-          <div class="form-check mb-0" *ngIf="!isSystemAdmin">
+      <div class="col-auto pb-2 mt-3 mt-md-0">
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+          
+          <div class="form-check mb-0 order-2 order-md-1" *ngIf="!isSystemAdmin">
             <input
               type="checkbox"
               class="form-check-input"
@@ -51,14 +35,28 @@
               直近を引き継ぐ
             </label>
           </div>
+
+          <div class="order-1 order-md-2 d-grid d-md-block">
+            <app-button
+              class="w-100"
+              label="報告書作成"
+              icon="file-plus-corner"
+              color="blue"
+              size="md"
+              [routerLink]="isSystemAdmin ? [] : ['/reports/new']"
+              [state]="{ previousUrl: previousUrl }"
+              [queryParams]="{ useLatest: useLatest }"
+              [disabled]="isSystemAdmin"
+              [matTooltip]="isSystemAdmin ? 'システム管理者は報告書の新規作成はできません' : '新規報告書を作成します'"
+              matTooltipPosition="above"
+            ></app-button>
+          </div>
+
         </div>
       </div>
     </div>
 
-    <!-- プロフィール編集フォーム -->
     <app-employee-edit *ngIf="showForm" [selfMode]="true"></app-employee-edit>
-
-    <!-- 報告書テーブル -->
     <app-report-table *ngIf="!showForm" [filterByUser]="true"></app-report-table>
   </div>
 </div>

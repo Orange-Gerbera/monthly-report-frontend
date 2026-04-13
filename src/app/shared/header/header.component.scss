@@ -7,3 +7,63 @@
   font-weight: 500;
   border: 1px solid #dee2e6; // うっすら枠
 }
+
+/* スマホ時（991px以下）のスタイル */
+/* =========================================
+   スマホ時（991px以下）のスタイル
+========================================= */
+@media (max-width: 991.98px) {
+
+  /* --- 1. 背景の半透明化 --- */
+  .app-navbar {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* --- 2. 要素の並び順（order）の指定 --- */
+  .app-navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap; /* 要素が折り返せるようにする */
+    padding-top: 10px; /* ヘッダー内の上下のゆとり */
+    padding-bottom: 10px;
+  }
+
+  /* ① タイトル（左上） */
+  .navbar-brand {
+    order: 1;
+    margin-right: 0;
+  }
+
+  /* ② ハンバーガーボタン（右上） */
+  .navbar-toggler {
+    order: 2;
+    margin-left: auto; /* 右端に押しやる */
+  }
+
+  /* ③ ハンバーガーメニューの中身（2段目） */
+  #navbarNav {
+    order: 3;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px; /* 上のタイトル達との余白 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  /* ④ セレクトボックスとバッジ（3段目） */
+  .app-navbar .container-fluid > .d-flex {
+    order: 4;
+    width: 100%;
+    margin-left: 0 !important; /* PC用の左余白をリセット */
+    margin-top: 15px; /* メニューを開いていない時の上の余白 */
+    justify-content: flex-end; /* 右寄せ */
+  }
+  
+  /* セレクトボックス自体の幅をスマホ用に調整 */
+  .app-navbar select {
+    min-width: auto !important;
+    width: 100%;
+  }
+}

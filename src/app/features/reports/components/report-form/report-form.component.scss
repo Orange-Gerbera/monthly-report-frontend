@@ -1,0 +1,43 @@
+@media (max-width: 768px) {
+  /* スライダーのツマミを少し大きくしてタップしやすくする */
+  input[type=range].form-range::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+    margin-top: -10px; /* 縦位置の微調整 */
+  }
+  input[type=range].form-range::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* 勤務時間の「時間」「分」の隙間調整 */
+  .input-group-text {
+    padding: 0.375rem 0.5rem; /* スマホ画面で文字が押し潰されないように余白を少し抜く */
+    font-size: 0.9rem;
+  }
+  
+  /* スマホの時はセクションの間隔を少し詰める（スクロール量を減らすため） */
+  .mb-5 {
+    margin-bottom: 2rem !important;
+  }
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* --- 既存のコード（スライダーなどの調整）はそのまま --- */
+  /* 文字サイズを全体的に少し小さくして洗練させる */
+  .form-label, .form-check-label {
+    font-size: 0.85rem; /* 約13.6px */
+  }
+  .form-control, .form-select {
+    font-size: 0.9rem; /* 約14.4px */
+    padding: 8px 10px; /* 入力欄も少しスリムに */
+  }
+  .input-group-text {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.85rem; /* 「時間」「分」の文字も小さく */
+  }
+  .section-title, h2 {
+    font-size: 1.1rem; /* セクション見出しも少し控えめに */
+  }
+}

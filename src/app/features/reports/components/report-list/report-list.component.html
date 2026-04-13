@@ -1,25 +1,22 @@
 <div class="container pt-5 pb-5">
   <div class="page-card">
-    <div class="d-flex mt-4 mb-4 pb-2 align-items-end">
-      <div class="flex-grow-1 border-bottom me-3 pb-2">
+
+    <div class="d-flex flex-column flex-md-row mt-4 mb-4 pb-2 align-items-md-end gap-3">
+      
+      <div class="flex-grow-1 border-bottom pb-2">
         <h1 class="h1 mb-0 d-flex align-items-center">
           <app-icon name="files" class="me-2"></app-icon>
           業務報告書一覧
         </h1>
       </div>
 
-      <app-button label="選択した報告書を出力 ({{selectedReports.size}})" icon="file-output" color="green" size="md"
-        (click)="exportSelectedReports()" [disabled]="selectedReports.size === 0">
-      </app-button>
-    </div>
-
-    <div [hidden]="!loading" class="d-flex justify-content-center my-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+      <div class="d-grid d-md-block">
+        <app-button label="選択した報告書を出力 ({{selectedReports.size}})" icon="file-output" color="green" size="md"
+          (click)="exportSelectedReports()" [disabled]="selectedReports.size === 0">
+        </app-button>
       </div>
-    </div>
-
-    <div class="d-flex justify-content-end mb-3">
+      
+    </div> <div class="d-flex justify-content-end mb-3">
       <app-select label="表示月" [options]="reportMonthList" [(ngModel)]="selectedMonth"
         (ngModelChange)="updateTableData()" [optionLabelFn]="'formatDate'" valueFormat="month" class="month-select" />
     </div>
@@ -67,7 +64,7 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header>提出期日</th>
           <td mat-cell *matCellDef="let report">
             <ng-container *ngIf="report.dueDate">
-              {{ formatDate(report.dueDate, "datetime") }}
+              {{ formatDate(report.dueDate, "datetimeWithDay") }}
             </ng-container>
           </td>
         </ng-container>
@@ -76,7 +73,7 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header>提出日時</th>
           <td mat-cell *matCellDef="let report">
             <ng-container *ngIf="report.completeFlg && report.submittedAt; else unsubmittedText">
-              {{ report.submittedAt | date : "yyyy/MM/dd HH:mm" }}
+              {{ formatDate(report.submittedAt, "datetimeWithDay") }}
             </ng-container>
             <ng-template #unsubmittedText>
               <span class="text-muted">未提出</span>

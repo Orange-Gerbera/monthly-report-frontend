@@ -451,3 +451,137 @@
     }
   }
 }
+
+@media (max-width:768px){
+
+  /* 全体余白を減らす */
+  .report-container{
+    padding:0 0px;
+  }
+
+  /* ヘッダー縦並び */
+  .header-main{
+    grid-template-columns:1fr;
+    padding:12px;
+
+    position:static;
+
+    background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,0.25);
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  /* 名前小さく */
+  .employee-name{
+    font-size:18px;
+  }
+
+  /* ステータス幅可変に */
+  .mini-labels,
+  .mini-dates,
+  .mini-users{
+    width:100%;
+    font-size:11px;
+  }
+
+  .mini-flow{
+    width:100%;
+  }
+
+  .mini-line{
+    width:100%;
+  }
+
+  /* カード余白縮小 */
+  .card-body{
+    padding: 10px 8px;
+  }
+
+  .form-control.bg-light{
+    padding:10px 8px;    /* ← 左右をさらに狭く */
+  }
+
+  /* ボタンを折り返す */
+  .action-bar{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .nav-actions,
+  .right-actions{
+    flex-wrap:wrap;
+  }
+
+   .status-mini{
+    gap:6px;
+  }
+
+  .mini-flow{
+    gap:6px;
+  }
+
+  .mini-dot{
+    width:18px;
+    height:18px;
+  }
+
+  .status-mini .mini-labels,
+  .status-mini .mini-dates,
+  .status-mini .mini-users{
+    width:100% !important;
+  }
+
+  .mini-flow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+    padding:0 23px; 
+  }
+
+  .mini-line{
+    flex:1;          /* ← これが正解 */
+    height:2px;
+    margin:0 2px;    /* ← ドットとの隙間 */
+  }
+
+  /* ラベル */
+  .mini-labels span,
+  .mini-dates span,
+  .mini-users span{
+    text-align:center;
+  }
+
+  /* 左だけ少し左へ */
+  .mini-labels span:nth-child(1),
+  .mini-dates span:nth-child(1),
+  .mini-users span:nth-child(1){
+    transform: translateX(-22px);
+  }
+
+  /* 右だけ少し右へ */
+  .mini-labels span:nth-child(3),
+  .mini-dates span:nth-child(3),
+  .mini-users span:nth-child(3){
+    transform: translateX(22px);
+  }
+
+  .meta-info{
+    margin-top:2px;
+  }
+
+  .status-mini{
+    margin-top:2px;
+    gap:2px;
+  }
+
+  .header-left{
+    gap:2px;
+  }
+
+
+}

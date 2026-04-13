@@ -248,3 +248,67 @@ h1 {
   padding: 4px 10px;
   border-radius: 999px;
 }
+
+/* ==========================================
+   ツールチップのスタイル調整
+========================================== */
+.mat-mdc-tooltip-panel {
+  --mdc-plain-tooltip-container-color: #3730a3;
+  --mdc-plain-tooltip-supporting-text-color: #ffffff;
+}
+
+.mat-mdc-tooltip-panel .mdc-tooltip__surface {
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(4px);
+  opacity: 0.98 !important;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================
+   スマホ専用の余白・ボタン調整（グローバル）
+========================================== */
+@media (max-width: 768px) {
+  /* 外側の余白を削って画面を広く使う */
+  .container, .page-card {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .py-5 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+  
+  .action-area .form-check {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  /* タイトル周りを小さく */
+  .page-card h1 {
+    font-size: 18px !important; /* 20px から 18px へ */
+  }
+  .title-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* 共通ボタン（編集、報告書、キャンセル等）を小さく */
+  ::ng-deep app-button button {
+    font-size: 12px !important; /* 14px から 12px へ */
+    padding: 6px 12px !important;
+    width: auto !important;
+    white-space: nowrap !important;
+  }
+
+}
+
+@media (max-width: 991.98px) {
+  body {
+    padding-top: 120px !important;
+  }
+}

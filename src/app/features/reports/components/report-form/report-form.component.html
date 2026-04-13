@@ -19,7 +19,7 @@
 <form #form="ngForm" (ngSubmit)="onSubmit(form)">
   <!-- 日付・氏名・所属 -->
   <div class="row g-3 mb-4">
-    <div class="col-md-2 col-6">
+    <div class="col-md-3">
       <label for="modelMonth" class="form-label">日付</label>
       <input
         type="month"
@@ -74,7 +74,7 @@
       <textarea
         matInput
         cdkTextareaAutosize
-        cdkAutosizeMinRows="12"
+        cdkAutosizeMinRows="6"
         cdkAutosizeMaxRows="40"
         id="contentBusiness"
         class="form-control"
@@ -579,7 +579,9 @@
     </div>
   </div>
 
-  <div class="text-end mt-4 pt-3 border-top">
-    <button type="submit" class="btn btn-success px-4">登録</button>
+  <div class="mt-4 pt-3 border-top d-grid d-md-block text-md-end">
+    <button type="submit" class="btn btn-success px-4 py-2 fw-bold" style="font-size: 1rem;">
+      登録
+    </button>
   </div>
 </form>

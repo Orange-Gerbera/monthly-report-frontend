@@ -1,3 +1,6 @@
+/* ==========================================
+   PC・共通スタイル（元のコードそのまま）
+   ========================================== */
 .confirm-dialog-container {
   min-width: 320px;
   max-width: 450px;
@@ -22,4 +25,51 @@
 
 .dialog-actions {
   gap: 12px; // ボタン同士の隙間
+}
+
+/* ==========================================
+   スマホ専用スタイル（PCには一切影響しません）
+   ========================================== */
+@media (max-width: 768px) {
+  .confirm-dialog-container {
+    /* 画面幅の狭いスマホ（iPhone SEなど）で見切れないよう制限を解除 */
+    min-width: auto; 
+    width: 100%;
+  }
+
+  /* タイトルと余白をスマホ用に少しスリム化 */
+  .dialog-title {
+    font-size: 1.15rem;
+    padding: 16px 20px 8px;
+    text-align: center; /* 中央寄せにするとスマホアプリっぽくなります */
+  }
+
+  .dialog-content {
+    padding: 8px 20px 16px !important;
+    text-align: center;
+    
+    .message-text {
+      font-size: 0.95rem;
+    }
+  }
+
+  /* --- ボタンを縦積みのフルサイズに変更 --- */
+  ::ng-deep .dialog-actions {
+    flex-direction: column;          /* 横並びを縦積みに変更 */
+    align-items: stretch !important; /* 横幅いっぱいに伸ばす */
+    padding: 0 20px 20px !important; /* スマホ用に下部余白を調整 */
+    gap: 10px;
+  }
+
+  /* app-button を幅100%にして、タップしやすい高さにする */
+  ::ng-deep .dialog-actions app-button {
+    width: 100%;
+    margin: 0 !important; /* Material特有の余計な隙間を消す */
+  }
+
+  ::ng-deep .dialog-actions app-button button {
+    width: 100% !important;
+    padding: 12px 0 !important; /* 指で押しやすいように少し高さを出す */
+    font-size: 15px !important; /* 確認ボタンは重要なので文字は少し大きめ維持 */
+  }
 }

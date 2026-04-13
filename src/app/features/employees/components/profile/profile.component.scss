@@ -25,3 +25,56 @@
   line-height: 1.4;
   letter-spacing: 0.02em;
 }
+
+
+/* ===== スマホ専用（PCには一切影響しない） ===== */
+@media (max-width: 768px) {
+
+  .action-area {
+    width: 100%;
+  }
+
+  .action-inner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .create-btn {
+    width: 100%;
+  }
+
+  /* スコープ限定 */
+  .action-area .form-check {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  .page-card h1 {
+    font-size: 20px;
+  }
+
+  .title-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+   .actions-col {
+    width: 120px;
+    min-width: 120px;
+  }
+
+   .create-btn button {
+    font-size: 10px !important;
+    padding: 6px 8px !important;
+    white-space: nowrap !important;
+  }
+
+   /* すべてのボタンに適用 */
+  app-button button {
+    font-size: 10px !important;
+    padding: 6px 8px !important;
+    white-space: nowrap !important; /* ← これが最重要 */
+  }
+
+}

@@ -67,7 +67,14 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
     'actions',
   ];
   dueDateOfCurrentMonth?: Date;
-  currentMonth: number = new Date().getMonth() + 1;
+
+  // 1. まず基準となる日付（10日判定を通したもの）を変数に入れておく
+  private targetDate = this.getCurrentTargetMonth(new Date());
+
+  // 2. その基準日から「月」と「年」の両方を取り出す
+  currentMonth: number = this.targetDate.getMonth() + 1;
+  currentYear: number = this.targetDate.getFullYear();
+
   previousUrl: string = '/reports'; 
  
   @ViewChild(MatSort) sort!: MatSort;
@@ -216,7 +223,7 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
 
   formatDate(
     input: string,
-    mode: 'month' | 'date' | 'datetime' | 'datetimeWithDay'
+    mode: 'month' | 'date' | 'dateWithDay' | 'datetime' | 'datetimeWithDay'
   ): string {
     if (!input) return '';
     const date = new Date(input);
@@ -230,31 +237,40 @@ export class ReportTableComponent implements OnInit, OnDestroy, AfterViewInit {
 
     switch (mode) {
       case 'month':
-        return `${y}/${m}`;
+        return `${y}年${m}月`;
+
       case 'date':
         return `${m}/${d}`;
+        
+      case 'dateWithDay':
+        return `${m}/${d}(${dayOfWeek})`;
+
       case 'datetime':
-        return `${y}/${m}/${d} ${hh}:${mm}`;
+        return `${m}/${d} ${hh}:${mm}`;
+
       case 'datetimeWithDay':
-        return `${y}/${m}/${d}(${dayOfWeek})${hh}:${mm}`;
+        return `${m}/${d}(${dayOfWeek}) ${hh}:${mm}`;
+
       default:
         return '';
     }
   }
 
-  /**
-   * 10日基準で「何月分の報告書か」を判定する
-   * 10日〜末日 -> その月
-   * 1日〜9日   -> 前の月
-   */
-  getCurrentTargetMonth(date: Date): Date {
-    const d = new Date(date.getTime());
-    const day = d.getDate();
-    
-    if (day < 10) {
- 		// 9日以前なら、1ヶ月前の日付を返す
-      d.setMonth(d.getMonth() - 1);
+    /**
+     * 10日基準で「何月分の報告書か」を判定する
+     * 10日〜末日 -> その月
+     * 1日〜9日   -> 前の月
+     */
+    getCurrentTargetMonth(date: Date): Date {
+      const d = new Date(date.getTime());
+      const day = d.getDate();
+      
+      if (day < 10) {
+      // 9日以前なら、1ヶ月前の日付を返す
+        d.setMonth(d.getMonth() - 1);
+      }
+      return d;
     }
-    return d;
-  }
+
+ 
 }
