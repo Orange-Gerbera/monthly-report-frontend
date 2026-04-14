@@ -1,5 +1,84 @@
 .system-badge {
   display: inline-block;
-  width: 90px;       // ← ここを調整
+  width: 90px;
   text-align: center;
+}
+
+/* ==========================================
+   スマホ専用スタイル（従業員一覧のテーブルをカード化）
+   ========================================== */
+:host {
+  @media (max-width: 768px) {
+    ::ng-deep {
+      /* テーブルの骨組みをリセット */
+      table.mat-mdc-table, table.mat-table, .app-table {
+        display: block !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      /* ヘッダーはスマホでは隠す */
+      thead, tr.mat-mdc-header-row, tr.mat-header-row {
+        display: none !important;
+      }
+      tbody {
+        display: block !important;
+        width: 100% !important;
+      }
+
+      /* 1行をカードにする */
+      tr.mat-mdc-row, tr.mat-row {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        margin-bottom: 16px !important;
+        padding: 12px !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+      }
+
+      /* セルを横並び（ラベル：値）にする */
+      td.mat-mdc-cell, td.mat-cell {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 12px 0 !important;
+        border-bottom: 1px dashed #e2e8f0 !important;
+        box-sizing: border-box !important;
+        text-align: right !important;
+      }
+      td.mat-mdc-cell:last-child, td.mat-cell:last-child {
+        border-bottom: none !important;
+        padding-bottom: 4px !important;
+      }
+
+      /* --- ラベルの自動挿入（従業員一覧のカラムに対応） --- */
+      .mat-column-code::before { content: "社員番号"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+      .mat-column-name::before { content: "氏名"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+      .mat-column-department::before { content: "所属"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+      .mat-column-role::before { content: "権限"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+      .mat-column-status::before { content: "雇用状態"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+      .mat-column-system::before { content: "システム利用可否"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+      .mat-column-actions::before { content: "詳細"; color: #64748b; font-size: 13px; font-weight: bold; margin-right: 12px; }
+
+      /* アクションボタン周辺の調整 */
+      .mat-column-actions .d-flex {
+        width: 100%;
+        justify-content: flex-end !important;
+        flex-wrap: wrap; /* ロック解除ボタンと詳細ボタンが並ぶ場合を考慮 */
+      }
+
+      /* 不要なテキストやページネーションを整える（ページネーションがある場合） */
+      .mat-mdc-paginator-range-label, .mat-mdc-paginator-page-size {
+        display: none !important;
+      }
+      .mat-mdc-paginator-container {
+        justify-content: center !important;
+        padding: 0 !important;
+      }
+    }
+  }
 }
