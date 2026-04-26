@@ -1,0 +1,20 @@
+/* =========================================
+   テーブル横スクロール用スタイル
+   ========================================= */
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  /* iOS Safariでの滑らかな慣性スクロールを有効化 */
+  -webkit-overflow-scrolling: touch; 
+}
+
+/* Angular Materialのテーブル幅を最低限確保し、レイアウト崩れを防ぐ */
+.table-scroll-wrapper .app-table {
+  min-width: 500px; /* カラム数や文字数に合わせて適宜調整してください */
+}
+
+/* テーブル内の文字が勝手に改行されて縦に間延びするのを防ぐ */
+.table-scroll-wrapper mat-header-cell,
+.table-scroll-wrapper mat-cell {
+  white-space: nowrap; 
+}

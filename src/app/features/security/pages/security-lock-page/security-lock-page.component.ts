@@ -40,6 +40,7 @@ interface LockEntry {
     ConfirmDialogComponent
   ],
   templateUrl: './security-lock-page.component.html',
+  styleUrls: ['./security-lock-page.component.scss'],
 })
 export class SecurityLockPageComponent implements OnInit {
   ipLockDataSource = new MatTableDataSource<LockEntry>([]);

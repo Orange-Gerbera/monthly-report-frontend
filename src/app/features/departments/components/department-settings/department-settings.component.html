@@ -1,7 +1,6 @@
 <div class="container pt-5 pt-3">
   <div class="page-card">
 
-    <!-- タイトル -->
     <div class="row mb-4 mt-4 align-items-center">
       <div class="col-12">
         <h1 class="border-bottom pb-2 d-flex align-items-center">
@@ -9,7 +8,6 @@
           所属設定
         </h1>
 
-        <!-- 追加フォーム -->
         <div class="row mt-4">
           <div class="input-group">
             <input
@@ -18,7 +16,7 @@
               placeholder="新しい所属名"
               [(ngModel)]="newDepartmentName"
             />
-            <button class="btn btn-primary" (click)="addDepartment()">
+            <button class="btn btn-primary text-nowrap" (click)="addDepartment()">
               追加
             </button>
           </div>
@@ -30,23 +28,19 @@
       </div>
     </div>
 
-    <!-- 一覧 -->
     <div class="table-like">
 
       <div *ngFor="let dept of departments"
            class="row-item d-flex align-items-center justify-content-between"
            [class.inactive-row]="!dept.active">
 
-        <!-- 左：状態＋名前 -->
-        <div class="d-flex align-items-center gap-3 flex-grow-1">
+        <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width: 0;">
 
-          <!-- ★ ID追加 -->
-          <span class="col-id">
+          <span class="col-id flex-shrink-0">
             {{ dept.id }}
           </span>
-          <!-- 状態ドット（クリックで切替） -->
           <span
-            class="status-dot"
+            class="status-dot flex-shrink-0"
             [ngClass]="{
               'status-ok': dept.active,
               'status-off': !dept.active,
@@ -56,15 +50,13 @@
             (click)="toggleByDot(dept)">
           </span>
 
-          <!-- 所属名 -->
-          <span class="col-name">
+          <span class="col-name text-truncate">
             {{ dept.name }}
           </span>
 
         </div>
 
-        <!-- 右：削除 -->
-        <span [matTooltip]="getDeleteTooltip(dept)">
+        <span [matTooltip]="getDeleteTooltip(dept)" class="flex-shrink-0 ms-2">
           <app-button
             *ngIf="dept.name !== '(所属なし)'"
             label="削除"
